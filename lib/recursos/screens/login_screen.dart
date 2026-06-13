@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prueba_eskpe/recursos/screens/register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -18,6 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFCCCCCC), // Fondo gris de los laterales/abajo
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           // 1. Imagen de fondo (Ocupa toda la pantalla al inicio, y se mantiene fija atrás)
@@ -78,10 +80,10 @@ class _LoginScreenState extends State<LoginScreen> {
             duration: const Duration(milliseconds: 550),
             curve: Curves.fastOutSlowIn, // Curva de animación suave y natural
             // Si _mostrarLogin es falso, se esconde abajo del todo (size.height)
-            top: _mostrarLogin ? size.height * 0.28 : size.height, 
+            top: _mostrarLogin ? size.height * 0.33 : size.height, 
             left: 0,
             right: 0,
-            bottom: 0, // Se expande hasta el fondo de la pantalla
+            bottom: -75, // Se expande hasta el fondo de la pantalla
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 100.0),
               decoration: const BoxDecoration(
@@ -96,13 +98,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Espacio para darle holgura al diseño por debajo del logo animado
-                    SizedBox(height: size.height * 0.10),
+                    SizedBox(height: size.height * 0.06),
 
                     // Campo de Gmail
                     TextFormField(
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
-                        labelText: 'Gmail',
+                        labelText: 'Correo Electrónico',
                         labelStyle: TextStyle(
                           color: Color(0xFF4A3AFF),
                           fontWeight: FontWeight.w500,
@@ -199,8 +201,11 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         GestureDetector(
                           onTap: () {
-                            // Acción para redirigir al registro
-                          },
+                        Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                        );
+                      },
                           child: const Text(
                             'Regístrate!',
                             style: TextStyle(
