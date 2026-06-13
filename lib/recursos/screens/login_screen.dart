@@ -30,7 +30,7 @@ class LoginScreen extends StatelessWidget {
           ),
 
           // 2. Tarjeta blanca con los elementos del Login
-          Positioned(
+          Positioned( 
             top: size.height * 0.28, // Empieza un poco más arriba del final de la imagen
             left: 0,
             right: 0,
