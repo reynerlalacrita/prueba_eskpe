@@ -238,7 +238,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   fontFamily: 'Impact',
                   fontSize: _mostrarLogin ? 68 : 75,
                   fontWeight: FontWeight.bold,
-                  fontStyle: FontStyle.italic,
                   // Si la tarjeta subió, se vuelve gris oscuro; si está sobre la foto, blanco
                   color: _mostrarLogin ? const Color(0xFF222222) : Colors.white,
                   letterSpacing: 2,

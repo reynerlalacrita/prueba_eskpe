@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 // 1. IMPORTA TU PANTALLA: Cambia 'tu_proyecto' por el nombre real de tu proyecto de Flutter
 
@@ -19,7 +20,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true, // Activa Material 3 para un diseño más moderno
       ),
       // 2. CONFIGURA LA PANTALLA INICIAL HERE
-      home: const LoginScreen(), 
+      home: const HomeScreen(), 
     );
   }
 }
