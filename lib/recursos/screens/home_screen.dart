@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; // <--- Para saber quién está logueado
 import 'package:prueba_eskpe/recursos/colores.dart';
+import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart'; // <--- Ruta del admin panel
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -10,10 +12,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Guardamos el destino actual. Luego lo podrás cambiar dinámicamente.
-  final String _destinoSeleccionado = 'Morrocoy';
+  String rol = 'usuario'; // Por defecto es usuario normal por seguridad
+  bool cargandoRol = true;
 
-  // Lista local de empresas (por ahora)
   final List<Map<String, String>> _empresas = [
     {'nombre': 'Posada Alfa', 'imagen': 'assets/posada.jpg'},
     {'nombre': 'Yates Express', 'imagen': 'assets/yates.jpg'},
@@ -21,32 +22,79 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _obtenerRolDesdeFirebase();
+  }
+
+  void _obtenerRolDesdeFirebase() async {
+    try {
+      User? usuarioActual = FirebaseAuth.instance.currentUser;
+      if (usuarioActual != null) {
+        DocumentSnapshot doc = await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(usuarioActual.uid)
+            .get();
+
+        if (doc.exists && doc.data() != null) {
+          Map<String, dynamic> datos = doc.data() as Map<String, dynamic>;
+          setState(() {
+            rol = datos['rol'] ?? 'usuario'; 
+            cargandoRol = false;
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error obteniendo rol: $e");
+    }
+    setState(() => cargandoRol = false);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Mientras verifica si eres admin, muestra un cargando
+    if (cargandoRol) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1))),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFFCCCCCC), 
+      
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(70.0), // 👈 AQUÍ MANEJAS LA ALTURA (Prueba con 75 o 80)
+        child: AppBar(
+          backgroundColor: AppColors.azul1, 
+          elevation: 3,
+          centerTitle: true,
+          // Metemos un Padding en el title por si quieres ajustar la posición vertical del texto en la nueva barra
+          title: const Padding(
+            padding: EdgeInsets.only(top: 10.0), // 👈 Si la barra es más alta, esto baja el logo para que quede centrado fino
+            child: Text(
+              'ESK-PE',
+              style: TextStyle(
+                fontFamily: 'Impact',
+                fontSize: 40, // Le subí de 36 a 38 ya que ahora tienes más espacio
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.italic,
+                color: Colors.white,
+                letterSpacing: 2,
+              ),
+            ),
+          ),
+        ),
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 1. LOGO PRINCIPAL "ESK-PE"
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20.0),
-                child: Center(
-                  child: Text(
-                    'ESK-PE',
-                    style: TextStyle(
-                      fontFamily: 'Impact',
-                      fontSize: 38,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                      color: Colors.black.withOpacity(0.8),
-                      letterSpacing: 2,
-                    ),
-                  ),
-                ),
-              ),
+              // 💡 NOTA: Se eliminó el logo en Padding que estaba aquí arriba.
+              
+              const SizedBox(height: 20), // Espacio inicial debajo de la nueva AppBar
 
               // 2. BANNER PRINCIPAL 
               Container(
@@ -77,16 +125,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 25),
 
-              // 3. SECCIÓN LUGARES - APUNTANDO A TU SUBCOLECCIÓN
-              _buildSeccionTitulo("Lugares de $_destinoSeleccionado"),
+              // 3. SECCIÓN LUGARES (Manteniendo tus destinos intactos)
+              _buildSeccionTitulo("Destinos"),
               const SizedBox(height: 15),
               StreamBuilder<QuerySnapshot>(
-                // AQUÍ ESTÁ EL CAMBIO: Entra a destinos -> Morrocoy -> lugares
                 stream: FirebaseFirestore.instance
-                    .collection('destinos')
-                    .doc(_destinoSeleccionado)
-                    .collection('lugares')
-                    .snapshots(),
+                .collectionGroup('destinos') 
+                .limit(7)
+                .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return const Padding(
@@ -102,11 +148,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   final docsLugares = snapshot.data?.docs ?? [];
 
                   if (docsLugares.isEmpty) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
-                        'No hay lugares registrados para $_destinoSeleccionado.', 
-                        style: const TextStyle(color: Colors.black54)
+                        'No hay lugares registrados', 
+                        style: TextStyle(color: Colors.black54)
                       ),
                     );
                   }
@@ -123,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         
                         return _buildItemCircular(
                           datosLugar['nombre'] ?? 'Sin nombre', 
-                          datosLugar['rutaAsset'] ?? '' // Tu ruta local: 'assets/cayo_sombrero.jpg'
+                          datosLugar['rutaAsset'] ?? '' 
                         );
                       },
                     ),
@@ -136,7 +182,21 @@ class _HomeScreenState extends State<HomeScreen> {
               // 4. SECCIÓN EMPRESAS (Local)
               _buildSeccionTitulo("Empresas"),
               const SizedBox(height: 15),
-              SizedBox(
+
+              Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 15), // Espacio interno arriba y abajo de los círculos
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 115, 111, 129), // 👈 EL COLOR DE FONDO (Puedes usar Colors.white, Colors.grey[800], etc.)
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05), // Sombra suave para que despegue del fondo gris
+                    blurRadius: 10,
+                    offset: const Offset(0, 5),
+                  ),
+                ],
+              ),
+              child: SizedBox(
                 height: 140, 
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
@@ -148,10 +208,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   },
                 ),
               ),
-
+           ),
+      
               const SizedBox(height: 25),
 
-              // 5. SECCIÓN PRONTOS - EN VIVO DESDE LA COLECCIÓN VIAJES
+              // 5. SECCIÓN PRONTOS
               _buildSeccionTitulo("Prontos"),
               const SizedBox(height: 15),
               StreamBuilder<QuerySnapshot>(
@@ -232,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
           Text(
             nombre,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.azuleskpe),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
           ),
         ],
       ),
@@ -285,11 +346,21 @@ class _HomeScreenState extends State<HomeScreen> {
       showUnselectedLabels: false,
       selectedItemColor: Colors.black,
       unselectedItemColor: Colors.black38,
-      currentIndex: 0,
-      items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home_filled, size: 30), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.shopping_cart_outlined, size: 30), label: ''),
-        BottomNavigationBarItem(icon: Icon(Icons.person_outline, size: 30), label: ''),
+      currentIndex: 0, 
+      onTap: (index) {
+        if (index == 2 && rol == 'admin') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AdminScreen()),
+          );
+        }
+      },
+      items: [
+        const BottomNavigationBarItem(icon: Icon(Icons.home_filled, size: 30), label: ''),
+        const BottomNavigationBarItem(icon: Icon(Icons.search, size: 30), label: ''),
+        
+        if (rol == 'admin')
+          const BottomNavigationBarItem(icon: Icon(Icons.person_outline, size: 30), label: ''),
       ],
     );
   }

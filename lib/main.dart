@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true, // Activa Material 3 para un diseño más moderno
       ),
       // 2. CONFIGURA LA PANTALLA INICIAL HERE
-      home: const HomeScreen(), 
+      home: const LoginScreen(), 
     );
   }
 }
