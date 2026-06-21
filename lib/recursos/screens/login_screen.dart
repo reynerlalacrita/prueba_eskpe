@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:prueba_eskpe/recursos/screens/register_screen.dart';
+import 'package:flutter/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
+import 'register_screen.dart'; // <--- Asegúrate de que el nombre del archivo coincida
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -9,83 +13,114 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  // Variable para controlar si la tarjeta de login ya subió o no
-  bool _mostrarLogin = false;
+  final _formKey = GlobalKey<FormState>();
+  
+  // Controladores para capturar las credenciales
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  // FUNCIÓN PARA INICIAR SESIÓN Y LEER EL ROL
+  Future<void> _procesarLogin() async {
+    try {
+      // Mostrar indicador de carga
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1))),
+      );
+
+      // 1. Autenticar con Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      String uid = userCredential.user!.uid;
+
+      // 2. Buscar el documento del usuario en Firestore para saber su Rol
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(uid)
+          .get();
+
+      Navigator.pop(context); // Quitar el círculo de carga
+
+      if (userDoc.exists) {
+        String rol = userDoc.get('rol');
+        print("Usuario autenticado con éxito. Rol: $rol");
+
+        // 3. AQUÍ DECIDES A DÓNDE MANDARLO SEGÚN SU ROL
+        if (rol == 'admin') {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+        } else if (rol == 'usuario') {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+        } else {
+          // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+        }
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('¡Bienvenido de vuelta! Perfil: $rol'), backgroundColor: Colors.green),
+        );
+
+      } else {
+        // Si por algún motivo el usuario está en Auth pero no en Firestore
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se encontraron datos de perfil.'), backgroundColor: Colors.orange),
+        );
+      }
+
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context); // Quitar carga
+      String mensajeError = 'Error al iniciar sesión.';
+      if (e.code == 'user-not-found' || e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        mensajeError = 'Correo o contraseña incorrectos.';
+      } else if (e.code == 'invalid-email') {
+        mensajeError = 'El formato del correo no es válido.';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mensajeError), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      Navigator.pop(context);
+      print("Error en login: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Obtenemos el tamaño de la pantalla para que sea responsivo
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFCCCCCC), // Fondo gris de los laterales/abajo
+      backgroundColor: const Color(0xFFCCCCCC),
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // 1. Imagen de fondo (Ocupa toda la pantalla al inicio, y se mantiene fija atrás)
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/background_road.jpg'), 
-                  fit: BoxFit.cover,
-                ),
-              ),
+          // Fondo inmutable idéntico al registro
+          SizedBox(
+            width: size.width,
+            height: size.height,
+            child: Image.asset(
+              'assets/background_road.jpg',
+              fit: BoxFit.cover,
             ),
           ),
 
-          // 2. Filtro oscuro opcional cuando la tarjeta no ha subido (para mejorar contraste del botón)
-          if (!_mostrarLogin)
-            Positioned.fill(
-              child: Container(color: Colors.black.withOpacity(0.15)),
-            ),
-
-          // 3. Botón inicial "INICIAR" (Solo se ve si la tarjeta está oculta)
-          if (!_mostrarLogin)
-            Positioned(
-              bottom: 60,
-              left: 30,
-              right: 30,
-              child: SizedBox(
-                height: 55,
-                child: ElevatedButton(
-                  onPressed: () {
-                    // Al presionar, cambiamos el estado para activar la animación de subida
-                    setState(() {
-                      _mostrarLogin = true;
-                    });
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2E16D1), // Morado eléctrico
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30.0),
-                    ),
-                    elevation: 5,
-                  ),
-                  child: const Text(
-                    'ESCAPATE AHORA',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      letterSpacing: 1.2,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-          // 5. Tarjeta blanca animada con los elementos del Login
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 550),
-            curve: Curves.fastOutSlowIn, // Curva de animación suave y natural
-            // Si _mostrarLogin es falso, se esconde abajo del todo (size.height)
-            top: _mostrarLogin ? size.height * 0.33 : size.height, 
+          // Tarjeta Blanca de Login
+          Positioned(
+            top: size.height * 0.30, // Más abajo que el registro porque son menos campos
             left: 0,
             right: 0,
-            bottom: -75, // Se expande hasta el fondo de la pantalla
+            bottom: -20,
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 100.0),
+              padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 40.0),
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.only(
@@ -94,158 +129,133 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    // Espacio para darle holgura al diseño por debajo del logo animado
-                    SizedBox(height: size.height * 0.06),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const SizedBox(height: 20),
 
-                    // Campo de Gmail
-                    TextFormField(
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: const InputDecoration(
-                        labelText: 'Correo Electrónico',
-                        labelStyle: TextStyle(
-                          color: Color(0xFF4A3AFF),
-                          fontWeight: FontWeight.w500,
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFD6C7FF), width: 2),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFF4A3AFF), width: 2),
-                        ),
-                      ),
-                    ),
-                    
-                    const SizedBox(height: 30),
-
-                    // Campo de Contraseña
-                    TextFormField(
-                      obscureText: true,
-                      decoration: const InputDecoration(
-                        labelText: 'Contraseña',
-                        labelStyle: TextStyle(
-                          color: Color(0xFF4A3AFF),
-                          fontWeight: FontWeight.w500,
-                        ),
-                        enabledBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFFD6C7FF), width: 2),
-                        ),
-                        focusedBorder: UnderlineInputBorder(
-                          borderSide: BorderSide(color: Color(0xFF4A3AFF), width: 2),
-                        ),
-                      ),
-                    ),
-                    
-                    SizedBox(height: size.height * 0.05),
-
-                    // Botón INICIAR SESIÓN
-                    SizedBox(
-                      width: double.infinity,
-                      height: 55,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Acción del botón de iniciar sesión
+                      _buildTextField(
+                        "Correo electrónico",
+                        TextInputType.emailAddress,
+                        _emailController,
+                        (value) {
+                          if (value == null || value.isEmpty) return 'Ingresa tu correo';
+                          return null;
                         },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2E16D1),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'INICIAR SESIÓN',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 1.2,
-                          ),
-                        ),
                       ),
-                    ),
-                    
-                    const SizedBox(height: 15),
-                    
-                    // Texto Recuperar contraseña
-                    TextButton(
-                      onPressed: () {
-                        // Acción de recuperar contraseña
-                      },
-                      child: const Text(
-                        'Recuperar contraseña',
-                        style: TextStyle(
-                          color: Color(0xFF444444),
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          decoration: TextDecoration.underline,
-                        ),
+
+                      const SizedBox(height: 20),
+
+                      _buildTextField(
+                        "Contraseña",
+                        TextInputType.text,
+                        _passwordController,
+                        (value) {
+                          if (value == null || value.isEmpty) return 'Ingresa tu contraseña';
+                          return null;
+                        },
+                        obscureText: true,
                       ),
-                    ),
 
-                    const SizedBox(height: 15),
+                      const SizedBox(height: 40),
 
-                    // Fila de Registro: Texto pequeño + enlace
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          'No tienes una cuenta todavía? ',
-                          style: TextStyle(
-                            color: Color(0xFF666666),
-                            fontSize: 15,
-                            fontWeight: FontWeight.w400,
+                      // Botón Ingresar
+                      SizedBox(
+                        width: double.infinity,
+                        height: 55,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_formKey.currentState!.validate()) {
+                              _procesarLogin();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E16D1),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30.0)),
+                            elevation: 0,
                           ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                        Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const RegisterScreen()),
-                        );
-                      },
                           child: const Text(
-                            'Regístrate!',
-                            style: TextStyle(
-                              color: Color(0xFF2E16D1),
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              decoration: TextDecoration.underline,
-                            ),
+                            'INGRESAR',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                           ),
                         ),
-                      ],
-                    ),
-                  ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Saltar al Registro
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const RegisterScreen()),
+                          );
+                        },
+                        child: const Text(
+                          "¿No tienes cuenta? Regístrate aquí",
+                          style: TextStyle(
+                            color: Color(0xFF444444),
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
 
-                    // 4. Logo / Título "ESK-PE" con animación de posición y color
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 600),
-            curve: Curves.easeInOutCubic, // Movimiento fluido
-            top: _mostrarLogin ? size.height * 0.34 : size.height * 0.35,
+          // Logo ESK-PE
+          Positioned(
+            top: size.height * 0.12,
             left: 0,
             right: 0,
-            child: Center(
+            child: const Center(
               child: Text(
                 'ESK-PE',
                 style: TextStyle(
                   fontFamily: 'Impact',
-                  fontSize: _mostrarLogin ? 68 : 75,
+                  fontSize: 50,
                   fontWeight: FontWeight.bold,
-                  // Si la tarjeta subió, se vuelve gris oscuro; si está sobre la foto, blanco
-                  color: _mostrarLogin ? const Color(0xFF222222) : Colors.white,
+                  fontStyle: FontStyle.italic,
+                  color: Color(0xFF222222),
                   letterSpacing: 2,
                 ),
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // Auxiliar de campos idéntico al de Register para mantener la consistencia visual
+  Widget _buildTextField(
+    String label,
+    TextInputType type,
+    TextEditingController controller,
+    String? Function(String?)? validator, {
+    List<TextInputFormatter>? inputFormatters,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    bool obscureText = false,
+  }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: type,
+      validator: validator,
+      inputFormatters: inputFormatters,
+      textCapitalization: textCapitalization,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Color(0xFF4A3AFF), fontWeight: FontWeight.w500),
+        enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFD6C7FF), width: 2)),
+        focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF4A3AFF), width: 2)),
+        errorStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.w500),
       ),
     );
   }

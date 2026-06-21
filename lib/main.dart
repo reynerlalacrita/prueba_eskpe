@@ -1,9 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
+
 // 1. IMPORTA TU PANTALLA: Cambia 'tu_proyecto' por el nombre real de tu proyecto de Flutter
 
-void main() {
+void main() async{
+WidgetsFlutterBinding.ensureInitialized();
+  
+  // Inicialización manual para Android
+  await Firebase.initializeApp(
+    options: const FirebaseOptions(
+      apiKey: "AIzaSyApadeihrG50p_pATvrd8Unfy36nIJ7vjo", // La encuentras dentro del google-services.json
+      appId: "1:143524415006:android:f6658891b2525dd5a5d00f",   // La encuentras dentro del google-services.json
+      messagingSenderId: "143524415006", 
+      projectId: "trabajo-5aecf",
+    ),
+  );
+
+  
   runApp(const MyApp());
 }
 

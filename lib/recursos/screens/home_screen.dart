@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -9,14 +10,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Datos de prueba para simular tus listas
-  final List<Map<String, String>> _lugares = [
-    {'nombre': 'Tucacas', 'imagen': 'assets/tucacas.jpg'},
-    {'nombre': 'Morrocoy', 'imagen': 'assets/morrocoy.jpg'},
-    {'nombre': 'Chichiriviche', 'imagen': 'assets/chichi.jpg'},
-    {'nombre': 'Cata', 'imagen': 'assets/cata.jpg'},
-  ];
+  // Guardamos el destino actual. Luego lo podrás cambiar dinámicamente.
+  final String _destinoSeleccionado = 'Morrocoy';
 
+  // Lista local de empresas (por ahora)
   final List<Map<String, String>> _empresas = [
     {'nombre': 'Posada Alfa', 'imagen': 'assets/posada.jpg'},
     {'nombre': 'Yates Express', 'imagen': 'assets/yates.jpg'},
@@ -26,7 +23,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFCCCCCC), // Fondo gris claro similar a tu diseño
+      backgroundColor: const Color(0xFFCCCCCC), 
       body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -51,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              // 2. BANNER PRINCIPAL (Slider de arriba de Navidad/Playa)
+              // 2. BANNER PRINCIPAL 
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 20),
                 height: 180,
@@ -65,7 +62,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               
               const SizedBox(height: 10),
-              // Indicador de puntitos simple
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(5, (index) => Container(
@@ -81,56 +77,67 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 25),
 
-              // Dentro del Scaffold de tu HomeScreen:
-                FloatingActionButton(
-                backgroundColor: const Color(0xFF2E16D1),
-                child: const Icon(Icons.add, color: Colors.white),
-                onPressed: () async {
-                  // Abre el panel y espera a recibir los datos del nuevo objeto
-                  final resultado = await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminPanelScreen()),
-                  );
-
-                  if (resultado != null) {
-                    setState(() {
-                      if (resultado['tipo'] == 'empresa') {
-                        _empresas.add({
-                          'nombre': resultado['nombre'],
-                          'imagen': '', // Guardas la referencia temporal o ruta de archivo
-                          'file': resultado['imagenFile'], // Añades el File real de la foto seleccionada
-                        });
-                      } else if (resultado['tipo'] == 'viaje') {
-                        // Repites el proceso para agregar el viaje a la lista de abajo
-                      }
-                    });
-                  }
-                },
-              ),
-
-              // 3. SECCIÓN SECTOR LUGARES (Horizontal)
-              _buildSeccionTitulo("Lugares"),
+              // 3. SECCIÓN LUGARES - APUNTANDO A TU SUBCOLECCIÓN
+              _buildSeccionTitulo("Lugares de $_destinoSeleccionado"),
               const SizedBox(height: 15),
-              SizedBox(
-                height: 140, // Alto fijo para que quepan los círculos y el texto abajo
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: _lugares.length,
-                  itemBuilder: (context, index) {
-                    return _buildItemCircular(_lugares[index]['nombre']!, _lugares[index]['imagen']!);
-                  },
-                ),
+              StreamBuilder<QuerySnapshot>(
+                // AQUÍ ESTÁ EL CAMBIO: Entra a destinos -> Morrocoy -> lugares
+                stream: FirebaseFirestore.instance
+                    .collection('destinos')
+                    .doc(_destinoSeleccionado)
+                    .collection('lugares')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) {
+                    return const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20),
+                      child: Text('Error al cargar lugares...'),
+                    );
+                  }
+
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1)));
+                  }
+
+                  final docsLugares = snapshot.data?.docs ?? [];
+
+                  if (docsLugares.isEmpty) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        'No hay lugares registrados para $_destinoSeleccionado.', 
+                        style: const TextStyle(color: Colors.black54)
+                      ),
+                    );
+                  }
+
+                  return SizedBox(
+                    height: 140, 
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: docsLugares.length,
+                      itemBuilder: (context, index) {
+                        final datosLugar = docsLugares[index].data() as Map<String, dynamic>;
+                        
+                        return _buildItemCircular(
+                          datosLugar['nombre'] ?? 'Sin nombre', 
+                          datosLugar['rutaAsset'] ?? '' // Tu ruta local: 'assets/cayo_sombrero.jpg'
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
 
               const SizedBox(height: 20),
 
-              // 4. NUEVA SECCIÓN EMPRESAS (Horizontal - Exactamente lo que pediste)
+              // 4. SECCIÓN EMPRESAS (Local)
               _buildSeccionTitulo("Empresas"),
               const SizedBox(height: 15),
               SizedBox(
-                height: 140, // Reutiliza el mismo alto y comportamiento
+                height: 140, 
                 child: ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 15),
                   scrollDirection: Axis.horizontal,
@@ -144,23 +151,50 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 25),
 
-              // 5. SECCIÓN PRONTOS / PROXIMAMENTE
+              // 5. SECCIÓN PRONTOS - EN VIVO DESDE LA COLECCIÓN VIAJES
               _buildSeccionTitulo("Prontos"),
               const SizedBox(height: 15),
-              // Aquí irían tus tarjetas cuadradas de abajo (Playa los Indios, Cayo Sombrero)
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('viajes').snapshots(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasError) return const Text('Error...');
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1)));
+                  }
+
+                  final docsViajes = snapshot.data?.docs ?? [];
+                  if (docsViajes.isEmpty) return const Text('No hay viajes.');
+
+                  return SizedBox(
+                    height: 210, 
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 15),
+                      scrollDirection: Axis.horizontal,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: docsViajes.length,
+                      itemBuilder: (context, index) {
+                        final datosViaje = docsViajes[index].data() as Map<String, dynamic>;
+                        return _buildTarjetaViaje(
+                          datosViaje['nombre'] ?? 'Sin destino',
+                          datosViaje['precio']?.toString() ?? '0',
+                          datosViaje['fecha'] ?? 'Próximamente',
+                          datosViaje['rutaAsset'] ?? '', 
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
               
-              const SizedBox(height: 100), // Espacio para que no lo tape la barra inferior
+              const SizedBox(height: 100), 
             ],
           ),
         ),
       ),
-      
-      // 6. BARRA DE NAVEGACIÓN INFERIOR (BottomNavigationBar)
       bottomNavigationBar: _buildBottomNav(),
     );
   }
 
-  // Widget auxiliar para los títulos de sección con la flechita
   Widget _buildSeccionTitulo(String titulo) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -168,33 +202,29 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Text(
             titulo,
-            style: const TextStyle(
-              fontSize: 24, 
-              fontWeight: FontWeight.bold, 
-              color: Color(0xFF7B1FA2), // Color morado de tu diseño
-            ),
+            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.azuleskpe),
           ),
           const SizedBox(width: 5),
-          const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF7B1FA2)),
+          const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.azuleskpe),
         ],
       ),
     );
   }
 
-  // Widget auxiliar para construir cada círculo deslizable
-  Widget _buildItemCircular(String nombre, String rutaImagen) {
+  Widget _buildItemCircular(String nombre, String rutaAsset) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: Column(
         children: [
           Container(
-            width: 85,
-            height: 85,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.white, width: 2),
-              image: const DecorationImage(
-                image: AssetImage('assets/placeholder_playa.jpg'), // Cambia por tu rutaImagen
+              shape: BoxShape.rectangle,
+              border: Border.all(color: Colors.white, width: 2,),
+              borderRadius: BorderRadius.circular(12),
+              image: DecorationImage(
+                image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'), 
                 fit: BoxFit.cover,
               ),
             ),
@@ -202,18 +232,53 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: 8),
           Text(
             nombre,
-            style: const TextStyle(
-              fontSize: 18, 
-              fontWeight: FontWeight.w500, 
-              color: Color(0xFF7B1FA2),
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: AppColors.azuleskpe),
           ),
         ],
       ),
     );
   }
 
-  // Widget de la barra inferior
+  Widget _buildTarjetaViaje(String destino, String precio, String fecha, String rutaAsset) {
+    return Container(
+      width: 160,
+      margin: const EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 110,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+              image: DecorationImage(
+                image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(destino, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87), maxLines: 1, overflow: TextOverflow.ellipsis),
+                const SizedBox(height: 2),
+                Text(fecha, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1),
+                const SizedBox(height: 6),
+                Text('\$$precio', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF2E16D1))),
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+
   Widget _buildBottomNav() {
     return BottomNavigationBar(
       showSelectedLabels: false,

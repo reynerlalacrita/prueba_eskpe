@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // <--- NECESARIA PARA LOS FORMATTERS
-
+import 'package:flutter/services.dart'; 
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -10,23 +13,102 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // Controladores para capturar la información
-  final TextEditingController _dateController = TextEditingController();
-   final _formKey = GlobalKey<FormState>();
+  final _formKey = GlobalKey<FormState>();
 
-  // Función para abrir el selector de fecha (DatePicker)
+  // 1. CONTROLADORES PARA CAPTURAR LA INFORMACIÓN
+  final TextEditingController _nombreController = TextEditingController();
+  final TextEditingController _apellidoController = TextEditingController();
+  final TextEditingController _cedulaController = TextEditingController();
+  final TextEditingController _telefonoController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController(); // <--- Necesaria para Auth
+  final TextEditingController _dateController = TextEditingController();
+
+  // Variable interna para asignar el rol por defecto en el registro público
+  final String _rolPorDefecto = "usuario"; 
+
+  @override
+  void dispose() {
+    // Limpieza de controladores al cerrar la pantalla
+    _nombreController.dispose();
+    _apellidoController.dispose();
+    _cedulaController.dispose();
+    _telefonoController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _dateController.dispose();
+    super.dispose();
+  }
+
   Future<void> _selectDate(BuildContext context) async {
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().subtract(const Duration(days: 6570)), // Sugiere 18 años atrás
+      initialDate: DateTime.now().subtract(const Duration(days: 6570)), 
       firstDate: DateTime(1920),
       lastDate: DateTime.now(),
     );
     if (picked != null) {
       setState(() {
         _dateController.text = "${picked.day}/${picked.month}/${picked.year}";
-        
       });
+    }
+  }
+
+  // 2. FUNCIÓN PRINCIPAL DE ENLACE AUTH + FIRESTORE
+  Future<void> _procesarRegistro() async {
+    try {
+      // Mostrar un indicador de carga circular
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1))),
+      );
+
+      // A. Crear el usuario en Firebase Auth
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      // B. Obtener el UID único que Auth le otorgó
+      String uid = userCredential.user!.uid;
+
+      // C. Guardar los datos del formulario en Firestore usando ese UID exacto
+      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
+        'uid': uid,
+        'nombres': _nombreController.text.trim(),
+        'apellidos': _apellidoController.text.trim(),
+        'cedula': _cedulaController.text.trim(),
+        'telefono': _telefonoController.text.trim(),
+        'correo': _emailController.text.trim(),
+        'fecha_nacimiento': _dateController.text,
+        'rol': _rolPorDefecto, // Aquí se amarra el rol de "usuario"
+        'fecha_registro': FieldValue.serverTimestamp(),
+      });
+
+      Navigator.pop(context); // Quitar el círculo de carga
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('¡Registro exitoso en ESK-PE!'), backgroundColor: Colors.green),
+      );
+
+      // Aquí puedes redirigir a tu HomeScreen o Login
+       Navigator.pop(
+        context,
+        MaterialPageRoute(builder: (context)=> const HomeScreen())); 
+
+    } on FirebaseAuthException catch (e) {
+      Navigator.pop(context); // Quitar carga
+      String mensajeError = 'Ocurrió un error en el registro.';
+      if (e.code == 'email-already-in-use') mensajeError = 'Este correo ya está registrado.';
+      if (e.code == 'weak-password') mensajeError = 'La contraseña es muy débil.';
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mensajeError), backgroundColor: Colors.red),
+      );
+    } catch (e) {
+      Navigator.pop(context);
+      print("Error detallado: $e");
     }
   }
 
@@ -36,10 +118,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFCCCCCC),
-      resizeToAvoidBottomInset: true, // Permite que la tarjeta se desplace hacia arriba cuando se abre el teclado
+      resizeToAvoidBottomInset: true, 
       body: Stack(
         children: [
-          // 1. Fondo fijo inmutable (Mismo que el login)
           LayoutBuilder(
             builder: (context, constraints) {
               return SizedBox(
@@ -53,12 +134,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
             },
           ),
 
-          // 2. Tarjeta Blanca de Registro (Fija, sin animación)
           Positioned(
-            top: size.height * 0.18, // Se posiciona fija arriba de una vez
+            top: size.height * 0.15, // Bajamos un pelo para dar más aire
             left: 0,
             right: 0,
-            bottom: -20, // Sella el borde inferior
+            bottom: -20, 
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 40.0),
               decoration: const BoxDecoration(
@@ -73,45 +153,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   key: _formKey,
                 child: Column(
                   children: [
-                    const SizedBox(height: 50), // Espacio para que el logo no tape el contenido inicial
+                    const SizedBox(height: 50), 
                     
                     _buildTextField(
-                    "Nombres", 
-                    TextInputType.name,
-                    (value) {
-                      if (value == null || value.trim().isEmpty) return 'Por favor, ingresa tus nombres';
-                      // Validación extra por si copian y pegan texto inválido
-                      if (!RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$').hasMatch(value)) return 'Los nombres no deben contener números ni símbolos';
-                      return null;
-                    },
-                    // Expresión regular que permite solo letras (mayúsculas, minúsculas, acentos, eñes y espacios)
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+'))],
-                    textCapitalization: TextCapitalization.words,
-                  ),
-                  
-                  const SizedBox(height: 20),
+                      "Nombres", 
+                      TextInputType.name,
+                      _nombreController, // <--- ASIGNADO
+                      (value) {
+                        if (value == null || value.trim().isEmpty) return 'Por favor, ingresa tus nombres';
+                        if (!RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$').hasMatch(value)) return 'Los nombres no deben contener números';
+                        return null;
+                      },
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+'))],
+                      textCapitalization: TextCapitalization.words,
+                    ),
+                    
+                    const SizedBox(height: 20),
 
-                  _buildTextField(
-                    "Apellidos", 
-                    TextInputType.name,
-                    (value) {
-                      if (value == null || value.trim().isEmpty) return 'Por favor, ingresa tus apellidos';
-                      if (!RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$').hasMatch(value)) return 'Los apellidos no deben contener números ni símbolos';
-                      return null;
-                    },
-                    inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+'))],
-                    textCapitalization: TextCapitalization.words,
-                  ),
+                    _buildTextField(
+                      "Apellidos", 
+                      TextInputType.name,
+                      _apellidoController, // <--- ASIGNADO
+                      (value) {
+                        if (value == null || value.trim().isEmpty) return 'Por favor, ingresa tus apellidos';
+                        if (!RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+$').hasMatch(value)) return 'Los apellidos no deben contener números';
+                        return null;
+                      },
+                      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ ]+'))],
+                      textCapitalization: TextCapitalization.words,
+                    ),
                     const SizedBox(height: 20),
 
                     _buildTextField(
                       "Cédula de Identidad", 
                       TextInputType.number,
+                      _cedulaController, // <--- ASIGNADO
                       (value) {
                         if (value == null || value.isEmpty) return 'La cédula es obligatoria';
                         return null;
                       },
-                      // Este formatter solo deja pasar dígitos del 0 al 9
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly,
                         LengthLimitingTextInputFormatter(8), 
@@ -123,36 +203,49 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _buildTextField(
                       "Número telefónico", 
                       TextInputType.phone,
+                      _telefonoController, // <--- ASIGNADO
                       (value) {
                         if (value == null || value.isEmpty) return 'El número telefónico es obligatorio';
-                        // Validación por si acaso pegan un texto que no es
-                        if (value.length < 11) return 'El número debe tener 11 dígitos (Ej: 04141234567)';
+                        if (value.length < 11) return 'Debe tener 11 dígitos (Ej: 04141234567)';
                         return null;
                       },
-                      // Aquí le pasamos dos filtros en la lista:
                       inputFormatters: [
-                        FilteringTextInputFormatter.digitsOnly, // 1. Solo permite números del 0 al 9
-                        LengthLimitingTextInputFormatter(11),   // 2. Bloquea el teclado si intentan escribir un 12vo número
+                        FilteringTextInputFormatter.digitsOnly, 
+                        LengthLimitingTextInputFormatter(11),   
                       ],
                     ),
 
                     const SizedBox(height: 20),
 
                     _buildTextField(
-                    "Correo electrónico", 
-                    TextInputType.emailAddress,
-                    (value) {
-                      if (value == null || value.isEmpty) return 'El correo electrónico es obligatorio';
-                      // Validación simple de estructura de correo usando expresiones regulares
-                      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-                      if (!emailRegex.hasMatch(value)) return 'Ingresa un correo electrónico válido';
-                      return null;
-                    },
-                  ),
+                      "Correo electrónico", 
+                      TextInputType.emailAddress,
+                      _emailController, // <--- ASIGNADO
+                      (value) {
+                        if (value == null || value.isEmpty) return 'El correo electrónico es obligatorio';
+                        final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                        if (!emailRegex.hasMatch(value)) return 'Ingresa un correo electrónico válido';
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    // CAMPO NUEVO IMPRESCINDIBLE PARA FIREBASE AUTH
+                    _buildTextField(
+                      "Contraseña", 
+                      TextInputType.text,
+                      _passwordController, // <--- ASIGNADO
+                      (value) {
+                        if (value == null || value.isEmpty) return 'La contraseña es obligatoria';
+                        if (value.length < 6) return 'La contraseña debe tener mínimo 6 caracteres';
+                        return null;
+                      },
+                      obscureText: true, // Oculta los caracteres de la clave
+                    ),
 
                     const SizedBox(height: 20),
                     
-                    // Campo para Fecha de Nacimiento
                     TextFormField(
                       controller: _dateController,
                       readOnly: true,
@@ -172,19 +265,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                     const SizedBox(height: 40),
 
-                    // Botón de Registro
                     SizedBox(
                       width: double.infinity,
                       height: 55,
                       child: ElevatedButton(
                         onPressed: () {
-                          // Si todos los campos cumplen los requisitos, currentState!.validate() devuelve true
                           if (_formKey.currentState!.validate()) {
-                            // ¡Perfecto! Todos los datos son válidos, aquí procesas el registro
-                            print("Formulario válido. Registrando usuario...");
-                          } else {
-                            // Si algo falta, Flutter mostrará los textos de alerta automáticamente
-                            print("Formulario inválido. Revisa los errores.");
+                            // Ejecutamos el registro amarrado
+                            _procesarRegistro();
                           }
                         },
                         style: ElevatedButton.styleFrom(
@@ -201,7 +289,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     
                     const SizedBox(height: 20),
 
-                    // Volver al Login
                     TextButton(
                       onPressed: () => Navigator.pop(context),
                       child: const Text(
@@ -221,9 +308,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ),
 
-          // 3. Logo ESK-PE (Fijo por encima de la tarjeta)
           Positioned(
-            top: size.height * 0.08,
+            top: size.height * 0.06,
             left: 0,
             right: 0,
             child: const Center(
@@ -245,26 +331,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-        // Widget auxiliar para no duplicar el diseño de los inputs
-          Widget _buildTextField(
-            String label, 
-            TextInputType type, 
-            String? Function(String?)? validator,
-            {List<TextInputFormatter>? inputFormatters,
-            TextCapitalization textCapitalization = TextCapitalization.none} // <--- NUEVO PARÁMETRO OPCIONAL
-          ) {
-            return TextFormField(
-              keyboardType: type,
-              validator: validator,
-              inputFormatters: inputFormatters, // <--- ASIGNAMOS EL FILTRO AQUÍ
-              textCapitalization: textCapitalization,
-              decoration: InputDecoration(
-                labelText: label,
-                labelStyle: const TextStyle(color: Color(0xFF4A3AFF), fontWeight: FontWeight.w500),
-                enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFD6C7FF), width: 2)),
-                focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF4A3AFF), width: 2)),
-                errorStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.w500),
-              ),
-            );
-          }
+  Widget _buildTextField(
+    String label, 
+    TextInputType type, 
+    TextEditingController controller, // <--- AHORA EL WIDGET PIDE EL CONTROLLER
+    String? Function(String?)? validator,
+    {List<TextInputFormatter>? inputFormatters,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+    bool obscureText = false} // <--- PARÁMETRO PARA OCULTAR CLAVE
+  ) {
+    return TextFormField(
+      controller: controller, // <--- SE LO CORRESPONDEMOS AQUÍ
+      keyboardType: type,
+      validator: validator,
+      inputFormatters: inputFormatters, 
+      textCapitalization: textCapitalization,
+      obscureText: obscureText,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Color(0xFF4A3AFF), fontWeight: FontWeight.w500),
+        enabledBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFFD6C7FF), width: 2)),
+        focusedBorder: const UnderlineInputBorder(borderSide: BorderSide(color: Color(0xFF4A3AFF), width: 2)),
+        errorStyle: const TextStyle(color: Colors.red, fontWeight: FontWeight.w500),
+      ),
+    );
+  }
 }
