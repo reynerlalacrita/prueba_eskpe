@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/destinos_screen.dart';
 
 // 1. IMPORTA TU PANTALLA: Cambia 'tu_proyecto' por el nombre real de tu proyecto de Flutter
 
@@ -37,7 +37,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true, // Activa Material 3 para un diseño más moderno
       ),
       // 2. CONFIGURA LA PANTALLA INICIAL HERE
-      home: const LoginScreen(), 
+      home: const DestinosScreen(), 
     );
   }
 }
+//cambiar destinos a login cuando termines de editar destinos

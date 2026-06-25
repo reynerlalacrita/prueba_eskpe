@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // <--- Para saber quién está logueado
 import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart'; // <--- Ruta del admin panel
+import 'package:carousel_slider/carousel_slider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -64,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color(0xFFCCCCCC), 
       
       appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(70.0), // 👈 AQUÍ MANEJAS LA ALTURA (Prueba con 75 o 80)
+        preferredSize: const Size.fromHeight(60.0), // 👈 AQUÍ MANEJAS LA ALTURA (Prueba con 75 o 80)
         child: AppBar(
           backgroundColor: AppColors.azul1, 
           elevation: 3,
@@ -93,35 +94,37 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 💡 NOTA: Se eliminó el logo en Padding que estaba aquí arriba.
-              
-              const SizedBox(height: 20), // Espacio inicial debajo de la nueva AppBar
+              //carrusel de fotos abajo
+            // Dentro de tu Column en HomeScreen:
+CarouselSlider(
+  options: CarouselOptions(
+    height: 200.0, // Ajusta a la altura que necesites
+    autoPlay: true, // Para que se mueva solo
+    enlargeCenterPage: true, // La foto del centro se ve más grande
+    viewportFraction: 0.9, // Qué tanto espacio ocupa la foto
+  ),
+  items: ['assets/playa1.jpg', 'assets/playa2.jpg', 'assets/playa3.jpg'].map((i) {
+    return Builder(
+      builder: (BuildContext context) {
+        return Container(
+          width: MediaQuery.of(context).size.width,
+          margin: const EdgeInsets.symmetric(horizontal: 5.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            image: DecorationImage(
+              image: AssetImage(i),
+              fit: BoxFit.cover,
+            ),
+          ),
+        );
+      },
+    );
+  }).toList(),
+),
+              const SizedBox(height: 5), // Espacio inicial debajo de la nueva AppBar
 
-              // 2. BANNER PRINCIPAL 
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20),
-                height: 180,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(25),
-                  image: const DecorationImage(
-                    image: AssetImage('assets/banner_principal.jpg'),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
               
-              const SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(5, (index) => Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 3),
-                  width: index == 0 ? 12 : 6,
-                  height: 6,
-                  decoration: BoxDecoration(
-                    color: index == 0 ? const Color(0xFF2E16D1) : Colors.grey,
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                )),
-              ),
+             
 
               const SizedBox(height: 25),
 

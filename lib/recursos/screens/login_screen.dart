@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/destinos_screen.dart';
 import 'register_screen.dart'; // <--- Asegúrate de que el nombre del archivo coincida
 
 class LoginScreen extends StatefulWidget {
@@ -56,14 +57,20 @@ class _LoginScreenState extends State<LoginScreen> {
         String rol = userDoc.get('rol');
         print("Usuario autenticado con éxito. Rol: $rol");
 
-        // 3. AQUÍ DECIDES A DÓNDE MANDARLO SEGÚN SU ROL
+        // --- SUSTITUYE DESDE AQUÍ ---
         if (rol == 'admin') {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-        } else if (rol == 'usuario') {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const HomeScreen())
+          );
         } else {
-          // Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+          // Redirige a DestinosScreen para usuarios normales
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const DestinosScreen())
+          );
         }
+        // --- HASTA AQUÍ ---
         
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('¡Bienvenido de vuelta! Perfil: $rol'), backgroundColor: Colors.green),
