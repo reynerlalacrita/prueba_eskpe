@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart'; // <--- Para saber quién está logueado
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
-import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart'; // <--- Ruta del admin panel
+import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:prueba_eskpe/recursos/screens/busqueda_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuario_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/destino_detalle_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,8 +16,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String rol = 'usuario'; // Por defecto es usuario normal por seguridad
+  String rol = 'usuario';
   bool cargandoRol = true;
+  int _indiceActual = 0;
 
   final List<Map<String, String>> _empresas = [
     {'nombre': 'Posada Alfa', 'imagen': 'assets/posada.jpg'},
@@ -22,349 +26,181 @@ class _HomeScreenState extends State<HomeScreen> {
     {'nombre': 'Rest. Mar', 'imagen': 'assets/restaurante.jpg'},
   ];
 
+  late final List<Widget> _pantallas;
+
   @override
   void initState() {
     super.initState();
     _obtenerRolDesdeFirebase();
+    _pantallas = [
+      _buildCuerpoHome(),
+      const BusquedaScreen(),
+      const UsuarioScreen(),
+    ];
   }
 
   void _obtenerRolDesdeFirebase() async {
     try {
       User? usuarioActual = FirebaseAuth.instance.currentUser;
       if (usuarioActual != null) {
-        DocumentSnapshot doc = await FirebaseFirestore.instance
-            .collection('usuarios')
-            .doc(usuarioActual.uid)
-            .get();
-
+        DocumentSnapshot doc = await FirebaseFirestore.instance.collection('usuarios').doc(usuarioActual.uid).get();
         if (doc.exists && doc.data() != null) {
           Map<String, dynamic> datos = doc.data() as Map<String, dynamic>;
           setState(() {
-            rol = datos['rol'] ?? 'usuario'; 
+            rol = datos['rol'] ?? 'usuario';
             cargandoRol = false;
           });
           return;
         }
       }
-    } catch (e) {
-      debugPrint("Error obteniendo rol: $e");
-    }
+    } catch (e) { debugPrint("Error: $e"); }
     setState(() => cargandoRol = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Mientras verifica si eres admin, muestra un cargando
-    if (cargandoRol) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1))),
-      );
-    }
+    if (cargandoRol) return const Scaffold(body: Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1))));
 
     return Scaffold(
-      backgroundColor: const Color(0xFFCCCCCC), 
-      
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(60.0), // 👈 AQUÍ MANEJAS LA ALTURA (Prueba con 75 o 80)
-        child: AppBar(
-          backgroundColor: AppColors.azul1, 
-          elevation: 3,
-          centerTitle: true,
-          // Metemos un Padding en el title por si quieres ajustar la posición vertical del texto en la nueva barra
-          title: const Padding(
-            padding: EdgeInsets.only(top: 10.0), // 👈 Si la barra es más alta, esto baja el logo para que quede centrado fino
-            child: Text(
-              'ESK-PE',
-              style: TextStyle(
-                fontFamily: 'Impact',
-                fontSize: 40, // Le subí de 36 a 38 ya que ahora tienes más espacio
-                fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.italic,
-                color: Colors.white,
-                letterSpacing: 2,
-              ),
-            ),
-          ),
-        ),
+      backgroundColor: const Color(0xFFCCCCCC),
+      appBar: _indiceActual == 0 ? _buildAppBar() : null,
+      body: _pantallas[_indiceActual],
+      bottomNavigationBar: BottomNavigationBar(
+        showSelectedLabels: false,
+        showUnselectedLabels: false,
+        selectedItemColor: Colors.black,
+        unselectedItemColor: Colors.black38,
+        currentIndex: _indiceActual,
+        onTap: (index) {
+          if (index == 2 && rol == 'admin') {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminScreen()));
+          } else {
+            setState(() => _indiceActual = index);
+          }
+        },
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home_filled, size: 30), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.search, size: 30), label: 'Buscar'),
+          BottomNavigationBarItem(icon: Icon(Icons.person_outline, size: 30), label: 'Usuario'),
+        ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 💡 NOTA: Se eliminó el logo en Padding que estaba aquí arriba.
-              //carrusel de fotos abajo
-            // Dentro de tu Column en HomeScreen:
-CarouselSlider(
-  options: CarouselOptions(
-    height: 200.0, // Ajusta a la altura que necesites
-    autoPlay: true, // Para que se mueva solo
-    enlargeCenterPage: true, // La foto del centro se ve más grande
-    viewportFraction: 0.9, // Qué tanto espacio ocupa la foto
-  ),
-  items: ['assets/playa1.jpg', 'assets/playa2.jpg', 'assets/playa3.jpg'].map((i) {
-    return Builder(
-      builder: (BuildContext context) {
-        return Container(
-          width: MediaQuery.of(context).size.width,
-          margin: const EdgeInsets.symmetric(horizontal: 5.0),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            image: DecorationImage(
-              image: AssetImage(i),
-              fit: BoxFit.cover,
-            ),
-          ),
-        );
-      },
     );
-  }).toList(),
-),
-              const SizedBox(height: 5), // Espacio inicial debajo de la nueva AppBar
+  }
 
-              
-             
-
-              const SizedBox(height: 25),
-
-              // 3. SECCIÓN LUGARES (Manteniendo tus destinos intactos)
-              _buildSeccionTitulo("Destinos"),
-              const SizedBox(height: 15),
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance
-                .collectionGroup('destinos') 
-                .limit(7)
-                .snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Text('Error al cargar lugares...'),
-                    );
-                  }
-
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1)));
-                  }
-
-                  final docsLugares = snapshot.data?.docs ?? [];
-
-                  if (docsLugares.isEmpty) {
-                    return const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20),
-                      child: Text(
-                        'No hay lugares registrados', 
-                        style: TextStyle(color: Colors.black54)
-                      ),
-                    );
-                  }
-
-                  return SizedBox(
-                    height: 140, 
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: docsLugares.length,
-                      itemBuilder: (context, index) {
-                        final datosLugar = docsLugares[index].data() as Map<String, dynamic>;
-                        
-                        return _buildItemCircular(
-                          datosLugar['nombre'] ?? 'Sin nombre', 
-                          datosLugar['rutaAsset'] ?? '' 
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-
-              const SizedBox(height: 20),
-
-              // 4. SECCIÓN EMPRESAS (Local)
-              _buildSeccionTitulo("Empresas"),
-              const SizedBox(height: 15),
-
-              Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 15), // Espacio interno arriba y abajo de los círculos
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 115, 111, 129), // 👈 EL COLOR DE FONDO (Puedes usar Colors.white, Colors.grey[800], etc.)
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05), // Sombra suave para que despegue del fondo gris
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: SizedBox(
-                height: 140, 
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  scrollDirection: Axis.horizontal,
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: _empresas.length,
-                  itemBuilder: (context, index) {
-                    return _buildItemCircular(_empresas[index]['nombre']!, _empresas[index]['imagen']!);
-                  },
-                ),
-              ),
-           ),
-      
-              const SizedBox(height: 25),
-
-              // 5. SECCIÓN PRONTOS
-              _buildSeccionTitulo("Prontos"),
-              const SizedBox(height: 15),
-              StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('viajes').snapshots(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) return const Text('Error...');
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1)));
-                  }
-
-                  final docsViajes = snapshot.data?.docs ?? [];
-                  if (docsViajes.isEmpty) return const Text('No hay viajes.');
-
-                  return SizedBox(
-                    height: 210, 
-                    child: ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 15),
-                      scrollDirection: Axis.horizontal,
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: docsViajes.length,
-                      itemBuilder: (context, index) {
-                        final datosViaje = docsViajes[index].data() as Map<String, dynamic>;
-                        return _buildTarjetaViaje(
-                          datosViaje['nombre'] ?? 'Sin destino',
-                          datosViaje['precio']?.toString() ?? '0',
-                          datosViaje['fecha'] ?? 'Próximamente',
-                          datosViaje['rutaAsset'] ?? '', 
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
-              
-              const SizedBox(height: 100), 
-            ],
-          ),
+  PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(60.0),
+      child: AppBar(
+        backgroundColor: AppColors.azul1,
+        elevation: 3,
+        centerTitle: true,
+        title: const Padding(
+          padding: EdgeInsets.only(top: 10.0),
+          child: Text('ESK-PE', style: TextStyle(fontFamily: 'Impact', fontSize: 40, fontWeight: FontWeight.bold, fontStyle: FontStyle.italic, color: Colors.white, letterSpacing: 2)),
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildCuerpoHome() {
+    return SafeArea(
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+            CarouselSlider(
+              options: CarouselOptions(height: 200.0, autoPlay: true, enlargeCenterPage: true, viewportFraction: 0.9),
+              items: ['assets/playa1.jpg', 'assets/playa2.jpg', 'assets/playa3.jpg'].map((i) {
+                return Builder(builder: (context) {
+                  return Container(width: MediaQuery.of(context).size.width, margin: const EdgeInsets.symmetric(horizontal: 5.0), decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), image: DecorationImage(image: AssetImage(i), fit: BoxFit.cover)));
+                });
+              }).toList(),
+            ),
+            const SizedBox(height: 25),
+            _buildSeccionTitulo("Destinos"),
+            const SizedBox(height: 15),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collectionGroup('destinos').limit(7).snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                final docs = snapshot.data!.docs;
+                return SizedBox(height: 140, child: ListView.builder(padding: const EdgeInsets.symmetric(horizontal: 15), scrollDirection: Axis.horizontal, itemCount: docs.length, itemBuilder: (context, index) {
+                  final data = docs[index].data() as Map<String, dynamic>;
+                  return _buildItemCircular(data['nombre'] ?? '', data['rutaAsset'] ?? '');
+                }));
+              },
+            ),
+            const SizedBox(height: 25),
+            _buildSeccionTitulo("Empresas"),
+            const SizedBox(height: 15),
+            Container(color: const Color.fromARGB(255, 115, 111, 129), child: SizedBox(height: 140, child: ListView.builder(padding: const EdgeInsets.symmetric(horizontal: 15), scrollDirection: Axis.horizontal, itemCount: _empresas.length, itemBuilder: (context, index) => _buildItemCircular(_empresas[index]['nombre']!, _empresas[index]['imagen']!)))),
+            const SizedBox(height: 25),
+            _buildSeccionTitulo("Prontos"),
+            const SizedBox(height: 15),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('viajes').snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                final docs = snapshot.data!.docs;
+                return SizedBox(height: 210, child: ListView.builder(padding: const EdgeInsets.symmetric(horizontal: 15), scrollDirection: Axis.horizontal, itemCount: docs.length, itemBuilder: (context, index) {
+                  final data = docs[index].data() as Map<String, dynamic>;
+                  return _buildTarjetaViaje(data['nombre'] ?? '', data['precio']?.toString() ?? '0', data['fecha'] ?? '', data['rutaAsset'] ?? '');
+                }));
+              },
+            ),
+            const SizedBox(height: 100),
+          ],
+        ),
+      ),
     );
   }
 
   Widget _buildSeccionTitulo(String titulo) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Row(
-        children: [
-          Text(
-            titulo,
-            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.azuleskpe),
-          ),
-          const SizedBox(width: 5),
-          const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.azuleskpe),
-        ],
-      ),
-    );
+    return Padding(padding: const EdgeInsets.symmetric(horizontal: 20.0), child: Row(children: [Text(titulo, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.azuleskpe)), const SizedBox(width: 5), const Icon(Icons.arrow_forward_ios, size: 16, color: AppColors.azuleskpe)]));
   }
 
   Widget _buildItemCircular(String nombre, String rutaAsset) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10.0),
-      child: Column(
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              shape: BoxShape.rectangle,
-              border: Border.all(color: Colors.white, width: 2,),
-              borderRadius: BorderRadius.circular(12),
-              image: DecorationImage(
-                image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'), 
-                fit: BoxFit.cover,
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+    child: Column(
+      children: [
+        // Envolvemos el contenedor en Material e InkWell para el efecto de toque
+        Material(
+          color: Colors.transparent, // Color base del Material
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12), // Hace que la onda respete tus bordes
+            onTap: () {
+              // Navegación a la pantalla de detalles
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => DestinoDetalleScreen(nombre: nombre, rutaAsset: rutaAsset),
+                ),
+              );
+            },
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                image: DecorationImage(
+                  image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            nombre,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.black),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+        const SizedBox(height: 8),
+        Text(nombre, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500)),
+      ],
+    ),
+  );
+}
 
   Widget _buildTarjetaViaje(String destino, String precio, String fecha, String rutaAsset) {
-    return Container(
-      width: 160,
-      margin: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 110,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-              image: DecorationImage(
-                image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(10.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(destino, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87), maxLines: 1, overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 2),
-                Text(fecha, style: const TextStyle(fontSize: 12, color: Colors.grey), maxLines: 1),
-                const SizedBox(height: 6),
-                Text('\$$precio', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF2E16D1))),
-              ],
-            ),
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBottomNav() {
-    return BottomNavigationBar(
-      showSelectedLabels: false,
-      showUnselectedLabels: false,
-      selectedItemColor: Colors.black,
-      unselectedItemColor: Colors.black38,
-      currentIndex: 0, 
-      onTap: (index) {
-        if (index == 2 && rol == 'admin') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AdminScreen()),
-          );
-        }
-      },
-      items: [
-        const BottomNavigationBarItem(icon: Icon(Icons.home_filled, size: 30), label: ''),
-        const BottomNavigationBarItem(icon: Icon(Icons.search, size: 30), label: ''),
-        
-        if (rol == 'admin')
-          const BottomNavigationBarItem(icon: Icon(Icons.person_outline, size: 30), label: ''),
-      ],
-    );
+    return Container(width: 160, margin: const EdgeInsets.symmetric(horizontal: 10), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)), child: Column(children: [Container(height: 110, decoration: BoxDecoration(borderRadius: const BorderRadius.vertical(top: Radius.circular(20)), image: DecorationImage(image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'), fit: BoxFit.cover))), Padding(padding: const EdgeInsets.all(10), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text(destino, style: const TextStyle(fontWeight: FontWeight.bold)), Text(fecha, style: const TextStyle(fontSize: 12)), Text('\$$precio', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2E16D1)))]))]));
   }
 }
