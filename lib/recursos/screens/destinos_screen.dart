@@ -10,20 +10,32 @@ class DestinosScreen extends StatefulWidget {
 
 class _DestinosScreenState extends State<DestinosScreen> {
   final TextEditingController _searchController = TextEditingController();
-  final List<String> _destinos = ['Tucacas', 'Morrocoy', 'Chichiriviche', 'Cata'];
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
+  
+  // Lista de ejemplo con nombres y rutas de imágenes
+  final List<Map<String, String>> _destinos = [
+    {'nombre': 'Tucacas', 'imagen': 'assets/tucacas.jpg'},
+    {'nombre': 'Morrocoy', 'imagen': 'assets/morrocoy.jpg'},
+    {'nombre': 'Chichiriviche', 'imagen': 'assets/chichiriviche.jpg'},
+    {'nombre': 'Cata', 'imagen': 'assets/cata.jpg'},
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("Selecciona un destino"),
-        actions: [
+      backgroundColor: Colors.white,
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Empuja el título a la izquierda y el botón a la derecha
+        children: [
+          const Text(
+            "Selecciona un destino",
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
           TextButton(
             onPressed: () {
               Navigator.pushReplacement(
@@ -31,47 +43,68 @@ class _DestinosScreenState extends State<DestinosScreen> {
                 MaterialPageRoute(builder: (context) => const HomeScreen())
               );
             },
-            child: const Text("Omitir"),
+            child: const Text("Omitir", style: TextStyle(fontSize: 16)),
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // BARRA DE BÚSQUEDA INTEGRADA
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: "Buscar destino...",
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
+    ),      
+            // Barra de búsqueda con tu diseño
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: "Buscar destino...",
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
                 ),
-                filled: true,
-                fillColor: Colors.grey[200],
               ),
-              onChanged: (value) {
-                // Aquí puedes agregar la lógica para filtrar tu lista _destinos
-                print("Buscando: $value");
-              },
             ),
-          ),
-          
-          // LISTA DE DESTINOS
-          Expanded(
-            child: ListView.builder(
-              itemCount: _destinos.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  leading: const Icon(Icons.location_on, color: Color.fromRGBO(32, 32, 188, 1)),
-                  title: Text(_destinos[index]),
-                  onTap: () => print("Destino seleccionado: ${_destinos[index]}"),
-                );
-              },
+            
+            // Cuadrícula de tarjetas
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.all(20),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2, // 2 columnas como en la imagen
+                  crossAxisSpacing: 15,
+                  mainAxisSpacing: 15,
+                  childAspectRatio: 0.8,
+                ),
+                itemCount: _destinos.length,
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () {
+                      // AQUÍ LLAMARÁS A TU NUEVA PANTALLA MÁS ADELANTE
+                      print("Navegar a: ${_destinos[index]['nombre']}");
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        image: DecorationImage(
+                          image: AssetImage(_destinos[index]['imagen']!), 
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(color: Colors.black.withOpacity(0.3)), // Filtro oscuro para leer mejor el texto
+                          Text(
+                            _destinos[index]['nombre']!,
+                            style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          const Positioned(top: 10, child: Icon(Icons.location_on, color: Colors.blue, size: 30)),
+                          const Positioned(bottom: 10, child: Icon(Icons.location_on, color: Colors.blue, size: 30)),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
