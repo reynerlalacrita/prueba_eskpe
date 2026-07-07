@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class DestinoDetalleScreen extends StatelessWidget {
-  final String nombre;
+class EmpresaDetalleScreen extends StatelessWidget {
+  final String nombreEmpresa;
   final String rutaAsset;
 
-  const DestinoDetalleScreen({super.key, required this.nombre, required this.rutaAsset});
+  const EmpresaDetalleScreen({super.key, required this.nombreEmpresa, required this.rutaAsset});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class DestinoDetalleScreen extends StatelessWidget {
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          // Encabezado con la imagen del destino
+          // Encabezado con la imagen (logo de la empresa o foto representativa)
           SliverAppBar(
             expandedHeight: 250.0,
             floating: false,
@@ -22,7 +22,7 @@ class DestinoDetalleScreen extends StatelessWidget {
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                nombre,
+                nombreEmpresa,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -30,15 +30,15 @@ class DestinoDetalleScreen extends StatelessWidget {
                 ),
               ),
               background: Image.asset(
-                rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg',
+                rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder.png',
                 fit: BoxFit.cover,
-                color: Colors.black.withOpacity(0.3), // Filtro para que el texto resalte
+                color: Colors.black.withOpacity(0.4), // Filtro un poco más oscuro
                 colorBlendMode: BlendMode.darken,
               ),
             ),
           ),
           
-          // Cuerpo con los viajes de Firebase
+          // Texto descriptivo
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
@@ -46,12 +46,12 @@ class DestinoDetalleScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    "Viajes Disponibles",
+                    "Viajes Programados",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    "Explora las opciones de las empresas para $nombre",
+                    "Descubre todo lo que $nombreEmpresa tiene para ti",
                     style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 20),
@@ -60,12 +60,12 @@ class DestinoDetalleScreen extends StatelessWidget {
             ),
           ),
 
-          // Lista de viajes desde Firebase
+          // Lista de viajes desde Firebase FILTRADOS POR EMPRESA
           StreamBuilder<QuerySnapshot>(
-            // AQUÍ FILTRAMOS LOS VIAJES POR EL DESTINO SELECCIONADO
+            // AQUÍ LA MAGIA: filtramos usando 'empresa' en lugar de 'nombre'
             stream: FirebaseFirestore.instance
                 .collection('viajes')
-                .where('nombre', isEqualTo: nombre) // Cambia 'nombre' por el campo que uses en tu BD
+                .where('empresa', isEqualTo: nombreEmpresa) 
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -81,12 +81,12 @@ class DestinoDetalleScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(40.0),
                       child: Column(
                         children: [
-                          Icon(Icons.sailing_outlined, size: 60, color: Colors.grey.shade400),
+                          Icon(Icons.directions_boat_filled_outlined, size: 60, color: Colors.grey.shade400),
                           const SizedBox(height: 15),
-                          const Text(
-                            "Aún no hay viajes programados para este destino.",
+                          Text(
+                            "$nombreEmpresa aún no ha publicado viajes.",
                             textAlign: TextAlign.center,
-                            style: TextStyle(color: Colors.grey, fontSize: 16),
+                            style: const TextStyle(color: Colors.grey, fontSize: 16),
                           ),
                         ],
                       ),
@@ -102,10 +102,10 @@ class DestinoDetalleScreen extends StatelessWidget {
                   (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
                     return _buildTarjetaViaje(
-                      data['empresa'] ?? 'Empresa', // Asumiendo que guardas la empresa
+                      data['nombre'] ?? 'Destino Desconocido', // Ahora mostramos el nombre del destino
                       data['precio']?.toString() ?? '0',
                       data['fecha'] ?? '',
-                      data['rutaAsset'] ?? '', // Imagen del viaje/empresa
+                      data['rutaAsset'] ?? '', 
                     );
                   },
                   childCount: docs.length,
@@ -120,8 +120,8 @@ class DestinoDetalleScreen extends StatelessWidget {
     );
   }
 
-  // Mismo diseño de tarjeta que tienes en el Home para mantener consistencia
-  Widget _buildTarjetaViaje(String empresa, String precio, String fecha, String rutaAsset) {
+  // Tarjeta de viaje para EmpresaDetalleScreen
+  Widget _buildTarjetaViaje(String destino, String precio, String fecha, String rutaAsset) {
     return Container(
       height: 110,
       margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
@@ -154,7 +154,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(empresa, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text(destino, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                       Text('\$$precio', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)),
                     ],
                   ),
