@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/destino_detalle_screen.dart'; // Importante agregar esto
 
 class DestinosScreen extends StatefulWidget {
   const DestinosScreen({super.key});
@@ -11,12 +12,13 @@ class DestinosScreen extends StatefulWidget {
 class _DestinosScreenState extends State<DestinosScreen> {
   final TextEditingController _searchController = TextEditingController();
   
-  // Lista de ejemplo con nombres y rutas de imágenes
   final List<Map<String, String>> _destinos = [
-    {'nombre': 'Tucacas', 'imagen': 'assets/tucacas.jpg'},
+    {'nombre': 'Tucacas', 'imagen': 'assets/background_road.jpg'},
     {'nombre': 'Morrocoy', 'imagen': 'assets/morrocoy.jpg'},
-    {'nombre': 'Chichiriviche', 'imagen': 'assets/chichiriviche.jpg'},
-    {'nombre': 'Cata', 'imagen': 'assets/cata.jpg'},
+    {'nombre': 'Los Juanes', 'imagen': 'assets/banner_losjuanes.jpg'},
+    {'nombre': 'Cayo Sal', 'imagen': 'assets/banner_cayosal.jpg'},
+    {'nombre': 'Cayo Sombrero', 'imagen': 'assets/banner_cayosombrero.jpg'},
+    {'nombre': 'Los Roques', 'imagen': 'assets/losroques.jpg'},
   ];
 
   @override
@@ -28,27 +30,26 @@ class _DestinosScreenState extends State<DestinosScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-      padding: const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 20),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Empuja el título a la izquierda y el botón a la derecha
-        children: [
-          const Text(
-            "Selecciona un destino",
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pushReplacement(
-                context, 
-                MaterialPageRoute(builder: (context) => const HomeScreen())
-              );
-            },
-            child: const Text("Omitir", style: TextStyle(fontSize: 16)),
-          ),
-        ],
-      ),
-    ),      
-            // Barra de búsqueda con tu diseño
+              padding: const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 20),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Selecciona un destino",
+                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pushReplacement(
+                        context, 
+                        MaterialPageRoute(builder: (context) => const HomeScreen())
+                      );
+                    },
+                    child: const Text("Omitir", style: TextStyle(fontSize: 16, color: Color(0xFF1E2A4F))),
+                  ),
+                ],
+              ),
+            ),      
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: TextField(
@@ -61,12 +62,11 @@ class _DestinosScreenState extends State<DestinosScreen> {
               ),
             ),
             
-            // Cuadrícula de tarjetas
             Expanded(
               child: GridView.builder(
                 padding: const EdgeInsets.all(20),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2, // 2 columnas como en la imagen
+                  crossAxisCount: 2, 
                   crossAxisSpacing: 15,
                   mainAxisSpacing: 15,
                   childAspectRatio: 0.8,
@@ -75,8 +75,16 @@ class _DestinosScreenState extends State<DestinosScreen> {
                 itemBuilder: (context, index) {
                   return GestureDetector(
                     onTap: () {
-                      // AQUÍ LLAMARÁS A TU NUEVA PANTALLA MÁS ADELANTE
-                      print("Navegar a: ${_destinos[index]['nombre']}");
+                      // AQUÍ HACEMOS LA NAVEGACIÓN REAL
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => DestinoDetalleScreen(
+                            nombre: _destinos[index]['nombre']!,
+                            rutaAsset: _destinos[index]['imagen']!,
+                          ),
+                        ),
+                      );
                     },
                     child: Container(
                       decoration: BoxDecoration(
@@ -89,7 +97,12 @@ class _DestinosScreenState extends State<DestinosScreen> {
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
-                          Container(color: Colors.black.withOpacity(0.3)), // Filtro oscuro para leer mejor el texto
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.black.withOpacity(0.3),
+                            )
+                          ), 
                           Text(
                             _destinos[index]['nombre']!,
                             style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),

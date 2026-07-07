@@ -7,6 +7,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:prueba_eskpe/recursos/screens/busqueda_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuario_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/destino_detalle_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresa_detalle_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -236,34 +237,44 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Diseño de Empresas: Tarjeta blanca limpia con sombra suave
+  // Diseño de Empresas: Tarjeta interactiva para ir a los detalles
   Widget _buildItemEmpresa(String nombre, String rutaAsset) {
-    return Container(
-      width: 100,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 3)),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 45,
-            height: 45,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder.png'),
-                fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context, 
+          MaterialPageRoute(
+            builder: (context) => EmpresaDetalleScreen(nombreEmpresa: nombre, rutaAsset: rutaAsset)
+          )
+        );
+      },
+      child: Container(
+        width: 100,
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 3)),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 45,
+              height: 45,
+              decoration: BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder.png'),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Text(nombre, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
-        ],
+            const SizedBox(height: 10),
+            Text(nombre, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
+          ],
+        ),
       ),
     );
   }
