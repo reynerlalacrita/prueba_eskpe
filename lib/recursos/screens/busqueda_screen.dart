@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/screens/destino_detalle_screen.dart'; // 👈 1. IMPORTANTE: Importamos Firestore
 
 class BusquedaScreen extends StatefulWidget {
   const BusquedaScreen({super.key});
@@ -8,11 +10,8 @@ class BusquedaScreen extends StatefulWidget {
 }
 
 class _BusquedaScreenState extends State<BusquedaScreen> {
-  // 1. Variable de estado para controlar la lista de búsquedas
-  List<String> _busquedasRecientes = [
-    "Cayo Sombrero",
-    "Los Roques",
-  ];
+  // Variable de estado para controlar la lista de búsquedas
+  final List<String> _busquedasRecientes = [];
 
   // Método para eliminar una búsqueda
   void _eliminarBusqueda(String busqueda) {
@@ -93,12 +92,11 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                 ),
               ),
               const SizedBox(height: 5),
-              // Generamos la lista dinámicamente
               ..._busquedasRecientes.map((busqueda) => _buildBusquedaReciente(busqueda)),
               const SizedBox(height: 25),
             ],
 
-            // SUGERENCIAS PARA TI
+            // SUGERENCIAS PARA TI (Ahora dinámicas desde Firebase 🌟)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 15.0),
               child: Text(
@@ -107,9 +105,54 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
               ),
             ),
             const SizedBox(height: 10),
-            _buildSugerencia("Cayo Sombrero", 'assets/placeholder_playa.jpg'),
-            _buildSugerencia("Isla de Plata", 'assets/placeholder_playa.jpg'),
-            _buildSugerencia("Los Roques", 'assets/placeholder_playa.jpg'),
+
+            StreamBuilder<QuerySnapshot>(
+              // Usamos collectionGroup igual que en la Home por si tus destinos están en subcolecciones
+              stream: FirebaseFirestore.instance
+                  .collectionGroup('destinos')
+                  .limit(5) // Limitamos a 5 sugerencias iniciales para no saturar
+                  .snapshots(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Padding(
+                    padding: EdgeInsets.all(15.0),
+                    child: Text('Error al cargar sugerencias...'),
+                  );
+                }
+
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(20.0),
+                      child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
+                    ),
+                  );
+                }
+
+                final docsSugerencias = snapshot.data?.docs ?? [];
+
+                if (docsSugerencias.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 15.0),
+                    child: Text('No hay sugerencias disponibles', style: TextStyle(color: Colors.grey)),
+                  );
+                }
+
+                return ListView.builder(
+                  shrinkWrap: true, // 👈 OBLIGATORIO: Evita que explote dentro del SingleChildScrollView
+                  physics: const NeverScrollableScrollPhysics(), // 👈 OBLIGATORIO: Deja que el scroll lo mande el padre
+                  itemCount: docsSugerencias.length,
+                  itemBuilder: (context, index) {
+                    final datosSugerencia = docsSugerencias[index].data() as Map<String, dynamic>;
+                    
+                    return _buildSugerencia(
+                      datosSugerencia['nombre'] ?? 'Sin nombre', 
+                      datosSugerencia['rutaAsset'] ?? ''
+                    );
+                  },
+                );
+              },
+            ),
             
             const SizedBox(height: 30),
           ],
@@ -135,7 +178,6 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
     );
   }
 
-  // Diseño actualizado con botón para borrar
   Widget _buildBusquedaReciente(String texto) {
     return ListTile(
       visualDensity: VisualDensity.compact,
@@ -143,25 +185,27 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
       title: Text(texto, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
       trailing: IconButton(
         icon: const Icon(Icons.close, color: Colors.grey, size: 20),
-        onPressed: () => _eliminarBusqueda(texto), // 👈 Llama a la función de borrado
+        onPressed: () => _eliminarBusqueda(texto),
       ),
-      onTap: () {
-        // Lógica futura al tocar la búsqueda
-      },
+      onTap: () {},
     );
   }
 
-  Widget _buildSugerencia(String texto, String rutaImagen) {
+  Widget _buildSugerencia(String nombre, String rutaAsset) {
     return ListTile(
       visualDensity: VisualDensity.compact,
       leading: CircleAvatar(
         radius: 18,
-        backgroundImage: AssetImage(rutaImagen),
+        // 🛠️ Controlamos si el String de la ruta viene vacío de Firebase para que no tire error de Asset
+        backgroundImage: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
         backgroundColor: Colors.grey.shade200,
       ),
-      title: Text(texto, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      title: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
       onTap: () {
-        // Lógica futura al tocar una sugerencia
+      Navigator.push(
+        context,
+       MaterialPageRoute(builder: (context) => DestinoDetalleScreen(nombre: nombre, rutaAsset: rutaAsset)),
+       ); // Lógica futura al tocar una sugerencia
       },
     );
   }

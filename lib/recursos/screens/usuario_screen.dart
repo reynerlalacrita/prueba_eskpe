@@ -69,13 +69,13 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
             _buildMenuCard(
               children: [
                 _buildSwitchItem(
-                  Icons.dark_mode_outlined, 
+                  _modoOscuro ? Icons.dark_mode : Icons.dark_mode_outlined, 
                   "Modo Oscuro", 
                   _modoOscuro, 
                   (valor) => setState(() => _modoOscuro = valor)
                 ),
                 _buildSwitchItem(
-                  Icons.notifications_none_outlined, 
+                  _notificaciones ? Icons.notifications_active : Icons.notifications_none_outlined, 
                   "Notificaciones", 
                   _notificaciones, 
                   (valor) => setState(() => _notificaciones = valor)

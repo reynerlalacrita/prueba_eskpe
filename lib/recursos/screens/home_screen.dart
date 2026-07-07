@@ -62,21 +62,20 @@ class _HomeScreenState extends State<HomeScreen> {
     if (cargandoRol) return const Scaffold(body: Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1))));
 
     return Scaffold(
-      backgroundColor: Colors.white, // Fondo blanco según el nuevo diseño
+      backgroundColor: Colors.white, 
       appBar: _indiceActual == 0 ? _buildAppBar() : null,
       body: _pantallas[_indiceActual],
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        selectedItemColor: const Color(0xFF1E2A4F), // Azul oscuro para combinar
+        selectedItemColor: const Color(0xFF1E2A4F), 
         unselectedItemColor: Colors.black38,
         currentIndex: _indiceActual,
+        // 🛠️ SE ELIMINÓ EL IF: Ahora cambia directamente de índice y renderiza UsuarioScreen
         onTap: (index) {
-          if (index == 2 && rol == 'admin') {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminScreen()));
-          } else {
-            setState(() => _indiceActual = index);
-          }
+          setState(() {
+            _indiceActual = index;
+          });
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_filled, size: 30), label: 'Home'),
@@ -91,8 +90,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return PreferredSize(
       preferredSize: const Size.fromHeight(60.0),
       child: AppBar(
-        backgroundColor: const Color(0xFF1E2A4F), // Azul oscuro
-        elevation: 0, // Sin sombra dura para que se vea más moderno
+        backgroundColor: const Color(0xFF1E2A4F), 
+        elevation: 0, 
         centerTitle: true,
         title: const Padding(
           padding: EdgeInsets.only(top: 10.0),
@@ -110,7 +109,6 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 20),
-            // Carrusel ajustado al nuevo estilo
             CarouselSlider(
               options: CarouselOptions(height: 180.0, autoPlay: true, enlargeCenterPage: true, viewportFraction: 0.85),
               items: ['assets/playa1.jpg', 'assets/playa2.jpg', 'assets/playa3.jpg'].map((i) {
@@ -153,7 +151,6 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 15),
             _buildSeccionTitulo("Empresas"),
             const SizedBox(height: 10),
-            // Eliminado el recuadro gris de fondo para mantenerlo limpio
             SizedBox(
               height: 120, 
               child: ListView.builder(
@@ -172,11 +169,10 @@ class _HomeScreenState extends State<HomeScreen> {
               builder: (context, snapshot) {
                 if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                 final docs = snapshot.data!.docs;
-                // Cambio visual: Lista apilada verticalmente como en tu diseño
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 0), 
-                  shrinkWrap: true, // Permite que se interegrue al SingleChildScrollView
-                  physics: const NeverScrollableScrollPhysics(), // Evita doble scroll
+                  shrinkWrap: true, 
+                  physics: const NeverScrollableScrollPhysics(), 
                   itemCount: docs.length, 
                   itemBuilder: (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
@@ -192,8 +188,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // --- WIDGETS VISUALES ACTUALIZADOS ---
-
   Widget _buildSeccionTitulo(String titulo) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0), 
@@ -201,12 +195,11 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Text(titulo, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F))), 
           const Icon(Icons.chevron_right, size: 24, color: Color(0xFF1E2A4F))
-        ]
-      )
+        ],
+      ),
     );
   }
 
-  // Diseño de Destinos: Círculo perfecto con borde
   Widget _buildItemDestino(String nombre, String rutaAsset) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
@@ -221,7 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 80,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF1E2A4F), width: 2), // Borde azul oscuro
+                border: Border.all(color: const Color(0xFF1E2A4F), width: 2), 
                 image: DecorationImage(
                   image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
                   fit: BoxFit.cover,
@@ -236,13 +229,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Diseño de Empresas: Tarjeta blanca limpia con sombra suave
   Widget _buildItemEmpresa(String nombre, String rutaAsset) {
     return Container(
       width: 100,
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color.fromARGB(255, 103, 102, 102),
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 3)),
@@ -268,7 +260,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Diseño de Prontos: Tarjeta horizontal con botón
   Widget _buildTarjetaViaje(String destino, String precio, String fecha, String rutaAsset) {
     return Container(
       height: 110,
@@ -282,7 +273,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          // Imagen del lado izquierdo
           Container(
             width: 110,
             decoration: BoxDecoration(
@@ -293,7 +283,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // Contenido del lado derecho
           Expanded(
             child: Padding(
               padding: const EdgeInsets.all(12.0),
@@ -305,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(destino, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('\$$precio', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)), // Color dorado
+                      Text('\$$precio', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)), 
                     ],
                   ),
                   Row(
@@ -328,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E2A4F), // Botón azul oscuro
+                          color: const Color(0xFF1E2A4F), 
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: const Text("Reservar", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
