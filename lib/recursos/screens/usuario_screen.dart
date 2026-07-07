@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // 🛠️ Agregado para leer los datos de Firestore
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 
 class UsuarioScreen extends StatefulWidget {
@@ -13,6 +14,42 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
   // Variables para controlar el estado de los interruptores
   bool _modoOscuro = false;
   bool _notificaciones = false;
+
+  // 🛠️ Variable para almacenar el nombre del usuario
+  String _nombreUsuario = 'Cargando...';
+  String _apellidoUsuario = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _obtenerNombreDesdeFirebase();
+  }
+
+  // 🛠️ Función para jalar el nombre desde Firestore
+  void _obtenerNombreDesdeFirebase() async {
+    try {
+      User? usuarioActual = FirebaseAuth.instance.currentUser;
+      if (usuarioActual != null) {
+        DocumentSnapshot doc = await FirebaseFirestore.instance
+            .collection('usuarios')
+            .doc(usuarioActual.uid)
+            .get();
+            
+        if (doc.exists && doc.data() != null) {
+          Map<String, dynamic> datos = doc.data() as Map<String, dynamic>;
+          setState(() {
+            // Si no tiene campo 'nombre', usa el de Auth, o por defecto 'Viajero'
+            _nombreUsuario = datos['nombres'] ?? usuarioActual.displayName ?? 'Viajero';
+            _apellidoUsuario = datos ['apellidos'];
+          });
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error al obtener el nombre: $e");
+    }
+    setState(() => _nombreUsuario = 'Viajero');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +88,20 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 70), // Espacio necesario por la imagen sobresaliente
+            const SizedBox(height: 60), // Espacio ajustado para que la foto no pise el texto
+
+            // 🛠️ EL NOMBRE DEL USUARIO (SÓLO EL NOMBRE)
+            Text(
+              '$_nombreUsuario $_apellidoUsuario',
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1E2A4F), // Azul oscuro para combinar
+                letterSpacing: 0.5,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 25), // Espacio entre el nombre y la primera tarjeta
 
             // 2. PRIMERA TARJETA (Opciones de cuenta)
             _buildMenuCard(
