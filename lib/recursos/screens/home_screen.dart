@@ -141,8 +141,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     scrollDirection: Axis.horizontal, 
                     itemCount: docs.length, 
                     itemBuilder: (context, index) {
-                      final data = docs[index].data() as Map<String, dynamic>;
-                      return _buildItemDestino(data['nombre'] ?? '', data['rutaAsset'] ?? '');
+                      final doc = docs[index];
+                      final data = doc.data() as Map<String, dynamic>;
+                      return _buildItemDestino(data['nombre'] ?? '', data['rutaAsset'] ?? '', doc.id);
                     }
                   )
                 );
@@ -177,7 +178,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: docs.length, 
                   itemBuilder: (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
-                    return _buildTarjetaViaje(data['nombre'] ?? '', data['precio']?.toString() ?? '0', data['fecha'] ?? '', data['rutaAsset'] ?? '');
+                    String fechaTexto = '';
+                     if (data['fecha'] != null) {
+                      final Timestamp timestamp = data['fecha'] as Timestamp;
+                      final DateTime fechaDateTime = timestamp.toDate();
+                      fechaTexto = "${fechaDateTime.day}/${fechaDateTime.month}/${fechaDateTime.year}";
+                    }
+                    return _buildTarjetaViaje(data['nombre'] ?? '', data['precio']?.toString() ?? '0', fechaTexto, data['rutaAsset'] ?? '');
                   }
                 );
               },
@@ -201,12 +208,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildItemDestino(String nombre, String rutaAsset) {
+  Widget _buildItemDestino(String nombre, String rutaAsset, String destinoId) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 10.0),
       child: GestureDetector(
         onTap: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => DestinoDetalleScreen(nombre: nombre, rutaAsset: rutaAsset)));
+          Navigator.push(context, MaterialPageRoute(builder: (context) => DestinoDetalleScreen(nombre: nombre, rutaAsset: rutaAsset, destinoId: destinoId,)));
         },
         child: Column(
           children: [

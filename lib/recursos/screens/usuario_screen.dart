@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // 🛠️ Agregado para leer los datos de Firestore
+import 'package:prueba_eskpe/recursos/screens/agregar_viajes_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 
 class UsuarioScreen extends StatefulWidget {
@@ -18,6 +19,8 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
   // 🛠️ Variable para almacenar el nombre del usuario
   String _nombreUsuario = 'Cargando...';
   String _apellidoUsuario = '';
+  String rol = 'usuario';
+  bool cargandoRol = true;
 
   @override
   void initState() {
@@ -34,13 +37,16 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
             .collection('usuarios')
             .doc(usuarioActual.uid)
             .get();
-            
+
         if (doc.exists && doc.data() != null) {
           Map<String, dynamic> datos = doc.data() as Map<String, dynamic>;
           setState(() {
             // Si no tiene campo 'nombre', usa el de Auth, o por defecto 'Viajero'
-            _nombreUsuario = datos['nombres'] ?? usuarioActual.displayName ?? 'Viajero';
-            _apellidoUsuario = datos ['apellidos'];
+            _nombreUsuario =
+                datos['nombres'] ?? usuarioActual.displayName ?? 'Viajero';
+            _apellidoUsuario = datos['apellidos'];
+            rol = datos['rol'] ?? 'usuario';
+            cargandoRol = false;
           });
           return;
         }
@@ -54,7 +60,9 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F8), // Fondo gris muy claro para resaltar las tarjetas blancas
+      backgroundColor: const Color(
+        0xFFF5F6F8,
+      ), // Fondo gris muy claro para resaltar las tarjetas blancas
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -81,15 +89,18 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                     child: const CircleAvatar(
                       radius: 50,
                       // Aquí puedes usar un NetworkImage si descargas la foto del usuario desde Firebase
-                      backgroundImage: AssetImage('assets/placeholder_user.jpg'), 
+                      backgroundImage: AssetImage(
+                        'assets/placeholder_user.jpg',
+                      ),
                       backgroundColor: Colors.grey,
                     ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 60), // Espacio ajustado para que la foto no pise el texto
-
+            const SizedBox(
+              height: 60,
+            ), // Espacio ajustado para que la foto no pise el texto
             // 🛠️ EL NOMBRE DEL USUARIO (SÓLO EL NOMBRE)
             Text(
               '$_nombreUsuario $_apellidoUsuario',
@@ -101,8 +112,9 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 25), // Espacio entre el nombre y la primera tarjeta
-
+            const SizedBox(
+              height: 25,
+            ), // Espacio entre el nombre y la primera tarjeta
             // 2. PRIMERA TARJETA (Opciones de cuenta)
             _buildMenuCard(
               children: [
@@ -111,6 +123,19 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                 _buildMenuItem(Icons.credit_card, "Métodos de Pago"),
                 _buildMenuItem(Icons.tune, "Historial de Viajes"),
                 _buildMenuItem(Icons.help_outline, "Ayuda y Soporte"),
+                if (rol == 'empresa')
+                  _buildMenuItem(
+                    Icons.add,
+                    "Agregar viajes",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AgregarViajeScreen(),
+                        ),
+                      );
+                    },
+                  ),
               ],
             ),
             const SizedBox(height: 15),
@@ -119,16 +144,18 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
             _buildMenuCard(
               children: [
                 _buildSwitchItem(
-                  _modoOscuro ? Icons.dark_mode : Icons.dark_mode_outlined, 
-                  "Modo Oscuro", 
-                  _modoOscuro, 
-                  (valor) => setState(() => _modoOscuro = valor)
+                  _modoOscuro ? Icons.dark_mode : Icons.dark_mode_outlined,
+                  "Modo Oscuro",
+                  _modoOscuro,
+                  (valor) => setState(() => _modoOscuro = valor),
                 ),
                 _buildSwitchItem(
-                  _notificaciones ? Icons.notifications_active : Icons.notifications_none_outlined, 
-                  "Notificaciones", 
-                  _notificaciones, 
-                  (valor) => setState(() => _notificaciones = valor)
+                  _notificaciones
+                      ? Icons.notifications_active
+                      : Icons.notifications_none_outlined,
+                  "Notificaciones",
+                  _notificaciones,
+                  (valor) => setState(() => _notificaciones = valor),
                 ),
               ],
             ),
@@ -142,21 +169,32 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                   await FirebaseAuth.instance.signOut();
                   if (context.mounted) {
                     Navigator.pushAndRemoveUntil(
-                      context, 
-                      MaterialPageRoute(builder: (context) => const LoginScreen()), 
-                      (route) => false
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
                     );
                   }
                 },
                 icon: const Icon(Icons.logout, color: Color(0xFFA53030)),
                 label: const Text(
-                  "Cerrar Sesión", 
-                  style: TextStyle(color: Color(0xFFA53030), fontSize: 16, fontWeight: FontWeight.w600)
+                  "Cerrar Sesión",
+                  style: TextStyle(
+                    color: Color(0xFFA53030),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 style: OutlinedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 55),
-                  side: const BorderSide(color: Color(0xFFA53030), width: 1.2), // Borde rojo
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  side: const BorderSide(
+                    color: Color(0xFFA53030),
+                    width: 1.2,
+                  ), // Borde rojo
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   backgroundColor: Colors.transparent,
                 ),
               ),
@@ -185,28 +223,47 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
           ),
         ],
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
   // Crea cada fila de opción estándar
-  Widget _buildMenuItem(IconData icon, String title) {
+  Widget _buildMenuItem(IconData icon, String title, {VoidCallback? onTap}) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF1E2A4F)),
-      title: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87)),
-      onTap: () {
-        // Lógica futura de navegación
-      },
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+        ),
+      ),
+      onTap:
+          onTap ??
+          () {
+            // Lógica futura de navegación
+          },
     );
   }
 
   // Crea cada fila con interruptor (Switch)
-  Widget _buildSwitchItem(IconData icon, String title, bool value, ValueChanged<bool> onChanged) {
+  Widget _buildSwitchItem(
+    IconData icon,
+    String title,
+    bool value,
+    ValueChanged<bool> onChanged,
+  ) {
     return ListTile(
       leading: Icon(icon, color: const Color(0xFF1E2A4F)),
-      title: Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500, color: Colors.black87)),
+      title: Text(
+        title,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+        ),
+      ),
       trailing: Switch(
         value: value,
         onChanged: onChanged,

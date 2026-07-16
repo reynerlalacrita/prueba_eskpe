@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/screens/reservas_screen.dart'; // Asegúrate de que este archivo tenga el widget 'ReservarViajeScreen'
 
 class DestinoDetalleScreen extends StatelessWidget {
   final String nombre;
+  final String destinoId;
   final String rutaAsset;
 
-  const DestinoDetalleScreen({super.key, required this.nombre, required this.rutaAsset});
+  const DestinoDetalleScreen({super.key, required this.nombre, required this.rutaAsset, required this.destinoId});
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +34,7 @@ class DestinoDetalleScreen extends StatelessWidget {
               background: Image.asset(
                 rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg',
                 fit: BoxFit.cover,
-                color: Colors.black.withOpacity(0.3), // Filtro para que el texto resalte
+                color: Colors.black.withOpacity(0.3),
                 colorBlendMode: BlendMode.darken,
               ),
             ),
@@ -62,10 +64,9 @@ class DestinoDetalleScreen extends StatelessWidget {
 
           // Lista de viajes desde Firebase
           StreamBuilder<QuerySnapshot>(
-            // AQUÍ FILTRAMOS LOS VIAJES POR EL DESTINO SELECCIONADO
             stream: FirebaseFirestore.instance
                 .collection('viajes')
-                .where('nombre', isEqualTo: nombre) // Cambia 'nombre' por el campo que uses en tu BD
+                .where('destinoId', isEqualTo: destinoId)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -100,12 +101,26 @@ class DestinoDetalleScreen extends StatelessWidget {
               return SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final data = docs[index].data() as Map<String, dynamic>;
+                    final doc = docs[index];
+                    final data = doc.data() as Map<String, dynamic>;
+                    
+                    // Convertimos la fecha de forma segura
+                    String fechaTexto = 'Fechas por definir';
+                    if (data['fecha'] != null) {
+                      final Timestamp timestamp = data['fecha'] as Timestamp;
+                      final DateTime fechaDateTime = timestamp.toDate();
+                      fechaTexto = "${fechaDateTime.day}/${fechaDateTime.month}/${fechaDateTime.year}";
+                    }
+
+                    // 🛠️ SOLUCIÓN: Pasamos el context, el doc.id y el mapa de datos completo
                     return _buildTarjetaViaje(
-                      data['empresa'] ?? 'Empresa', // Asumiendo que guardas la empresa
-                      data['precio']?.toString() ?? '0',
-                      data['fecha'] ?? '',
-                      data['rutaAsset'] ?? '', // Imagen del viaje/empresa
+                      context,
+                      doc.id, 
+                      data,
+                      data['empresaNombre'] ?? data['empresa'] ?? 'Empresa', // Compatible con ambos campos
+                      data['precioPorPuesto']?.toString() ?? data['precio']?.toString() ?? '0',
+                      fechaTexto,
+                      data['rutaAsset'] ?? '',
                     );
                   },
                   childCount: docs.length,
@@ -120,8 +135,16 @@ class DestinoDetalleScreen extends StatelessWidget {
     );
   }
 
-  // Mismo diseño de tarjeta que tienes en el Home para mantener consistencia
-  Widget _buildTarjetaViaje(String empresa, String precio, String fecha, String rutaAsset) {
+  // 🛠️ SOLUCIÓN: Agregamos context, viajeId y datosViaje a los parámetros de la tarjeta
+  Widget _buildTarjetaViaje(
+    BuildContext context, 
+    String viajeId, 
+    Map<String, dynamic> datosViaje, 
+    String empresa, 
+    String precio, 
+    String fecha, 
+    String rutaAsset
+  ) {
     return Container(
       height: 110,
       margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
@@ -162,19 +185,33 @@ class DestinoDetalleScreen extends StatelessWidget {
                     children: [
                       const Icon(Icons.calendar_today, size: 14, color: Color(0xFFB8860B)),
                       const SizedBox(width: 5),
-                      Text(fecha.isEmpty ? "Fechas por definir" : fecha, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                      Text(fecha, style: const TextStyle(fontSize: 12, color: Colors.black54)),
                     ],
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E2A4F),
-                          borderRadius: BorderRadius.circular(8),
+                      GestureDetector(
+                        onTap: () {
+                          // 🌟 ¡LISTO! Ahora sí reconoce de dónde salen las variables y el context
+                          Navigator.push(
+                            context, 
+                            MaterialPageRoute(
+                              builder: (context) => ReservarViajeScreen(
+                                viajeId: viajeId, 
+                                datosViaje: datosViaje
+                              )
+                            )
+                          );
+                        },
+                        child: Container( // 🛠️ FIJADO: Añadido el 'child:' que faltaba aquí
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E2A4F),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text("Reservar", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                         ),
-                        child: const Text("Reservar", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                       )
                     ],
                   ),
