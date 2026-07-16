@@ -8,6 +8,9 @@ import 'package:prueba_eskpe/recursos/screens/busqueda_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuario_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/destino_detalle_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/empresa_detalle_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/lista_destinos_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/lista_empresas_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/lista_prontos_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,9 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
   int _indiceActual = 0;
 
   final List<Map<String, String>> _empresas = [
-    {'nombre': 'Posada Alfa', 'imagen': 'assets/posada.jpg'},
-    {'nombre': 'Yates Express', 'imagen': 'assets/yates.jpg'},
-    {'nombre': 'Rest. Mar', 'imagen': 'assets/restaurante.jpg'},
+    {'nombre': 'Alfa Tours', 'imagen': 'assets/AlfaTours.jpg'},
+    {'nombre': 'Yates Express', 'imagen': 'assets/YateExpress.jpg'},
+    {'nombre': 'Caracas Tours', 'imagen': 'assets/CaracasTours.jpg'},
   ];
 
   late final List<Widget> _pantallas;
@@ -127,7 +130,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 25),
             
-            _buildSeccionTitulo("Destinos"),
+            _buildSeccionTitulo("Destinos", () {
+  Navigator.push(context, MaterialPageRoute(builder: (context) => const ListaDestinosScreen()));
+}),
             const SizedBox(height: 15),
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collectionGroup('destinos').limit(7).snapshots(),
@@ -151,7 +156,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             
             const SizedBox(height: 15),
-            _buildSeccionTitulo("Empresas"),
+            _buildSeccionTitulo("Empresas", () {
+  Navigator.push(context, MaterialPageRoute(builder: (context) => const ListaEmpresasScreen()));
+}),
             const SizedBox(height: 10),
             SizedBox(
               height: 120, 
@@ -164,7 +171,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             
             const SizedBox(height: 20),
-            _buildSeccionTitulo("Prontos"),
+            _buildSeccionTitulo("Prontos", () {
+  Navigator.push(context, MaterialPageRoute(builder: (context) => const ListaProntosScreen()));
+}),
             const SizedBox(height: 15),
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('viajes').snapshots(),
@@ -196,17 +205,21 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSeccionTitulo(String titulo) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0), 
+  Widget _buildSeccionTitulo(String titulo, VoidCallback onTap) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+    child: GestureDetector(
+      onTap: onTap, // Llamamos a la función que pasamos como parámetro
       child: Row(
         children: [
-          Text(titulo, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F))), 
+          Text(titulo, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F))),
+          const SizedBox(width: 5), // Un poco de espacio
           const Icon(Icons.chevron_right, size: 24, color: Color(0xFF1E2A4F))
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildItemDestino(String nombre, String rutaAsset, String destinoId) {
     return Padding(
