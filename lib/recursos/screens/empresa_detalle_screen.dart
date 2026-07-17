@@ -1,19 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/utils.dart';
 
 class EmpresaDetalleScreen extends StatelessWidget {
   final String nombreEmpresa;
   final String rutaAsset;
+  final String telefonoEmpresa;
+  final String destinoId;
 
-  const EmpresaDetalleScreen({super.key, required this.nombreEmpresa, required this.rutaAsset});
+  const EmpresaDetalleScreen({
+    super.key,
+    required this.nombreEmpresa,
+    required this.rutaAsset,
+    required this.telefonoEmpresa,
+    required this.destinoId,
+  });
 
   @override
   Widget build(BuildContext context) {
+    // Definimos si el teléfono es válido (no vacío y distinto al número que quieres evitar)
+    final bool esTelefonoValido = telefonoEmpresa.isNotEmpty && telefonoEmpresa != "584121234567";
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
         slivers: [
-          // Encabezado con la imagen (logo de la empresa o foto representativa)
           SliverAppBar(
             expandedHeight: 250.0,
             floating: false,
@@ -30,24 +41,47 @@ class EmpresaDetalleScreen extends StatelessWidget {
                 ),
               ),
               background: Image.asset(
-                rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder.png',
+                rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg',
                 fit: BoxFit.cover,
-                color: Colors.black.withOpacity(0.4), // Filtro un poco más oscuro
+                color: Colors.black.withOpacity(0.4),
                 colorBlendMode: BlendMode.darken,
               ),
             ),
           ),
-          
-          // Texto descriptivo
+
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Botón inteligente que se bloquea si el número no es válido
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: esTelefonoValido
+                        ? () => AppUtils.abrirWhatsApp(telefonoEmpresa, nombreEmpresa) // <--- Ahora pasas ambos
+                        : () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text("Número de WhatsApp no disponible.")),
+                            );
+                          },
+                      icon: const Icon(Icons.message, color: Colors.white),
+                      label: const Text("Consultar por WhatsApp",
+                          style: TextStyle(color: Colors.white)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: esTelefonoValido ? const Color(0xFF25D366) : Colors.grey,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 25),
                   const Text(
                     "Viajes Programados",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+                    style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E2A4F)),
                   ),
                   const SizedBox(height: 5),
                   Text(
@@ -60,18 +94,15 @@ class EmpresaDetalleScreen extends StatelessWidget {
             ),
           ),
 
-          // Lista de viajes desde Firebase FILTRADOS POR EMPRESA
           StreamBuilder<QuerySnapshot>(
-            // AQUÍ LA MAGIA: filtramos usando 'empresa' en lugar de 'nombre'
             stream: FirebaseFirestore.instance
                 .collection('viajes')
-                .where('empresa', isEqualTo: nombreEmpresa) 
+                .where('empresa', isEqualTo: nombreEmpresa)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SliverToBoxAdapter(
-                  child: Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F))),
-                );
+                    child: Center(child: CircularProgressIndicator()));
               }
 
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -79,17 +110,8 @@ class EmpresaDetalleScreen extends StatelessWidget {
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.all(40.0),
-                      child: Column(
-                        children: [
-                          Icon(Icons.directions_boat_filled_outlined, size: 60, color: Colors.grey.shade400),
-                          const SizedBox(height: 15),
-                          Text(
-                            "$nombreEmpresa aún no ha publicado viajes.",
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Colors.grey, fontSize: 16),
-                          ),
-                        ],
-                      ),
+                      child: Text("$nombreEmpresa aún no ha publicado viajes.",
+                          style: const TextStyle(color: Colors.grey)),
                     ),
                   ),
                 );
@@ -101,11 +123,21 @@ class EmpresaDetalleScreen extends StatelessWidget {
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
+                    
+                    dynamic rawFecha = data['fecha'];
+                    String fechaTexto = "Sin fecha";
+                    if (rawFecha is Timestamp) {
+                      DateTime date = rawFecha.toDate();
+                      fechaTexto = "${date.day}/${date.month}/${date.year}";
+                    } else if (rawFecha is String) {
+                      fechaTexto = rawFecha;
+                    }
+
                     return _buildTarjetaViaje(
-                      data['nombre'] ?? 'Destino Desconocido', // Ahora mostramos el nombre del destino
+                      data['nombre'] ?? 'Sin nombre',
                       data['precio']?.toString() ?? '0',
-                      data['fecha'] ?? '',
-                      data['rutaAsset'] ?? '', 
+                      fechaTexto,
+                      data['rutaAsset'] ?? '',
                     );
                   },
                   childCount: docs.length,
@@ -113,15 +145,14 @@ class EmpresaDetalleScreen extends StatelessWidget {
               );
             },
           ),
-          
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
       ),
     );
   }
 
-  // Tarjeta de viaje para EmpresaDetalleScreen
-  Widget _buildTarjetaViaje(String destino, String precio, String fecha, String rutaAsset) {
+  Widget _buildTarjetaViaje(
+      String destino, String precio, String fecha, String rutaAsset) {
     return Container(
       height: 110,
       margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
@@ -129,7 +160,10 @@ class EmpresaDetalleScreen extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 4)),
+          BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 4)),
         ],
       ),
       child: Row(
@@ -137,9 +171,12 @@ class EmpresaDetalleScreen extends StatelessWidget {
           Container(
             width: 110,
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
+              borderRadius:
+                  const BorderRadius.horizontal(left: Radius.circular(15)),
               image: DecorationImage(
-                image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
+                image: AssetImage(rutaAsset.isNotEmpty
+                    ? rutaAsset
+                    : 'assets/placeholder_playa.jpg'),
                 fit: BoxFit.cover,
               ),
             ),
@@ -154,28 +191,24 @@ class EmpresaDetalleScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(destino, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('\$$precio', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)),
+                      Text(destino,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                      Text('\$$precio',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFB8860B),
+                              fontSize: 16)),
                     ],
                   ),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today, size: 14, color: Color(0xFFB8860B)),
+                      const Icon(Icons.calendar_today,
+                          size: 14, color: Color(0xFFB8860B)),
                       const SizedBox(width: 5),
-                      Text(fecha.isEmpty ? "Fechas por definir" : fecha, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E2A4F),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text("Reservar", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                      )
+                      Text(fecha.isEmpty ? "Fechas por definir" : fecha,
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.black54)),
                     ],
                   ),
                 ],

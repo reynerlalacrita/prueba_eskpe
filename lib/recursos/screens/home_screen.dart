@@ -166,10 +166,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.symmetric(horizontal: 15), 
                 scrollDirection: Axis.horizontal, 
                 itemCount: _empresas.length, 
-                itemBuilder: (context, index) => _buildItemEmpresa(_empresas[index]['nombre']!, _empresas[index]['imagen']!)
+                itemBuilder: (context, index) {
+              final empresa = _empresas[index]; // Obtenemos el objeto empresa
+              
+              return _buildItemEmpresa(
+                empresa['nombre'] ?? 'Sin nombre',    // 1. Nombre
+                empresa['imagen'] ?? '',             // 2. Imagen
+                empresa['telefono'] ?? '584121234567', // 3. Teléfono (o valor por defecto)
+                empresa['id'] ?? 'sin_id',           // 4. ID (debes asegurarte que venga en tu objeto)
+              );
+            },
               )
             ),
-            
             const SizedBox(height: 20),
             _buildSeccionTitulo("Prontos", () {
   Navigator.push(context, MaterialPageRoute(builder: (context) => const ListaProntosScreen()));
@@ -251,16 +259,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Diseño de Empresas: Tarjeta interactiva para ir a los detalles
-  Widget _buildItemEmpresa(String nombre, String rutaAsset) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context, 
-          MaterialPageRoute(
-            builder: (context) => EmpresaDetalleScreen(nombreEmpresa: nombre, rutaAsset: rutaAsset)
-          )
-        );
-      },
+  Widget _buildItemEmpresa(String nombre, String rutaAsset, String telefono, String id) { 
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          // 2. Ahora pasa los datos obligatorios aquí
+          builder: (context) => EmpresaDetalleScreen(
+            nombreEmpresa: nombre,
+            rutaAsset: rutaAsset,
+            telefonoEmpresa: telefono, // <--- El teléfono que recibes
+            destinoId: id,            // <--- El ID que recibes
+          ),
+        ),
+      );
+    },
       child: Container(
         width: 100,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),

@@ -1,7 +1,7 @@
 //todas las empresas de la aplicacion
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:prueba_eskpe/recursos/screens/destino_detalle_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresa_detalle_screen.dart';
 
 class ListaEmpresasScreen extends StatelessWidget {
   const ListaEmpresasScreen({super.key});
@@ -45,19 +45,39 @@ class ListaEmpresasScreen extends StatelessWidget {
               final String nombreSeguro = data['nombre'] ?? 'Sin nombre';
               final String rutaSegura = data['rutaAsset'] ?? 'assets/MorrocoyTours.jpg';
               
-              return _buildTarjetaDestino(context, nombreSeguro, rutaSegura, docs[index].id);
+
+              
+              // Línea 50 corregida:
+            return _buildTarjetaDestino(
+                context, 
+                nombreSeguro, 
+                rutaSegura, 
+                docs[index].id, 
+                data['telefono'] ?? '584263211350' // Aquí pasas el teléfono o un número por defecto
+);
+              
             },
           );
         },
       ),
     );
   }
-  Widget _buildTarjetaDestino(BuildContext context, String nombre, String ruta, String id) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => 
-          DestinoDetalleScreen(nombre: nombre, rutaAsset: ruta, destinoId: id)));
-      },
+  Widget _buildTarjetaDestino(BuildContext context, String nombre, String ruta, String id, String telefono) {
+  return GestureDetector(
+      // Ejemplo cuando navegas hacia la pantalla de detalle:
+onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EmpresaDetalleScreen(
+            nombreEmpresa: nombre, // Usas el parámetro 'nombre' que ya recibes
+            rutaAsset: ruta,       // Usas el parámetro 'ruta' que ya recibes
+            telefonoEmpresa: telefono, // <--- Ahora ya lo tienes
+            destinoId: id,         // <--- Ahora ya lo tienes
+          ),
+        ),
+      );
+    },
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
