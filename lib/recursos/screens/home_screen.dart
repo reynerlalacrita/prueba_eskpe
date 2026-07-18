@@ -10,7 +10,7 @@ import 'package:prueba_eskpe/recursos/screens/destino_detalle_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/empresa_detalle_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/lista_destinos_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/lista_empresas_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/lista_prontos_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/lista_viajes_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,11 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool cargandoRol = true;
   int _indiceActual = 0;
 
-  final List<Map<String, String>> _empresas = [
-    {'nombre': 'Alfa Tours', 'imagen': 'assets/AlfaTours.jpg'},
-    {'nombre': 'Yates Express', 'imagen': 'assets/YateExpress.jpg'},
-    {'nombre': 'Caracas Tours', 'imagen': 'assets/CaracasTours.jpg'},
-  ];
+
 
   late final List<Widget> _pantallas;
 
@@ -160,27 +156,40 @@ class _HomeScreenState extends State<HomeScreen> {
   Navigator.push(context, MaterialPageRoute(builder: (context) => const ListaEmpresasScreen()));
 }),
             const SizedBox(height: 10),
-            SizedBox(
-              height: 120, 
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 15), 
-                scrollDirection: Axis.horizontal, 
-                itemCount: _empresas.length, 
-                itemBuilder: (context, index) {
-              final empresa = _empresas[index]; // Obtenemos el objeto empresa
-              
-              return _buildItemEmpresa(
-                empresa['nombre'] ?? 'Sin nombre',    // 1. Nombre
-                empresa['imagen'] ?? '',             // 2. Imagen
-                empresa['telefono'] ?? '584121234567', // 3. Teléfono (o valor por defecto)
-                empresa['id'] ?? 'sin_id',           // 4. ID (debes asegurarte que venga en tu objeto)
-              );
-            },
-              )
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('usuarios').where('rol', isEqualTo: 'empresa').limit(7).snapshots(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+                final docs = snapshot.data!.docs;
+                if (docs.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Text("No hay empresas registradas aún.", style: TextStyle(color: Colors.grey)),
+                  );
+                }
+                return SizedBox(
+                  height: 120, 
+                  child: ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 15), 
+                    scrollDirection: Axis.horizontal, 
+                    itemCount: docs.length, 
+                    itemBuilder: (context, index) {
+                      final doc = docs[index];
+                      final data = doc.data() as Map<String, dynamic>;
+                      return _buildItemEmpresa(
+                        data['nombres'] ?? 'Sin nombre',
+                        data['rutaAsset'] ?? '', // Si luego se guarda imagen
+                        data['telefono'] ?? '584121234567',
+                        doc.id,
+                      );
+                    }
+                  )
+                );
+              },
             ),
             const SizedBox(height: 20),
-            _buildSeccionTitulo("Prontos", () {
-  Navigator.push(context, MaterialPageRoute(builder: (context) => const ListaProntosScreen()));
+            _buildSeccionTitulo("Viajes", () {
+  Navigator.push(context, MaterialPageRoute(builder: (context) => const ListaViajesScreen()));
 }),
             const SizedBox(height: 15),
             StreamBuilder<QuerySnapshot>(
@@ -195,13 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   itemCount: docs.length, 
                   itemBuilder: (context, index) {
                     final data = docs[index].data() as Map<String, dynamic>;
-                    String fechaTexto = '';
-                     if (data['fecha'] != null) {
-                      final Timestamp timestamp = data['fecha'] as Timestamp;
-                      final DateTime fechaDateTime = timestamp.toDate();
-                      fechaTexto = "${fechaDateTime.day}/${fechaDateTime.month}/${fechaDateTime.year}";
-                    }
-                    return _buildTarjetaViaje(data['nombre'] ?? '', data['precio']?.toString() ?? '0', fechaTexto, data['rutaAsset'] ?? '');
+                    return _buildTarjetaViaje(data);
                   }
                 );
               },
@@ -306,75 +309,126 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTarjetaViaje(String destino, String precio, String fecha, String rutaAsset) {
-    return Container(
-      height: 110,
-      margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 110,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-              image: DecorationImage(
-                image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
-                fit: BoxFit.cover,
+  Widget _buildTarjetaViaje(Map<String, dynamic> data) {
+    String destinoId = data['destinoId'] ?? '';
+    
+    if (destinoId.isEmpty) {
+      return _tarjetaContenido(data, "Destino Desconocido", data['rutaAsset'] ?? '');
+    }
+
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance.collection('destinos').doc(destinoId).get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            height: 110,
+            margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
+            child: const Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F))),
+          );
+        }
+
+        String nombre = "Cargando...";
+        String ruta = data['rutaAsset'] ?? '';
+        
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasData && snapshot.data!.exists) {
+            nombre = snapshot.data!['nombre'] ?? 'Destino Desconocido';
+            String assetDestino = snapshot.data!['rutaAsset'] ?? '';
+            if (assetDestino.isNotEmpty) ruta = assetDestino;
+          } else {
+            nombre = "Destino Desconocido";
+          }
+        }
+        
+        return _tarjetaContenido(data, nombre, ruta);
+      },
+    );
+  }
+
+  Widget _tarjetaContenido(Map<String, dynamic> data, String nombreDestino, String rutaAsset) {
+    String fechaStr = 'Fecha no definida';
+    if (data['fecha'] != null) {
+      final dt = (data['fecha'] as Timestamp).toDate();
+      fechaStr = "${dt.day}/${dt.month}/${dt.year}";
+    }
+    String precioStr = "\$0";
+    if (data['planes'] != null && (data['planes'] as List).isNotEmpty) {
+      List planes = data['planes'];
+      double minPrice = planes.map((p) => double.tryParse(p['precio']?.toString() ?? '0') ?? 0.0).reduce((a, b) => a < b ? a : b);
+      precioStr = "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
+    } else {
+      String precio = data['precioPorPuesto']?.toString() ?? data['precio']?.toString() ?? '0';
+      precioStr = "\$$precio";
+    }
+
+    String empresaNombre = data['empresaNombre'] ?? data['empresa'] ?? 'Agencia de Viajes';
+
+    return GestureDetector(
+      onTap: () {
+        // TODO: Navegar a la futura screen de detalles del viaje
+      },
+      child: Container(
+        height: 125,
+        margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 110,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
+                image: DecorationImage(
+                  image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(destino, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('\$$precio', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)), 
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_today, size: 14, color: Color(0xFFB8860B)),
-                      const SizedBox(width: 5),
-                      Text(fecha.isEmpty ? "Hoy - 2 hrs" : fecha, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.access_time, size: 14, color: Color(0xFFB8860B)),
-                          SizedBox(width: 5),
-                          Text("Hoy - 1 hrs", style: TextStyle(fontSize: 12, color: Colors.black54)),
-                        ],
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E2A4F), 
-                          borderRadius: BorderRadius.circular(8),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(empresaNombre, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(nombreDestino, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), overflow: TextOverflow.ellipsis),
                         ),
-                        child: const Text("Reservar", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                      )
-                    ],
-                  ),
-                ],
+                        const SizedBox(width: 5),
+                        Text(precioStr, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)), 
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_today, size: 14, color: Color(0xFFB8860B)),
+                        const SizedBox(width: 5),
+                        Text(fechaStr, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                      ],
+                    ),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          "Ver detalles >", 
+                          style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold)
+                        )
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }

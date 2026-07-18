@@ -82,15 +82,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // D. Guardar los datos del formulario en Firestore usando ese UID exacto
       await FirebaseFirestore.instance.collection('usuarios').doc(uid).set(datosUsuario);
 
-      // E. Si es empresa, también agregar a la colección 'empresas' para ser listada
-      if (_esEmpresa) {
-        await FirebaseFirestore.instance.collection('empresas').doc(uid).set({
-          'nombre': _nombreController.text.trim(),
-          'rif': identificacion,
-          'contacto': _telefonoController.text.trim(),
-          'fechaRegistro': FieldValue.serverTimestamp(),
-        });
-      }
+
 
       if (!mounted) return;
       Navigator.pop(context); // Quitar el círculo de carga

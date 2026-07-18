@@ -112,13 +112,23 @@ class DestinoDetalleScreen extends StatelessWidget {
                       fechaTexto = "${fechaDateTime.day}/${fechaDateTime.month}/${fechaDateTime.year}";
                     }
 
+                    String precioStr = "\$0";
+                    if (data['planes'] != null && (data['planes'] as List).isNotEmpty) {
+                      List planes = data['planes'];
+                      double minPrice = planes.map((p) => double.tryParse(p['precio']?.toString() ?? '0') ?? 0.0).reduce((a, b) => a < b ? a : b);
+                      precioStr = "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
+                    } else {
+                      String precio = data['precioPorPuesto']?.toString() ?? data['precio']?.toString() ?? '0';
+                      precioStr = "\$$precio";
+                    }
+
                     // 🛠️ SOLUCIÓN: Pasamos el context, el doc.id y el mapa de datos completo
                     return _buildTarjetaViaje(
                       context,
                       doc.id, 
                       data,
                       data['empresaNombre'] ?? data['empresa'] ?? 'Empresa', // Compatible con ambos campos
-                      data['precioPorPuesto']?.toString() ?? data['precio']?.toString() ?? '0',
+                      precioStr,
                       fechaTexto,
                       data['rutaAsset'] ?? '',
                     );
@@ -141,7 +151,7 @@ class DestinoDetalleScreen extends StatelessWidget {
     String viajeId, 
     Map<String, dynamic> datosViaje, 
     String empresa, 
-    String precio, 
+    String precioStr, 
     String fecha, 
     String rutaAsset
   ) {
@@ -177,8 +187,11 @@ class DestinoDetalleScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(empresa, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('\$$precio', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)),
+                      Expanded(
+                        child: Text(empresa, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), overflow: TextOverflow.ellipsis),
+                      ),
+                      const SizedBox(width: 5),
+                      Text(precioStr, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)),
                     ],
                   ),
                   Row(
@@ -193,24 +206,11 @@ class DestinoDetalleScreen extends StatelessWidget {
                     children: [
                       GestureDetector(
                         onTap: () {
-                          // 🌟 ¡LISTO! Ahora sí reconoce de dónde salen las variables y el context
-                          Navigator.push(
-                            context, 
-                            MaterialPageRoute(
-                              builder: (context) => ReservarViajeScreen(
-                                viajeId: viajeId, 
-                                datosViaje: datosViaje
-                              )
-                            )
-                          );
+                          // TODO: Navegar a la futura screen de detalles del viaje
                         },
-                        child: Container( // 🛠️ FIJADO: Añadido el 'child:' que faltaba aquí
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E2A4F),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text("Reservar", style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                        child: const Text(
+                          "Ver detalles >", 
+                          style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold)
                         ),
                       )
                     ],

@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // 🛠️ Agregado para leer los datos de Firestore
 import 'package:prueba_eskpe/recursos/screens/agregar_viajes_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/historial_reservas_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/viajes_empresa_screen.dart';
 
 class UsuarioScreen extends StatefulWidget {
   const UsuarioScreen({super.key});
@@ -28,7 +30,6 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
     _obtenerNombreDesdeFirebase();
   }
 
-  // 🛠️ Función para jalar el nombre desde Firestore
   void _obtenerNombreDesdeFirebase() async {
     try {
       User? usuarioActual = FirebaseAuth.instance.currentUser;
@@ -40,21 +41,25 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
 
         if (doc.exists && doc.data() != null) {
           Map<String, dynamic> datos = doc.data() as Map<String, dynamic>;
-          setState(() {
-            // Si no tiene campo 'nombre', usa el de Auth, o por defecto 'Viajero'
-            _nombreUsuario =
-                datos['nombres'] ?? usuarioActual.displayName ?? 'Viajero';
-            _apellidoUsuario = datos['apellidos'];
-            rol = datos['rol'] ?? 'usuario';
-            cargandoRol = false;
-          });
+          if (mounted) {
+            setState(() {
+              // Si no tiene campo 'nombre', usa el de Auth, o por defecto 'Viajero'
+              _nombreUsuario =
+                  datos['nombres'] ?? usuarioActual.displayName ?? 'Viajero';
+              _apellidoUsuario = datos['apellidos'] ?? '';
+              rol = datos['rol'] ?? 'usuario';
+              cargandoRol = false;
+            });
+          }
           return;
         }
       }
     } catch (e) {
       debugPrint("Error al obtener el nombre: $e");
     }
-    setState(() => _nombreUsuario = 'Viajero');
+    if (mounted) {
+      setState(() => _nombreUsuario = 'Viajero');
+    }
   }
 
   @override
@@ -121,9 +126,33 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                 _buildMenuItem(Icons.person_outline, "Mis Datos"),
                 _buildMenuItem(Icons.lock_outline, "Seguridad y Contraseña"),
                 _buildMenuItem(Icons.credit_card, "Métodos de Pago"),
-                _buildMenuItem(Icons.tune, "Historial de Viajes"),
+                if (rol == 'usuario')
+                  _buildMenuItem(
+                    Icons.tune,
+                    "Historial de Viajes",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HistorialReservasScreen(),
+                        ),
+                      );
+                    },
+                  ),
                 _buildMenuItem(Icons.help_outline, "Ayuda y Soporte"),
-                if (rol == 'empresa')
+                if (rol == 'empresa') ...[
+                  _buildMenuItem(
+                    Icons.directions_boat_filled_outlined,
+                    "Mis Viajes Publicados",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ViajesEmpresaScreen(),
+                        ),
+                      );
+                    },
+                  ),
                   _buildMenuItem(
                     Icons.add,
                     "Agregar viajes",
@@ -136,6 +165,7 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                       );
                     },
                   ),
+                ],
               ],
             ),
             const SizedBox(height: 15),

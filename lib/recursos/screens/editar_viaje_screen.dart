@@ -1,36 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
-class AgregarViajeScreen extends StatefulWidget {
-  const AgregarViajeScreen({super.key});
+class EditarViajeScreen extends StatefulWidget {
+  final String viajeId;
+  final Map<String, dynamic> datosViaje;
+
+  const EditarViajeScreen({
+    super.key,
+    required this.viajeId,
+    required this.datosViaje,
+  });
 
   @override
-  State<AgregarViajeScreen> createState() => _AgregarViajeScreenState();
+  State<EditarViajeScreen> createState() => _EditarViajeScreenState();
 }
 
-class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
+class _EditarViajeScreenState extends State<EditarViajeScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  final TextEditingController _puestosController = TextEditingController();
-  final TextEditingController _detallesController = TextEditingController();
+  late TextEditingController _puestosController;
+  late TextEditingController _detallesController;
 
-  String? _destinoIdSeleccionado;
   DateTime? _fechaSeleccionada;
-  bool _subiendo = false;
+  bool _guardando = false;
 
-  // Lista para almacenar los planes agregados
+  late int _puestosTotalesOriginales;
+  late int _puestosDisponiblesOriginales;
+
   List<Map<String, dynamic>> _planes = [];
-
-  // Variables para guardar los datos de la empresa actual
-  String _empresaNombre = '';
-  String _empresaUid = '';
-  bool _cargandoDatosEmpresa = true;
 
   @override
   void initState() {
     super.initState();
-    _obtenerDatosEmpresa();
+    
+    // Cargar planes existentes o migrar el precio antiguo
+    if (widget.datosViaje['planes'] != null) {
+      _planes = List<Map<String, dynamic>>.from(widget.datosViaje['planes']);
+    } else {
+      String precio = widget.datosViaje['precioPorPuesto']?.toString() ?? widget.datosViaje['precio']?.toString() ?? '0';
+      _planes = [
+        {
+          'nombre': 'Plan Único',
+          'precio': double.tryParse(precio) ?? 0.0,
+          'beneficios': 'Beneficios por defecto'
+        }
+      ];
+    }
+
+    _puestosTotalesOriginales = widget.datosViaje['puestosTotales'] ?? 0;
+    _puestosDisponiblesOriginales =
+        widget.datosViaje['puestosDisponibles'] ?? 0;
+
+    _puestosController = TextEditingController(
+      text: _puestosTotalesOriginales.toString(),
+    );
+    _detallesController = TextEditingController(
+      text: widget.datosViaje['detallesViaje'] ?? '',
+    );
+
+    if (widget.datosViaje['fecha'] != null) {
+      _fechaSeleccionada = (widget.datosViaje['fecha'] as Timestamp).toDate();
+    }
   }
 
   @override
@@ -40,38 +70,11 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
     super.dispose();
   }
 
-  // Función para jalar los datos de la empresa desde Firestore
-  void _obtenerDatosEmpresa() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        _empresaUid = user.uid;
-        final doc = await FirebaseFirestore.instance
-            .collection('usuarios')
-            .doc(user.uid)
-            .get();
-        if (doc.exists && doc.data() != null) {
-          final data = doc.data() as Map<String, dynamic>;
-          setState(() {
-            _empresaNombre = data['nombres'] ?? 'Mi Empresa';
-            _cargandoDatosEmpresa = false;
-          });
-          return;
-        }
-      }
-    } catch (e) {
-      debugPrint("Error al obtener datos de empresa: $e");
-    }
-    setState(() {
-      _cargandoDatosEmpresa = false;
-    });
-  }
-
-  // Función para abrir el selector de fecha del teléfono
   void _seleccionarFecha() async {
     DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: DateTime.now().add(const Duration(days: 1)),
+      initialDate:
+          _fechaSeleccionada ?? DateTime.now().add(const Duration(days: 1)),
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
     );
@@ -192,13 +195,11 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
     );
   }
 
-  void _guardarViaje() async {
-    if (!_formKey.currentState!.validate() ||
-        _destinoIdSeleccionado == null ||
-        _fechaSeleccionada == null) {
+  void _guardarCambios() async {
+    if (!_formKey.currentState!.validate() || _fechaSeleccionada == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("Por favor, completa todos los campos."),
+          content: Text("Por favor, completa todos los campos requeridos."),
           backgroundColor: Colors.orange,
         ),
       );
@@ -215,42 +216,59 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
       return;
     }
 
-    setState(() => _subiendo = true);
+    setState(() => _guardando = true);
 
     try {
-      // Subimos el nuevo viaje organizado a Firestore
-      await FirebaseFirestore.instance.collection('viajes').add({
-        'destinoId': _destinoIdSeleccionado,
-        'empresaNombre': _empresaNombre,
-        'empresa': _empresaNombre,
-        'empresaId': _empresaUid,
-        'puestosTotales': int.parse(_puestosController.text),
-        'puestosDisponibles': int.parse(_puestosController.text),
-        'fecha': Timestamp.fromDate(_fechaSeleccionada!),
-        'detallesViaje': _detallesController.text,
-        'planes': _planes, // Nuevo arreglo de planes
-      });
+      int nuevosTotales = int.parse(_puestosController.text);
+
+      // Calcular nuevos disponibles
+      int diferenciaTotales = nuevosTotales - _puestosTotalesOriginales;
+      int nuevosDisponibles = _puestosDisponiblesOriginales + diferenciaTotales;
+
+      if (nuevosDisponibles < 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              "Los puestos totales no pueden ser menores a los ya reservados.",
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+        setState(() => _guardando = false);
+        return;
+      }
+
+      await FirebaseFirestore.instance
+          .collection('viajes')
+          .doc(widget.viajeId)
+          .update({
+            'puestosTotales': nuevosTotales,
+            'puestosDisponibles': nuevosDisponibles,
+            'fecha': Timestamp.fromDate(_fechaSeleccionada!),
+            'detallesViaje': _detallesController.text,
+            'planes': _planes,
+          });
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text("¡Viaje publicado con éxito!"),
+            content: Text("¡Viaje actualizado con éxito!"),
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.pop(context); // Volver al Perfil/Home
+        Navigator.pop(context); // Volver
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text("Error al guardar: $e"),
+            content: Text("Error al actualizar: $e"),
             backgroundColor: Colors.red,
           ),
         );
       }
     } finally {
-      if (mounted) setState(() => _subiendo = false);
+      if (mounted) setState(() => _guardando = false);
     }
   }
 
@@ -259,13 +277,13 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          "Publicar Nuevo Viaje",
+          "Editar Viaje",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: const Color(0xFF1E2A4F),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: _cargandoDatosEmpresa || _subiendo
+      body: _guardando
           ? const Center(
               child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
             )
@@ -275,41 +293,29 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                 key: _formKey,
                 child: ListView(
                   children: [
-                    // 1. Destino (Cargado dinámicamente de tu colección 'destinos')
-                    StreamBuilder<QuerySnapshot>(
-                      stream: FirebaseFirestore.instance
-                          .collection('destinos')
-                          .snapshots(),
-                      builder: (context, snapshot) {
-                        if (!snapshot.hasData) {
-                          return const LinearProgressIndicator();
-                        }
-
-                        var destinosDocs = snapshot.data!.docs;
-                        return DropdownButtonFormField<String>(
-                          decoration: const InputDecoration(
-                            labelText: "Selecciona el Destino",
-                            prefixIcon: Icon(Icons.map),
+                    // Destino (No editable, solo informativo)
+                    Container(
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.lock_outline, color: Colors.grey),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              "Destino ID: ${widget.datosViaje['destinoId'] ?? 'Desconocido'}\n(El destino no se puede editar)",
+                              style: const TextStyle(color: Colors.grey),
+                            ),
                           ),
-                          initialValue: _destinoIdSeleccionado,
-                          items: destinosDocs.map((doc) {
-                            String nombreDestino =
-                                doc['nombre'] ?? 'Sin nombre';
-                            return DropdownMenuItem(
-                              value: doc.id,
-                              child: Text(nombreDestino),
-                            );
-                          }).toList(),
-                          onChanged: (value) =>
-                              setState(() => _destinoIdSeleccionado = value),
-                        );
-                      },
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 20),
 
-                    const SizedBox(height: 20),
-
-                    // 2. Planes del Viaje
+                    // Planes del Viaje
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -366,20 +372,24 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                       ),
                     const SizedBox(height: 20),
 
-                    // 3. Cantidad de Puestos
+                    // Cantidad de Puestos
                     TextFormField(
                       controller: _puestosController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: "Total de puestos disponibles",
-                        prefixIcon: Icon(Icons.airline_seat_recline_normal),
+                        prefixIcon: const Icon(
+                          Icons.airline_seat_recline_normal,
+                        ),
+                        helperText:
+                            "Cupos reservados actualmente: ${_puestosTotalesOriginales - _puestosDisponiblesOriginales}",
                       ),
                       validator: (v) =>
                           v!.isEmpty ? "Define la capacidad" : null,
                     ),
                     const SizedBox(height: 20),
 
-                    // 4. Selector de Fecha
+                    // Selector de Fecha
                     ListTile(
                       tileColor: Colors.grey[100],
                       shape: RoundedRectangleBorder(
@@ -399,7 +409,7 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // 5. Detalles Adicionales
+                    // Detalles Adicionales
                     TextFormField(
                       controller: _detallesController,
                       maxLines: 3,
@@ -411,16 +421,16 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                     ),
                     const SizedBox(height: 40),
 
-                    // Botón de publicación
+                    // Botón de guardar
                     SizedBox(
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1E2A4F),
                         ),
-                        onPressed: _guardarViaje,
+                        onPressed: _guardarCambios,
                         child: const Text(
-                          "Publicar Viaje",
+                          "Guardar Cambios",
                           style: TextStyle(color: Colors.white, fontSize: 18),
                         ),
                       ),

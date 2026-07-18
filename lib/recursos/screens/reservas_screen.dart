@@ -19,6 +19,28 @@ class ReservarViajeScreen extends StatefulWidget {
 class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
   int _puestosAReservar = 1;
   bool _procesando = false;
+  Map<String, dynamic>? _planSeleccionado;
+  List<Map<String, dynamic>> _planesDisponibles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    // Extraer planes o crear uno por defecto
+    if (widget.datosViaje['planes'] != null && (widget.datosViaje['planes'] as List).isNotEmpty) {
+      _planesDisponibles = List<Map<String, dynamic>>.from(widget.datosViaje['planes']);
+      _planSeleccionado = _planesDisponibles.first; // Por defecto selecciona el primero
+    } else {
+      String precio = widget.datosViaje['precioPorPuesto']?.toString() ?? widget.datosViaje['precio']?.toString() ?? '0';
+      _planesDisponibles = [
+        {
+          'nombre': 'Plan Único',
+          'precio': double.tryParse(precio) ?? 0.0,
+          'beneficios': 'Beneficios por defecto'
+        }
+      ];
+      _planSeleccionado = _planesDisponibles.first;
+    }
+  }
 
   void _confirmarReservacion() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -39,15 +61,23 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
       // 🛠️ USO DE TRANSACCIÓN PARA EVITAR OVERBOOKING
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         DocumentSnapshot viajeSnapshot = await transaction.get(viajeRef);
+        DocumentSnapshot usuarioSnapshot = await transaction.get(FirebaseFirestore.instance.collection('usuarios').doc(user.uid));
+
+        Map<String, dynamic> viajeData = viajeSnapshot.data() as Map<String, dynamic>;
+        Map<String, dynamic>? usuarioData = usuarioSnapshot.exists ? (usuarioSnapshot.data() as Map<String, dynamic>) : null;
 
         if (!viajeSnapshot.exists) {
           throw Exception("El viaje ya no está disponible.");
         }
 
-        int puestosDisponibles = viajeSnapshot['puestosDisponibles'] ?? 0;
-        double precio = (viajeSnapshot['precioPorPuesto'] ?? 0).toDouble();
-        String empresa = viajeSnapshot['empresaNombre'] ?? 'Empresa';
-        String destino = viajeSnapshot['destinoId'] ?? 'Destino';
+        int puestosDisponibles = viajeData['puestosDisponibles'] ?? 0;
+        double precio = (viajeData['precioPorPuesto'] ?? 0).toDouble();
+        String empresa = viajeData['empresaNombre'] ?? 'Empresa';
+        String empresaId = viajeData['empresaId'] ?? '';
+        String destino = viajeData['destinoId'] ?? 'Destino';
+        
+        String usuarioNombre = usuarioData != null ? (usuarioData['nombres'] ?? 'Usuario') : 'Usuario';
+        String usuarioContacto = usuarioData != null ? (usuarioData['telefono'] ?? '') : '';
 
         // Validar si quedan puestos suficientes
         if (puestosDisponibles < _puestosAReservar) {
@@ -62,13 +92,18 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
         // 2. Crear el ticket de reservación
         transaction.set(reservaRef, {
           'usuarioId': user.uid,
+          'usuarioNombre': usuarioNombre,
+          'usuarioContacto': usuarioContacto,
           'viajeId': widget.viajeId,
           'destino': destino,
           'empresaNombre': empresa,
+          'empresaId': empresaId,
           'puestosReservados': _puestosAReservar,
-          'totalPago': precio * _puestosAReservar,
+          'planSeleccionado': _planSeleccionado?['nombre'] ?? 'Desconocido',
+          'precioPlan': _planSeleccionado?['precio'] ?? 0.0,
+          'totalPago': (_planSeleccionado?['precio'] ?? 0.0) * _puestosAReservar,
           'fechaReservacion': FieldValue.serverTimestamp(),
-          'estado': 'Pendiente', // Puede ser Pendiente, Confirmado, etc.
+          'estado': 'Pendiente', // Puede ser Pendiente, Aceptada, Rechazada, Cancelada
         });
       });
 
@@ -146,20 +181,88 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Precio por puesto:", style: TextStyle(fontSize: 16, color: Colors.grey)),
-                      Text("\$$precioIndividual", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFA53030))),
-                    ],
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
                       const Text("Puestos disponibles:", style: TextStyle(fontSize: 16, color: Colors.grey)),
                       Text("$maxPuestos", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: maxPuestos < 5 ? Colors.orange : Colors.green)),
                     ],
                   ),
                 ],
               ),
+            ),
+            const SizedBox(height: 25),
+
+            // Selector de Planes
+            const Text("Selecciona tu Plan", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 15),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _planesDisponibles.length,
+              itemBuilder: (context, index) {
+                final plan = _planesDisponibles[index];
+                final bool isSelected = _planSeleccionado == plan;
+
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _planSeleccionado = plan;
+                    });
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 15),
+                    padding: const EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                      color: isSelected ? const Color(0xFF1E2A4F).withOpacity(0.05) : Colors.white,
+                      border: Border.all(
+                        color: isSelected ? const Color(0xFF1E2A4F) : Colors.grey.shade300,
+                        width: isSelected ? 2 : 1,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Radio<Map<String, dynamic>>(
+                          value: plan,
+                          groupValue: _planSeleccionado,
+                          activeColor: const Color(0xFF1E2A4F),
+                          onChanged: (Map<String, dynamic>? value) {
+                            setState(() {
+                              _planSeleccionado = value;
+                            });
+                          },
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(child: Text(plan['nombre'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                                  Text("\$${plan['precio']}", style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFA53030), fontSize: 16)),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              if (plan['beneficios'] is List)
+                                Wrap(
+                                  spacing: 4,
+                                  runSpacing: 4,
+                                  children: (plan['beneficios'] as List).map<Widget>((b) => Chip(
+                                    label: Text(b.toString(), style: const TextStyle(fontSize: 11)),
+                                    padding: EdgeInsets.zero,
+                                    visualDensity: VisualDensity.compact,
+                                  )).toList(),
+                                )
+                              else if (plan['beneficios'] is String)
+                                Text(plan['beneficios'], style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 25),
 
@@ -194,7 +297,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text("Total a pagar:", style: TextStyle(color: Colors.white70, fontSize: 18)),
-                  Text("\$${precioIndividual * _puestosAReservar}", 
+                  Text("\$${(_planSeleccionado?['precio'] ?? 0.0) * _puestosAReservar}", 
                       style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
                 ],
               ),

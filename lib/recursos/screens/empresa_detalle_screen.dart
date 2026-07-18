@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/utils.dart';
+import 'package:prueba_eskpe/recursos/screens/reservas_screen.dart';
 
 class EmpresaDetalleScreen extends StatelessWidget {
   final String nombreEmpresa;
@@ -19,7 +20,8 @@ class EmpresaDetalleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Definimos si el teléfono es válido (no vacío y distinto al número que quieres evitar)
-    final bool esTelefonoValido = telefonoEmpresa.isNotEmpty && telefonoEmpresa != "584121234567";
+    final bool esTelefonoValido =
+        telefonoEmpresa.isNotEmpty && telefonoEmpresa != "584121234567";
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -41,7 +43,9 @@ class EmpresaDetalleScreen extends StatelessWidget {
                 ),
               ),
               background: Image.asset(
-                rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg',
+                rutaAsset.isNotEmpty
+                    ? rutaAsset
+                    : 'assets/placeholder_playa.jpg',
                 fit: BoxFit.cover,
                 color: Colors.black.withOpacity(0.4),
                 colorBlendMode: BlendMode.darken,
@@ -60,17 +64,29 @@ class EmpresaDetalleScreen extends StatelessWidget {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: esTelefonoValido
-                        ? () => AppUtils.abrirWhatsApp(telefonoEmpresa, nombreEmpresa) // <--- Ahora pasas ambos
-                        : () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Número de WhatsApp no disponible.")),
-                            );
-                          },
+                          ? () =>
+                                AppUtils.abrirWhatsApp(
+                                  telefonoEmpresa,
+                                  nombreEmpresa,
+                                ) // <--- Ahora pasas ambos
+                          : () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    "Número de WhatsApp no disponible.",
+                                  ),
+                                ),
+                              );
+                            },
                       icon: const Icon(Icons.message, color: Colors.white),
-                      label: const Text("Consultar por WhatsApp",
-                          style: TextStyle(color: Colors.white)),
+                      label: const Text(
+                        "Consultar por WhatsApp",
+                        style: TextStyle(color: Colors.white),
+                      ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: esTelefonoValido ? const Color(0xFF25D366) : Colors.grey,
+                        backgroundColor: esTelefonoValido
+                            ? const Color(0xFF25D366)
+                            : Colors.grey,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
@@ -79,9 +95,10 @@ class EmpresaDetalleScreen extends StatelessWidget {
                   const Text(
                     "Viajes Programados",
                     style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF1E2A4F)),
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E2A4F),
+                    ),
                   ),
                   const SizedBox(height: 5),
                   Text(
@@ -97,12 +114,13 @@ class EmpresaDetalleScreen extends StatelessWidget {
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('viajes')
-                .where('empresa', isEqualTo: nombreEmpresa)
+                .where('empresaId', isEqualTo: destinoId)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SliverToBoxAdapter(
-                    child: Center(child: CircularProgressIndicator()));
+                  child: Center(child: CircularProgressIndicator()),
+                );
               }
 
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
@@ -110,8 +128,10 @@ class EmpresaDetalleScreen extends StatelessWidget {
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.all(40.0),
-                      child: Text("$nombreEmpresa aún no ha publicado viajes.",
-                          style: const TextStyle(color: Colors.grey)),
+                      child: Text(
+                        "$nombreEmpresa aún no ha publicado viajes.",
+                        style: const TextStyle(color: Colors.grey),
+                      ),
                     ),
                   ),
                 );
@@ -120,28 +140,38 @@ class EmpresaDetalleScreen extends StatelessWidget {
               final docs = snapshot.data!.docs;
 
               return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final data = docs[index].data() as Map<String, dynamic>;
-                    
-                    dynamic rawFecha = data['fecha'];
-                    String fechaTexto = "Sin fecha";
-                    if (rawFecha is Timestamp) {
-                      DateTime date = rawFecha.toDate();
-                      fechaTexto = "${date.day}/${date.month}/${date.year}";
-                    } else if (rawFecha is String) {
-                      fechaTexto = rawFecha;
-                    }
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final data = docs[index].data() as Map<String, dynamic>;
 
-                    return _buildTarjetaViaje(
-                      data['nombre'] ?? 'Sin nombre',
-                      data['precio']?.toString() ?? '0',
-                      fechaTexto,
-                      data['rutaAsset'] ?? '',
-                    );
-                  },
-                  childCount: docs.length,
-                ),
+                  dynamic rawFecha = data['fecha'];
+                  String fechaTexto = "Sin fecha";
+                  if (rawFecha is Timestamp) {
+                    DateTime date = rawFecha.toDate();
+                    fechaTexto = "${date.day}/${date.month}/${date.year}";
+                  } else if (rawFecha is String) {
+                    fechaTexto = rawFecha;
+                  }
+
+                  String precioStr = "\$0";
+                  if (data['planes'] != null && (data['planes'] as List).isNotEmpty) {
+                    List planes = data['planes'];
+                    double minPrice = planes.map((p) => double.tryParse(p['precio']?.toString() ?? '0') ?? 0.0).reduce((a, b) => a < b ? a : b);
+                    precioStr = "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
+                  } else {
+                    String precio = data['precioPorPuesto']?.toString() ?? data['precio']?.toString() ?? '0';
+                    precioStr = "\$$precio";
+                  }
+
+                  return _buildTarjetaViaje(
+                    context,
+                    docs[index].id,
+                    data,
+                    data['destinoId'] ?? '',
+                    precioStr,
+                    fechaTexto,
+                    data['rutaAsset'] ?? '',
+                  );
+                }, childCount: docs.length),
               );
             },
           ),
@@ -152,7 +182,73 @@ class EmpresaDetalleScreen extends StatelessWidget {
   }
 
   Widget _buildTarjetaViaje(
-      String destino, String precio, String fecha, String rutaAsset) {
+    BuildContext context,
+    String viajeId,
+    Map<String, dynamic> datosViaje,
+    String destinoId,
+    String precio,
+    String fecha,
+    String rutaAssetFallback,
+  ) {
+    if (destinoId.isEmpty) {
+      return _tarjetaContenido(
+        context,
+        viajeId,
+        datosViaje,
+        "Destino Desconocido",
+        precio,
+        fecha,
+        rutaAssetFallback,
+      );
+    }
+
+    return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('destinos')
+          .doc(destinoId)
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Container(
+            height: 110,
+            margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
+            child: const Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F))),
+          );
+        }
+
+        String nombre = "Cargando...";
+        String ruta = rutaAssetFallback;
+        if (snapshot.connectionState == ConnectionState.done) {
+          if (snapshot.hasData && snapshot.data!.exists) {
+            nombre = snapshot.data!['nombre'] ?? 'Destino Desconocido';
+            String assetDestino = snapshot.data!['rutaAsset'] ?? '';
+            if (assetDestino.isNotEmpty) ruta = assetDestino;
+          } else {
+            nombre = "Destino Desconocido";
+          }
+        }
+        return _tarjetaContenido(
+          context,
+          viajeId,
+          datosViaje,
+          nombre,
+          precio,
+          fecha,
+          ruta,
+        );
+      },
+    );
+  }
+
+  Widget _tarjetaContenido(
+    BuildContext context,
+    String viajeId,
+    Map<String, dynamic> datosViaje,
+    String nombreDestino,
+    String precioStr,
+    String fecha,
+    String rutaAsset,
+  ) {
     return Container(
       height: 110,
       margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
@@ -161,9 +257,10 @@ class EmpresaDetalleScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.08),
-              blurRadius: 8,
-              offset: const Offset(0, 4)),
+            color: Colors.black.withOpacity(0.08),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: Row(
@@ -171,12 +268,15 @@ class EmpresaDetalleScreen extends StatelessWidget {
           Container(
             width: 110,
             decoration: BoxDecoration(
-              borderRadius:
-                  const BorderRadius.horizontal(left: Radius.circular(15)),
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(15),
+              ),
               image: DecorationImage(
-                image: AssetImage(rutaAsset.isNotEmpty
-                    ? rutaAsset
-                    : 'assets/placeholder_playa.jpg'),
+                image: AssetImage(
+                  rutaAsset.isNotEmpty
+                      ? rutaAsset
+                      : 'assets/placeholder_playa.jpg',
+                ),
                 fit: BoxFit.cover,
               ),
             ),
@@ -191,30 +291,53 @@ class EmpresaDetalleScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(destino,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                      Text('\$$precio',
-                          style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFFB8860B),
-                              fontSize: 16)),
+                      Expanded(
+                        child: Text(
+                          nombreDestino,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                      ),
+                      Text(
+                        precioStr,
+                        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16),
+                      ),
                     ],
                   ),
                   Row(
                     children: [
-                      const Icon(Icons.calendar_today,
-                          size: 14, color: Color(0xFFB8860B)),
+                      const Icon(
+                        Icons.calendar_today,
+                        size: 14,
+                        color: Color(0xFFB8860B),
+                      ),
                       const SizedBox(width: 5),
-                      Text(fecha.isEmpty ? "Fechas por definir" : fecha,
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.black54)),
+                      Text(
+                        fecha.isEmpty ? "Fechas por definir" : fecha,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          // TODO: Navegar a la futura screen de detalles del viaje
+                        },
+                        child: const Text(
+                          "Ver detalles >", 
+                          style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold)
+                        ),
+                      )
                     ],
                   ),
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );

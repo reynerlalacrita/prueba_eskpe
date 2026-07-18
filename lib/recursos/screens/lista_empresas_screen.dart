@@ -10,12 +10,14 @@ class ListaEmpresasScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Todas las Empresas"),
+        title: const Text("Todas las Empresas", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: const Color(0xFF1E2A4F),
+        iconTheme: const IconThemeData(color: Colors.white),
+        elevation: 0,
       ),
+      backgroundColor: const Color(0xFFF5F5F7),
       body: StreamBuilder<QuerySnapshot>(
-        // Quitamos el .limit(7) para traer todo
-        stream: FirebaseFirestore.instance.collectionGroup('empresas').snapshots(),
+        stream: FirebaseFirestore.instance.collection('usuarios').where('rol', isEqualTo: 'empresa').snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -42,7 +44,7 @@ class ListaEmpresasScreen extends StatelessWidget {
               final data = docs[index].data() as Map<String, dynamic>;
               
               // 🛠️ AQUÍ ESTÁ EL CAMBIO: Manejamos valores nulos antes de pasarlos a la función
-              final String nombreSeguro = data['nombre'] ?? 'Sin nombre';
+              final String nombreSeguro = data['nombres'] ?? 'Sin nombre';
               final String rutaSegura = data['rutaAsset'] ?? 'assets/MorrocoyTours.jpg';
               
 
