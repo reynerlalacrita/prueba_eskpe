@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/verificacion_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -39,21 +39,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  // 2. FUNCIÓN PRINCIPAL DE ENLACE AUTH + FIRESTORE
+  // 2. FUNCIÓN PRINCIPAL DE ENLACE AUTH + FIRESTORE Y VERIFICACIÓN
   Future<void> _procesarRegistro() async {
     try {
       // Mostrar un indicador de carga circular
       showDialog(
         context: context,
         barrierDismissible: false,
-        builder: (context) => const Center(child: CircularProgressIndicator(color: Color(0xFF2E16D1))),
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF2E16D1)),
+        ),
       );
 
       // A. Crear el usuario en Firebase Auth
-      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
 
       // B. Obtener el UID único que Auth le otorgó
       String uid = userCredential.user!.uid;
@@ -68,7 +71,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'uid': uid,
         'nombres': _nombreController.text.trim(),
         'apellidos': _esEmpresa ? "" : _apellidoController.text.trim(),
-        'cedula': identificacion, // Mantenemos cedula para compatibilidad con pantallas existentes
+        'cedula': identificacion,
         'telefono': _telefonoController.text.trim(),
         'correo': _emailController.text.trim(),
         'rol': rol,
@@ -80,11 +83,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
       }
 
       // D. Guardar los datos del formulario en Firestore usando ese UID exacto
-      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set(datosUsuario);
+      await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(uid)
+          .set(datosUsuario);
 
       // E. Si es empresa, también agregar a la colección 'empresas' para ser listada
       if (_esEmpresa) {
-        await FirebaseFirestore.instance.collection('empresas').doc(uid).set({
+        await FirebaseFirestore.instance
+            .collection('empresas')
+            .doc(uid)
+            .set({
           'nombre': _nombreController.text.trim(),
           'rif': identificacion,
           'contacto': _telefonoController.text.trim(),
@@ -92,32 +101,54 @@ class _RegisterScreenState extends State<RegisterScreen> {
         });
       }
 
+      // F. ENVIAR CORREO DE VERIFICACIÓN
+      if (userCredential.user != null) {
+        await userCredential.user!.sendEmailVerification();
+      }
+
       if (!mounted) return;
       Navigator.pop(context); // Quitar el círculo de carga
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Registro exitoso en ESK-PE!'), backgroundColor: Colors.green),
+        const SnackBar(
+          content: Text(
+            '¡Registro exitoso! Te hemos enviado un correo de verificación.',
+          ),
+          backgroundColor: Colors.green,
+        ),
       );
 
-      // Aquí puedes redirigir a tu HomeScreen o Login
-       Navigator.pop(
+      // G. REDIRIGIR A VERIFICACION SCREEN USANDO Navigator.pushReplacement
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context)=> const HomeScreen())); 
-
+        MaterialPageRoute(builder: (context) => const VerificacionScreen()),
+      );
     } on FirebaseAuthException catch (e) {
-      if (mounted) Navigator.pop(context); // Quitar carga
-      String mensajeError = 'Ocurrió un error en el registro.';
-      if (e.code == 'email-already-in-use') mensajeError = 'Este correo ya está registrado.';
-      if (e.code == 'weak-password') mensajeError = 'La contraseña es muy débil.';
+      if (!mounted) return;
+      Navigator.pop(context); // Quitar carga
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(mensajeError), backgroundColor: Colors.red),
-        );
+      String mensajeError = 'Ocurrió un error en el registro.';
+      if (e.code == 'email-already-in-use') {
+        mensajeError = 'Este correo ya está registrado.';
+      } else if (e.code == 'weak-password') {
+        mensajeError = 'La contraseña es muy débil.';
+      } else if (e.code == 'invalid-email') {
+        mensajeError = 'El formato del correo no es válido.';
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(mensajeError), backgroundColor: Colors.red),
+      );
     } catch (e) {
-      if (mounted) Navigator.pop(context);
+      if (!mounted) return;
+      Navigator.pop(context); // Quitar carga
       debugPrint("Error detallado: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ocurrió un error inesperado: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

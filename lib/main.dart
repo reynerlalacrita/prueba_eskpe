@@ -1,26 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/destinos_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/verificacion_screen.dart';
 
-// 1. IMPORTA TU PANTALLA: Cambia 'tu_proyecto' por el nombre real de tu proyecto de Flutter
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() async{
-WidgetsFlutterBinding.ensureInitialized();
-  
   // Inicialización manual para Android
   await Firebase.initializeApp(
     options: const FirebaseOptions(
-      apiKey: "AIzaSyApadeihrG50p_pATvrd8Unfy36nIJ7vjo", // La encuentras dentro del google-services.json
-      appId: "1:143524415006:android:f6658891b2525dd5a5d00f",   // La encuentras dentro del google-services.json
-      messagingSenderId: "143524415006", 
+      apiKey: "AIzaSyApadeihrG50p_pATvrd8Unfy36nIJ7vjo",
+      appId: "1:143524415006:android:f6658891b2525dd5a5d00f",
+      messagingSenderId: "143524415006",
       projectId: "trabajo-5aecf",
     ),
   );
 
-  
   runApp(const MyApp());
 }
 
@@ -31,14 +28,38 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'ESK-PE App',
-      debugShowCheckedModeBanner: false, // Quita la etiqueta roja de "Debug" en la esquina
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        useMaterial3: true, // Activa Material 3 para un diseño más moderno
+        primaryColor: const Color(0xFF2E16D1),
+        useMaterial3: true,
       ),
-      // 2. CONFIGURA LA PANTALLA INICIAL HERE
-      home: const DestinosScreen(), 
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              backgroundColor: Colors.white,
+              body: Center(
+                child: CircularProgressIndicator(
+                  color: Color(0xFF2E16D1),
+                ),
+              ),
+            );
+          }
+
+          if (snapshot.hasData && snapshot.data != null) {
+            User user = snapshot.data!;
+            if (user.emailVerified) {
+              return const HomeScreen();
+            } else {
+              return const VerificacionScreen();
+            }
+          }
+
+          return const LoginScreen();
+        },
+      ),
     );
   }
 }
-//cambiar destinos a login cuando termines de editar destinos

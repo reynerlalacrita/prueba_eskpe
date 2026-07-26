@@ -4,7 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/destinos_screen.dart';
-import 'register_screen.dart'; // <--- Asegúrate de que el nombre del archivo coincida
+import 'register_screen.dart';
+import 'verificacion_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -27,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // FUNCIÓN PARA INICIAR SESIÓN Y LEER EL ROL
+  // FUNCIÓN PARA INICIAR SESIÓN Y LEER EL ROL CON VERIFICACIÓN DE CORREO
   Future<void> _procesarLogin() async {
     try {
       // Mostrar indicador de carga
@@ -46,52 +47,84 @@ class _LoginScreenState extends State<LoginScreen> {
             password: _passwordController.text.trim(),
           );
 
-      String uid = userCredential.user!.uid;
+      User? user = userCredential.user;
 
-      // 2. Buscar el documento del usuario en Firestore para saber su Rol
-      DocumentSnapshot userDoc = await FirebaseFirestore.instance
-          .collection('usuarios')
-          .doc(uid)
-          .get();
+      if (user != null) {
+        // Refrescar estado del usuario para comprobar emailVerified actualizado
+        await user.reload();
+        user = FirebaseAuth.instance.currentUser;
 
-      Navigator.pop(context); // Quitar el círculo de carga
+        // 2. Verificar si el usuario ha confirmado su correo
+        if (user != null && user.emailVerified) {
+          String uid = user.uid;
 
-      if (userDoc.exists) {
-        String rol = userDoc.get('rol');
-        print("Usuario autenticado con éxito. Rol: $rol");
+          // Buscar el documento del usuario en Firestore para conocer su Rol
+          DocumentSnapshot userDoc = await FirebaseFirestore.instance
+              .collection('usuarios')
+              .doc(uid)
+              .get();
 
-        // --- SUSTITUYE DESDE AQUÍ ---
-        if (rol == 'admin') {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+          if (!mounted) return;
+          Navigator.pop(context); // Cerrar diálogo de carga
+
+          String rol = 'usuario';
+          if (userDoc.exists && userDoc.data() != null) {
+            final data = userDoc.data() as Map<String, dynamic>;
+            if (data.containsKey('rol')) {
+              rol = data['rol'];
+            }
+          }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('¡Bienvenido de vuelta! Perfil: $rol'),
+              backgroundColor: Colors.green,
+            ),
           );
+
+          if (rol == 'admin') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const HomeScreen()),
+            );
+          } else {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const DestinosScreen()),
+            );
+          }
         } else {
-          // Redirige a DestinosScreen para usuarios normales
+          // Correo NO verificado: mostrar advertencia, cerrar sesión y enviar a Verificación
+          if (!mounted) return;
+          Navigator.pop(context); // Cerrar diálogo de carga
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Tu correo electrónico aún no ha sido verificado. Por favor revísalo antes de ingresar.',
+              ),
+              backgroundColor: Colors.orange,
+            ),
+          );
+
+          await FirebaseAuth.instance.signOut();
+
+          if (!mounted) return;
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const DestinosScreen()),
+            MaterialPageRoute(
+              builder: (context) => const VerificacionScreen(),
+            ),
           );
         }
-        // --- HASTA AQUÍ ---
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('¡Bienvenido de vuelta! Perfil: $rol'),
-            backgroundColor: Colors.green,
-          ),
-        );
       } else {
-        // Si por algún motivo el usuario está en Auth pero no en Firestore
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('No se encontraron datos de perfil.'),
-            backgroundColor: Colors.orange,
-          ),
-        );
+        if (!mounted) return;
+        Navigator.pop(context);
       }
     } on FirebaseAuthException catch (e) {
-      Navigator.pop(context); // Quitar carga
+      if (!mounted) return;
+      Navigator.pop(context); // Cerrar diálogo de carga
+
       String mensajeError = 'Error al iniciar sesión.';
       if (e.code == 'user-not-found' ||
           e.code == 'wrong-password' ||
@@ -99,14 +132,23 @@ class _LoginScreenState extends State<LoginScreen> {
         mensajeError = 'Correo o contraseña incorrectos.';
       } else if (e.code == 'invalid-email') {
         mensajeError = 'El formato del correo no es válido.';
+      } else if (e.code == 'user-disabled') {
+        mensajeError = 'Esta cuenta ha sido deshabilitada.';
       }
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(mensajeError), backgroundColor: Colors.red),
       );
     } catch (e) {
-      Navigator.pop(context);
-      print("Error en login: $e");
+      if (!mounted) return;
+      Navigator.pop(context); // Cerrar diálogo de carga
+      debugPrint("Error en login: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Ocurrió un error inesperado: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
