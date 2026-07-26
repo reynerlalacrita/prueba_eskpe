@@ -5,6 +5,7 @@ import 'package:prueba_eskpe/recursos/screens/agregar_viajes_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/historial_reservas_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/viajes_empresa_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/mis_datos_screen.dart';
 
 class UsuarioScreen extends StatefulWidget {
   const UsuarioScreen({super.key});
@@ -64,6 +65,8 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
 
   @override
   Widget build(BuildContext context) {
+    User? usuarioActual = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       backgroundColor: const Color(
         0xFFF5F6F8,
@@ -82,7 +85,7 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                   width: double.infinity,
                   color: const Color(0xFF1E2A4F),
                 ),
-                // Foto de perfil posicionada en el borde inferior
+                // Foto de perfil posicionada en el borde inferior (Dinámica con StreamBuilder)
                 Positioned(
                   bottom: -50,
                   child: Container(
@@ -91,13 +94,35 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
-                    child: const CircleAvatar(
-                      radius: 50,
-                      // Aquí puedes usar un NetworkImage si descargas la foto del usuario desde Firebase
-                      backgroundImage: AssetImage(
-                        'assets/placeholder_user.jpg',
-                      ),
-                      backgroundColor: Colors.grey,
+                    child: StreamBuilder<DocumentSnapshot>(
+                      stream: usuarioActual != null
+                          ? FirebaseFirestore.instance
+                              .collection('usuarios')
+                              .doc(usuarioActual.uid)
+                              .snapshots()
+                          : null,
+                      builder: (context, snapshot) {
+                        String? fotoUrl;
+                        if (snapshot.hasData &&
+                            snapshot.data != null &&
+                            snapshot.data!.exists) {
+                          final data =
+                              snapshot.data!.data() as Map<String, dynamic>?;
+                          fotoUrl = data?['fotoUrl'] ?? usuarioActual?.photoURL;
+                        } else {
+                          fotoUrl = usuarioActual?.photoURL;
+                        }
+
+                        return CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.grey.shade200,
+                          backgroundImage: (fotoUrl != null && fotoUrl.isNotEmpty)
+                              ? NetworkImage(fotoUrl) as ImageProvider
+                              : const AssetImage(
+                                  'assets/placeholder_user.jpg',
+                                ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -123,9 +148,19 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
             // 2. PRIMERA TARJETA (Opciones de cuenta)
             _buildMenuCard(
               children: [
-                _buildMenuItem(Icons.person_outline, "Mis Datos"),
-                _buildMenuItem(Icons.lock_outline, "Seguridad y Contraseña"),
-                _buildMenuItem(Icons.credit_card, "Métodos de Pago"),
+                _buildMenuItem(
+                  Icons.person_outline,
+                  "Mis Datos",
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const MisDatosScreen(),
+                      ),
+                    );
+                    _obtenerNombreDesdeFirebase();
+                  },
+                ),
                 if (rol == 'usuario')
                   _buildMenuItem(
                     Icons.tune,
