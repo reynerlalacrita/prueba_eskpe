@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/home_empresa_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/destinos_screen.dart';
 import 'register_screen.dart'; // <--- Asegúrate de que el nombre del archivo coincida
 
@@ -60,20 +61,18 @@ class _LoginScreenState extends State<LoginScreen> {
         String rol = userDoc.get('rol');
         print("Usuario autenticado con éxito. Rol: $rol");
 
-        // --- SUSTITUYE DESDE AQUÍ ---
-        if (rol == 'admin') {
+        if (rol == 'empresa') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomeEmpresaScreen()),
+          );
+        } else {
+          // Redirige a HomeScreen para usuarios normales / clientes
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
-        } else {
-          // Redirige a DestinosScreen para usuarios normales
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const DestinosScreen()),
-          );
         }
-        // --- HASTA AQUÍ ---
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

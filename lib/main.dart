@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
-
-// 1. IMPORTA TU PANTALLA: Cambia 'tu_proyecto' por el nombre real de tu proyecto de Flutter
+import 'package:prueba_eskpe/recursos/screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,9 +33,8 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         useMaterial3: true, // Activa Material 3 para un diseño más moderno
       ),
-      // 2. CONFIGURA LA PANTALLA INICIAL HERE
-      home: const LoginScreen(),
+      // CONFIGURA LA PANTALLA INICIAL: SplashScreen verifica la sesión y el rol
+      home: const SplashScreen(),
     );
   }
-}
-//cambiar destinos a login cuando termines de editar destinos
+}
