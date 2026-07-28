@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/home_empresa_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -91,10 +92,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
         const SnackBar(content: Text('¡Registro exitoso en ESK-PE!'), backgroundColor: Colors.green),
       );
 
-      // Aquí puedes redirigir a tu HomeScreen o Login
-       Navigator.pop(
-        context,
-        MaterialPageRoute(builder: (context)=> const HomeScreen())); 
+      // Redirigir según el rol registrado (empresa o usuario)
+      if (_esEmpresa) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeEmpresaScreen()),
+          (route) => false,
+        );
+      } else {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          (route) => false,
+        );
+      }
 
     } on FirebaseAuthException catch (e) {
       if (mounted) Navigator.pop(context); // Quitar carga

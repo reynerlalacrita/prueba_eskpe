@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // <--- Importante para los formatters
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -568,6 +569,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                           controller: _apellidoController,
                         ),
                         const SizedBox(height: 15),
+                        // CÉDULA: Se mantiene bloqueada (readOnly: true)
                         _buildInputField(
                           label: "Cédula / RIF",
                           icon: Icons.badge_outlined,
@@ -575,11 +577,16 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                           readOnly: true,
                         ),
                         const SizedBox(height: 15),
+                        // TELÉFONO: Limitado a 11 dígitos numéricos máximo
                         _buildInputField(
                           label: "Teléfono",
                           icon: Icons.phone_outlined,
                           controller: _telefonoController,
                           keyboardType: TextInputType.phone,
+                          maxLength: 11, // Límite de caracteres
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly, // Solo números
+                          ],
                         ),
                         const SizedBox(height: 20),
                         SizedBox(
@@ -706,11 +713,15 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
     required TextEditingController controller,
     bool readOnly = false,
     TextInputType keyboardType = TextInputType.text,
+    int? maxLength,
+    List<TextInputFormatter>? inputFormatters,
   }) {
     return TextField(
       controller: controller,
       readOnly: readOnly,
       keyboardType: keyboardType,
+      maxLength: maxLength,
+      inputFormatters: inputFormatters,
       style: TextStyle(
         color: readOnly ? Colors.grey.shade700 : Colors.black87,
         fontWeight: FontWeight.w500,
@@ -725,6 +736,9 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
+        // Si no quieres que aparezca el contador numérico de caracteres abajo (ej. "0/11"), 
+        // puedes descomentar la siguiente línea:
+         counterText: "", 
       ),
     );
   }
