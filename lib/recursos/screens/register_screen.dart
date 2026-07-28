@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/home_empresa_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresas_screens/home_empresa_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart'; // 🛠️ Importación de Firestore
-import 'package:prueba_eskpe/recursos/screens/home_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/destino_detalle_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/destino_detalle_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
 
 class DestinosScreen extends StatefulWidget {
   const DestinosScreen({super.key});

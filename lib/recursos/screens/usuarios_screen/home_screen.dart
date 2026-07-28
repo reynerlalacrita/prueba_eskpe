@@ -4,13 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:prueba_eskpe/recursos/screens/busqueda_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuario_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/destino_detalle_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/empresa_detalle_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/lista_destinos_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/lista_empresas_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/lista_viajes_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/busqueda_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/destino_detalle_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/empresa_detalle_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_destinos_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_empresas_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_viajes_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -127,8 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 25),
             
             _buildSeccionTitulo("Destinos", () {
-  Navigator.push(context, MaterialPageRoute(builder: (context) => const ListaDestinosScreen()));
-}),
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const ListaDestinosScreen()));
+            }),
             const SizedBox(height: 15),
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collectionGroup('destinos').limit(7).snapshots(),

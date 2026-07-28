@@ -1,7 +1,7 @@
 //todas las empresas de la aplicacion
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:prueba_eskpe/recursos/screens/empresa_detalle_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/empresa_detalle_screen.dart';
 
 class ListaEmpresasScreen extends StatelessWidget {
   const ListaEmpresasScreen({super.key});

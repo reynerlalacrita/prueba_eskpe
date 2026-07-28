@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/utils.dart';
-import 'package:prueba_eskpe/recursos/screens/reservas_screen.dart';
 
 class EmpresaDetalleScreen extends StatelessWidget {
   final String nombreEmpresa;

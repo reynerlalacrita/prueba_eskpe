@@ -4,7 +4,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/editar_viaje_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/solicitudes_viaje_screen.dart';
 
-
 class ViajesEmpresaScreen extends StatelessWidget {
   const ViajesEmpresaScreen({super.key});
 

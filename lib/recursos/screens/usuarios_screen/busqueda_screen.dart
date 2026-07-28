@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:prueba_eskpe/recursos/screens/destino_detalle_screen.dart'; 
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/destino_detalle_screen.dart'; 
 
 class BusquedaScreen extends StatefulWidget {
   const BusquedaScreen({super.key});

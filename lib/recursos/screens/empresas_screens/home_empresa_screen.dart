@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:prueba_eskpe/recursos/screens/agregar_viajes_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/editar_viaje_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/solicitudes_viaje_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresas_screens/agregar_viajes_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresas_screens/editar_viaje_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresas_screens/solicitudes_viaje_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/mis_datos_screen.dart';
 

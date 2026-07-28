@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:prueba_eskpe/recursos/screens/reservas_screen.dart'; // Asegúrate de que este archivo tenga el widget 'ReservarViajeScreen'
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/reservas_screen.dart';
 
 class DestinoDetalleScreen extends StatelessWidget {
   final String nombre;
