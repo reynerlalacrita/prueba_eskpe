@@ -4,13 +4,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:prueba_eskpe/recursos/screens/usuario_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/busqueda_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/destino_detalle_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/empresa_detalle_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_destinos_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_empresas_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_viajes_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/usuario_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
