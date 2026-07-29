@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 class AgregarViajeScreen extends StatefulWidget {
   const AgregarViajeScreen({super.key});
@@ -169,7 +170,7 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                   child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E2A4F)),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.azuleskpe),
                   onPressed: () {
                     if (precioPlanController.text.isNotEmpty) {
                       setState(() {
@@ -262,7 +263,7 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
           "Publicar Nuevo Viaje",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF1E2A4F),
+        backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _cargandoDatosEmpresa || _subiendo
@@ -416,7 +417,7 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1E2A4F),
+                          backgroundColor: AppColors.azuleskpe,
                         ),
                         onPressed: _guardarViaje,
                         child: const Text(

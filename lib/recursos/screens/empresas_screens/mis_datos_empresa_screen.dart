@@ -1,31 +1,34 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // <--- Importante para los formatters
+import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 
-class MisDatosScreen extends StatefulWidget {
-  const MisDatosScreen({super.key});
+class MisDatosEmpresaScreen extends StatefulWidget {
+  const MisDatosEmpresaScreen({super.key});
 
   @override
-  State<MisDatosScreen> createState() => _MisDatosScreenState();
+  State<MisDatosEmpresaScreen> createState() => _MisDatosEmpresaScreenState();
 }
 
-class _MisDatosScreenState extends State<MisDatosScreen> {
+class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
   final User? _usuario = FirebaseAuth.instance.currentUser;
   bool _cargandoDatos = true;
   bool _subiendoFoto = false;
+  bool _subiendoGaleria = false;
 
-  // Controladores de texto para los datos de Firestore
+  // Controladores de texto
   final TextEditingController _nombreController = TextEditingController();
-  final TextEditingController _apellidoController = TextEditingController();
+  final TextEditingController _descripcionController = TextEditingController();
   final TextEditingController _telefonoController = TextEditingController();
   final TextEditingController _cedulaController = TextEditingController();
 
   String _fotoUrl = '';
+  List<String> _imagenesEmpresa = [];
 
   @override
   void initState() {
@@ -36,13 +39,12 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
   @override
   void dispose() {
     _nombreController.dispose();
-    _apellidoController.dispose();
+    _descripcionController.dispose();
     _telefonoController.dispose();
     _cedulaController.dispose();
     super.dispose();
   }
 
-  // Cargar datos actuales desde Firestore y Firebase Auth
   Future<void> _cargarDatosUsuario() async {
     if (_usuario == null) return;
     try {
@@ -54,16 +56,20 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
       if (doc.exists && doc.data() != null) {
         Map<String, dynamic> datos = doc.data() as Map<String, dynamic>;
         _nombreController.text = datos['nombres'] ?? _usuario.displayName ?? '';
-        _apellidoController.text = datos['apellidos'] ?? '';
+        _descripcionController.text = datos['descripcion'] ?? '';
         _telefonoController.text = datos['telefono'] ?? '';
         _cedulaController.text = datos['cedula'] ?? datos['rif'] ?? '';
         _fotoUrl = datos['fotoUrl'] ?? _usuario.photoURL ?? '';
+        
+        if (datos['imagenesEmpresa'] != null) {
+          _imagenesEmpresa = List<String>.from(datos['imagenesEmpresa']);
+        }
       } else {
         _nombreController.text = _usuario.displayName ?? '';
         _fotoUrl = _usuario.photoURL ?? '';
       }
     } catch (e) {
-      debugPrint("Error al cargar datos del usuario: $e");
+      debugPrint("Error al cargar datos de empresa: $e");
     } finally {
       if (mounted) {
         setState(() => _cargandoDatos = false);
@@ -71,7 +77,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
     }
   }
 
-  // 1. LÓGICA PARA CAMBIAR FOTO DE PERFIL (image_picker + Firebase Storage)
+  // 1. LÓGICA PARA CAMBIAR FOTO DE PERFIL (Logo de empresa)
   Future<void> _seleccionarYSubirFoto() async {
     if (_usuario == null) return;
 
@@ -98,10 +104,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
       TaskSnapshot snapshot = await uploadTask;
       String urlDescarga = await snapshot.ref.getDownloadURL();
 
-      // Actualizar fotoURL en Auth
       await _usuario.updatePhotoURL(urlDescarga);
-
-      // Actualizar fotoUrl en Firestore
       await FirebaseFirestore.instance.collection('usuarios').doc(uid).set(
         {'fotoUrl': urlDescarga},
         SetOptions(merge: true),
@@ -114,12 +117,11 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Foto de perfil actualizada correctamente.'),
+          content: Text('Logo de empresa actualizado correctamente.'),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
-      debugPrint("Error al subir foto: $e");
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -134,7 +136,125 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
     }
   }
 
-  // 2. LÓGICA PARA CAMBIAR CORREO ELECTRÓNICO
+  // 1.5 LÓGICA PARA SELECCIONAR MULTIPLES IMÁGENES
+  Future<void> _seleccionarImagenesGaleria() async {
+    if (_usuario == null) return;
+
+    final ImagePicker picker = ImagePicker();
+    final List<XFile> imagenes = await picker.pickMultiImage(
+      imageQuality: 80,
+      maxWidth: 1024,
+    );
+
+    if (imagenes.isEmpty) return;
+
+    // Calcular cuántas podemos subir
+    int disponibles = 8 - _imagenesEmpresa.length;
+    if (disponibles <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ya has alcanzado el límite de 8 fotos.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
+    List<XFile> imagenesASubir = imagenes.take(disponibles).toList();
+
+    setState(() => _subiendoGaleria = true);
+
+    try {
+      String uid = _usuario.uid;
+      List<String> nuevasUrls = [];
+
+      for (var img in imagenesASubir) {
+        File archivo = File(img.path);
+        String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+        Reference ref = FirebaseStorage.instance
+            .ref()
+            .child('empresas_imagenes')
+            .child(uid)
+            .child('$fileName.jpg');
+
+        UploadTask uploadTask = ref.putFile(archivo);
+        TaskSnapshot snapshot = await uploadTask;
+        String urlDescarga = await snapshot.ref.getDownloadURL();
+        nuevasUrls.add(urlDescarga);
+      }
+
+      _imagenesEmpresa.addAll(nuevasUrls);
+
+      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set(
+        {'imagenesEmpresa': _imagenesEmpresa},
+        SetOptions(merge: true),
+      );
+
+      if (!mounted) return;
+      setState(() {});
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${nuevasUrls.length} imagen(es) subidas con éxito.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al subir imágenes: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _subiendoGaleria = false);
+      }
+    }
+  }
+  
+  Future<void> _eliminarImagenGaleria(int index) async {
+    if (_usuario == null) return;
+
+    String urlEliminar = _imagenesEmpresa[index];
+
+    setState(() {
+      _imagenesEmpresa.removeAt(index);
+    });
+
+    try {
+      await FirebaseFirestore.instance.collection('usuarios').doc(_usuario.uid).set(
+        {'imagenesEmpresa': _imagenesEmpresa},
+        SetOptions(merge: true),
+      );
+      
+      try {
+        Reference ref = FirebaseStorage.instance.refFromURL(urlEliminar);
+        await ref.delete();
+      } catch (e) {
+        debugPrint("Error eliminando del storage: $e");
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Imagen eliminada correctamente.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al eliminar imagen: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // 2. LÓGICA PARA CAMBIAR CORREO
   Future<void> _mostrarDialogoEditarCorreo() async {
     final TextEditingController nuevoCorreoCtrl =
         TextEditingController(text: _usuario?.email ?? '');
@@ -192,7 +312,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              onPressed: () async {
+              onPressed: () {
                 String nuevoCorreo = nuevoCorreoCtrl.text.trim();
                 String pass = passwordCtrl.text.trim();
 
@@ -204,7 +324,6 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                   );
                   return;
                 }
-
                 Navigator.pop(dialogContext);
                 _procesarCambioCorreo(nuevoCorreo, pass);
               },
@@ -220,20 +339,13 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
   Future<void> _procesarCambioCorreo(
       String nuevoCorreo, String contrasenaActual) async {
     if (_usuario == null) return;
-
     try {
-      // Re-autenticar al usuario por seguridad
       AuthCredential credential = EmailAuthProvider.credential(
         email: _usuario.email!,
         password: contrasenaActual,
       );
-
       await _usuario.reauthenticateWithCredential(credential);
-
-      // Intentar actualizar correo en Firebase Auth
       await _usuario.verifyBeforeUpdateEmail(nuevoCorreo);
-
-      // Actualizar correo en Firestore
       await FirebaseFirestore.instance
           .collection('usuarios')
           .doc(_usuario.uid)
@@ -243,25 +355,12 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            'Se ha enviado un correo de confirmación al nuevo email. Revisa tu bandeja.',
+            'Se ha enviado un correo de confirmación al nuevo email.',
           ),
           backgroundColor: Colors.green,
         ),
       );
       setState(() {});
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      String msg = 'Error al actualizar correo.';
-      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        msg = 'La contraseña actual es incorrecta.';
-      } else if (e.code == 'email-already-in-use') {
-        msg = 'El nuevo correo ya está en uso por otra cuenta.';
-      } else if (e.code == 'invalid-email') {
-        msg = 'El correo ingresado no es válido.';
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.red),
-      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -327,28 +426,11 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12)),
               ),
-              onPressed: () async {
+              onPressed: () {
                 String actualPass = actualPassCtrl.text.trim();
                 String nuevaPass = nuevaPassCtrl.text.trim();
-
-                if (actualPass.isEmpty || nuevaPass.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Por favor ingresa ambas contraseñas.'),
-                        backgroundColor: Colors.orange),
-                  );
-                  return;
-                }
-
-                if (nuevaPass.length < 6) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('La nueva contraseña debe tener al menos 6 caracteres.'),
-                        backgroundColor: Colors.orange),
-                  );
-                  return;
-                }
-
+                if (actualPass.isEmpty || nuevaPass.isEmpty) return;
+                if (nuevaPass.length < 6) return;
                 Navigator.pop(dialogContext);
                 _procesarCambioPassword(actualPass, nuevaPass);
               },
@@ -364,17 +446,12 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
   Future<void> _procesarCambioPassword(
       String actualPassword, String nuevaPassword) async {
     if (_usuario == null || _usuario.email == null) return;
-
     try {
-      // 1. Re-autenticación
       AuthCredential credential = EmailAuthProvider.credential(
         email: _usuario.email!,
         password: actualPassword,
       );
-
       await _usuario.reauthenticateWithCredential(credential);
-
-      // 2. Actualizar la contraseña
       await _usuario.updatePassword(nuevaPassword);
 
       if (!mounted) return;
@@ -384,17 +461,6 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
           backgroundColor: Colors.green,
         ),
       );
-    } on FirebaseAuthException catch (e) {
-      if (!mounted) return;
-      String msg = 'Error al cambiar contraseña.';
-      if (e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        msg = 'La contraseña actual es incorrecta.';
-      } else if (e.code == 'weak-password') {
-        msg = 'La nueva contraseña es muy débil.';
-      }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.red),
-      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -403,8 +469,8 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
     }
   }
 
-  // 4. GUARDAR CAMBIOS DE NOMBRES Y TELÉFONO EN FIRESTORE
-  Future<void> _guardarDatosPersonales() async {
+  // 4. GUARDAR CAMBIOS EN FIRESTORE
+  Future<void> _guardarDatosEmpresa() async {
     if (_usuario == null) return;
 
     try {
@@ -413,19 +479,16 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
           .doc(_usuario.uid)
           .set({
         'nombres': _nombreController.text.trim(),
-        'apellidos': _apellidoController.text.trim(),
+        'descripcion': _descripcionController.text.trim(),
         'telefono': _telefonoController.text.trim(),
       }, SetOptions(merge: true));
 
-      // Actualizar también displayName en Firebase Auth
-      await _usuario.updateDisplayName(
-        '${_nombreController.text.trim()} ${_apellidoController.text.trim()}',
-      );
+      await _usuario.updateDisplayName(_nombreController.text.trim());
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Datos guardados correctamente.'),
+          content: Text('Datos de empresa guardados correctamente.'),
           backgroundColor: Colors.green,
         ),
       );
@@ -442,29 +505,18 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
-        backgroundColor: AppColors.azuleskpe,
-        elevation: 0,
         title: const Text(
-          "Mis Datos",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
+          "Datos de la Empresa",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),
       body: _cargandoDatos
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
-            )
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F)))
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Column(
                 children: [
-                  // CARD 1: EDICIÓN DE FOTO DE PERFIL
+                  // LOGO DE EMPRESA
                   _buildCard(
                     child: Column(
                       children: [
@@ -489,23 +541,19 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                                 backgroundColor: Colors.grey.shade200,
                                 backgroundImage: _fotoUrl.isNotEmpty
                                     ? NetworkImage(_fotoUrl) as ImageProvider
-                                    : const AssetImage(
-                                        'assets/placeholder_user.jpg',
-                                      ),
+                                    : const AssetImage('assets/placeholder_user.jpg'),
                               ),
                             ),
                             if (_subiendoFoto)
                               Container(
                                 width: 110,
                                 height: 110,
-                                decoration: BoxDecoration(
+                                decoration: const BoxDecoration(
                                   color: Colors.black45,
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Center(
-                                  child: CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
+                                  child: CircularProgressIndicator(color: Colors.white),
                                 ),
                               ),
                             Positioned(
@@ -519,11 +567,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                                     color: Color(0xFF1E2A4F),
                                     shape: BoxShape.circle,
                                   ),
-                                  child: const Icon(
-                                    Icons.camera_alt,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
+                                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
                                 ),
                               ),
                             ),
@@ -531,12 +575,8 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                         ),
                         const SizedBox(height: 12),
                         const Text(
-                          "Presiona la cámara para cambiar foto",
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w500,
-                          ),
+                          "Logo de la empresa",
+                          style: TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.w500),
                         ),
                       ],
                     ),
@@ -544,50 +584,43 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
 
                   const SizedBox(height: 20),
 
-                  // CARD 2: INFORMACIÓN PERSONAL
+                  // INFORMACIÓN DE LA EMPRESA
                   _buildCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          "Información Personal",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E2A4F),
-                          ),
+                          "Información Principal",
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
                         ),
                         const SizedBox(height: 15),
                         _buildInputField(
-                          label: "Nombres",
-                          icon: Icons.person_outline,
+                          label: "Nombre de la Empresa",
+                          icon: Icons.business,
                           controller: _nombreController,
                         ),
                         const SizedBox(height: 15),
                         _buildInputField(
-                          label: "Apellidos",
-                          icon: Icons.person_outline,
-                          controller: _apellidoController,
+                          label: "Descripción",
+                          icon: Icons.description_outlined,
+                          controller: _descripcionController,
+                          maxLines: 4,
                         ),
                         const SizedBox(height: 15),
-                        // CÉDULA: Se mantiene bloqueada (readOnly: true)
                         _buildInputField(
-                          label: "Cédula",
+                          label: "Cédula / RIF",
                           icon: Icons.badge_outlined,
                           controller: _cedulaController,
                           readOnly: true,
                         ),
                         const SizedBox(height: 15),
-                        // TELÉFONO: Limitado a 11 dígitos numéricos máximo
                         _buildInputField(
-                          label: "Teléfono",
+                          label: "Teléfono (WhatsApp)",
                           icon: Icons.phone_outlined,
                           controller: _telefonoController,
                           keyboardType: TextInputType.phone,
-                          maxLength: 11, // Límite de caracteres
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly, // Solo números
-                          ],
+                          maxLength: 11,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         ),
                         const SizedBox(height: 20),
                         SizedBox(
@@ -596,18 +629,10 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.azuleskpe,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
-                            onPressed: _guardarDatosPersonales,
-                            child: const Text(
-                              "Guardar Cambios Personales",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                            onPressed: _guardarDatosEmpresa,
+                            child: const Text("Guardar Información", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],
@@ -616,66 +641,135 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
 
                   const SizedBox(height: 20),
 
-                  // CARD 3: SEGURIDAD Y ACCESO (Correo y Contraseña)
+                  // CARRUSEL DE IMAGENES DE LA EMPRESA
+                  _buildCard(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              "Fotos de la Empresa",
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+                            ),
+                            Text(
+                              "${_imagenesEmpresa.length}/8",
+                              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 15),
+                        
+                        if (_imagenesEmpresa.isNotEmpty)
+                          CarouselSlider(
+                            options: CarouselOptions(
+                              height: 180,
+                              enableInfiniteScroll: false,
+                              enlargeCenterPage: true,
+                            ),
+                            items: _imagenesEmpresa.asMap().entries.map((entry) {
+                              int index = entry.key;
+                              String url = entry.value;
+                              return Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      url,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 5,
+                                    right: 5,
+                                    child: InkWell(
+                                      onTap: () => _eliminarImagenGaleria(index),
+                                      child: Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.black54,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }).toList(),
+                          )
+                        else
+                          Container(
+                            height: 150,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+                            ),
+                            child: const Center(
+                              child: Text(
+                                "No has subido fotos promocionales.",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                            ),
+                          ),
+
+                        const SizedBox(height: 15),
+                        if (_subiendoGaleria)
+                          const Center(child: CircularProgressIndicator())
+                        else
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton.icon(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                foregroundColor: const Color(0xFF1E2A4F),
+                                side: const BorderSide(color: Color(0xFF1E2A4F)),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              onPressed: _imagenesEmpresa.length >= 8 ? null : _seleccionarImagenesGaleria,
+                              icon: const Icon(Icons.add_photo_alternate_outlined),
+                              label: const Text("Subir Fotos", style: TextStyle(fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // SEGURIDAD Y ACCESO
                   _buildCard(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           "Seguridad y Credenciales",
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E2A4F),
-                          ),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
                         ),
                         const SizedBox(height: 15),
-                        
-                        // Item de Correo Electrónico
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.email_outlined,
-                              color: Color(0xFF1E2A4F)),
-                          title: const Text(
-                            "Correo electrónico",
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87),
-                          ),
-                          subtitle: Text(
-                            _usuario?.email ?? "No registrado",
-                            style: const TextStyle(
-                                fontSize: 13, color: Colors.grey),
-                          ),
+                          leading: const Icon(Icons.email_outlined, color: Color(0xFF1E2A4F)),
+                          title: const Text("Correo electrónico", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          subtitle: Text(_usuario?.email ?? "No registrado", style: const TextStyle(fontSize: 13, color: Colors.grey)),
                           trailing: IconButton(
-                            icon: const Icon(Icons.edit_outlined,
-                                color: Color(0xFF1E2A4F)),
+                            icon: const Icon(Icons.edit_outlined, color: Color(0xFF1E2A4F)),
                             onPressed: _mostrarDialogoEditarCorreo,
                           ),
                         ),
                         const Divider(),
-
-                        // Item de Contraseña
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.lock_outline,
-                              color: Color(0xFF1E2A4F)),
-                          title: const Text(
-                            "Contraseña",
-                            style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87),
-                          ),
-                          subtitle: const Text(
-                            "********",
-                            style: TextStyle(
-                                fontSize: 13, color: Colors.grey),
-                          ),
+                          leading: const Icon(Icons.lock_outline, color: Color(0xFF1E2A4F)),
+                          title: const Text("Contraseña", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                          subtitle: const Text("********", style: TextStyle(fontSize: 13, color: Colors.grey)),
                           trailing: IconButton(
-                            icon: const Icon(Icons.edit_outlined,
-                                color: Color(0xFF1E2A4F)),
+                            icon: const Icon(Icons.edit_outlined, color: Color(0xFF1E2A4F)),
                             onPressed: _mostrarDialogoEditarPassword,
                           ),
                         ),
@@ -688,7 +782,6 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
     );
   }
 
-  // Contenedor modular de tarjeta blanca con sombra
   Widget _buildCard({required Widget child}) {
     return Container(
       width: double.infinity,
@@ -697,11 +790,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
         ],
       ),
       child: child,
@@ -715,6 +804,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
     bool readOnly = false,
     TextInputType keyboardType = TextInputType.text,
     int? maxLength,
+    int maxLines = 1,
     List<TextInputFormatter>? inputFormatters,
   }) {
     return TextField(
@@ -722,6 +812,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
       readOnly: readOnly,
       keyboardType: keyboardType,
       maxLength: maxLength,
+      maxLines: maxLines,
       inputFormatters: inputFormatters,
       style: TextStyle(
         color: readOnly ? Colors.grey.shade700 : Colors.black87,
@@ -730,16 +821,14 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.grey),
-        prefixIcon: Icon(icon, color: const Color(0xFF1E2A4F)),
+        prefixIcon: maxLines == 1 ? Icon(icon, color: const Color(0xFF1E2A4F)) : Padding(
+          padding: const EdgeInsets.only(bottom: 50.0),
+          child: Icon(icon, color: const Color(0xFF1E2A4F)),
+        ),
         filled: true,
         fillColor: readOnly ? Colors.grey.shade100 : const Color(0xFFF7F7F9),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        // Si no quieres que aparezca el contador numérico de caracteres abajo (ej. "0/11"), 
-        // puedes descomentar la siguiente línea:
-         counterText: "", 
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        counterText: "",
       ),
     );
   }

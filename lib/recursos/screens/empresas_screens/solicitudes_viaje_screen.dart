@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 class SolicitudesViajeScreen extends StatefulWidget {
   final String viajeId;
@@ -84,7 +85,7 @@ class _SolicitudesViajeScreenState extends State<SolicitudesViajeScreen> {
       backgroundColor: const Color(0xFFF5F5F7),
       appBar: AppBar(
         title: Text("Solicitudes: ${widget.nombreViaje}", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-        backgroundColor: const Color(0xFF1E2A4F),
+        backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: StreamBuilder<QuerySnapshot>(

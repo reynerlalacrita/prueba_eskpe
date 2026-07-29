@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 class EditarViajeScreen extends StatefulWidget {
   final String viajeId;
@@ -172,7 +173,7 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                   child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E2A4F)),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.azuleskpe),
                   onPressed: () {
                     if (precioPlanController.text.isNotEmpty) {
                       setState(() {
@@ -305,9 +306,18 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                           const Icon(Icons.lock_outline, color: Colors.grey),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: Text(
-                              "Destino ID: ${widget.datosViaje['destinoId'] ?? 'Desconocido'}\n(El destino no se puede editar)",
-                              style: const TextStyle(color: Colors.grey),
+                            child: FutureBuilder<DocumentSnapshot>(
+                              future: FirebaseFirestore.instance.collection('destinos').doc(widget.datosViaje['destinoId']).get(),
+                              builder: (context, snapshot) {
+                                String nombreDestino = widget.datosViaje['destinoId'] ?? 'Desconocido';
+                                if (snapshot.connectionState == ConnectionState.done && snapshot.hasData && snapshot.data!.exists) {
+                                  nombreDestino = snapshot.data!['nombre'] ?? nombreDestino;
+                                }
+                                return Text(
+                                  "Destino: $nombreDestino\n(El destino no se puede editar)",
+                                  style: const TextStyle(color: Colors.grey),
+                                );
+                              },
                             ),
                           ),
                         ],
@@ -426,7 +436,7 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                       height: 50,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1E2A4F),
+                          backgroundColor: AppColors.azuleskpe,
                         ),
                         onPressed: _guardarCambios,
                         child: const Text(

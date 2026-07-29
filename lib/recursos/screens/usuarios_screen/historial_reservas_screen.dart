@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 class HistorialReservasScreen extends StatelessWidget {
   const HistorialReservasScreen({super.key});
@@ -20,7 +21,7 @@ class HistorialReservasScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F5F7),
       appBar: AppBar(
         title: const Text("Mis Reservas", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF1E2A4F),
+        backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
@@ -136,7 +137,16 @@ class HistorialReservasScreen extends StatelessWidget {
             ],
           ),
           const Divider(height: 25),
-          _buildInfoRow(Icons.map, "Destino", data['destino'] ?? 'Desconocido'),
+          FutureBuilder<DocumentSnapshot>(
+            future: FirebaseFirestore.instance.collection('destinos').doc(data['destino']).get(),
+            builder: (context, snapshot) {
+              String nombreDestino = data['destino'] ?? 'Desconocido';
+              if (snapshot.connectionState == ConnectionState.done && snapshot.hasData && snapshot.data!.exists) {
+                nombreDestino = snapshot.data!['nombre'] ?? nombreDestino;
+              }
+              return _buildInfoRow(Icons.map, "Destino", nombreDestino);
+            },
+          ),
           const SizedBox(height: 10),
           _buildInfoRow(Icons.group, "Puestos reservados", "${data['puestosReservados'] ?? 0}"),
           const SizedBox(height: 10),

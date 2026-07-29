@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: false,
         showUnselectedLabels: false,
-        selectedItemColor: const Color(0xFF1E2A4F), 
+        selectedItemColor: AppColors.azuleskpe, 
         unselectedItemColor: Colors.black38,
         currentIndex: _indiceActual,
         // 🛠️ SE ELIMINÓ EL IF: Ahora cambia directamente de índice y renderiza UsuarioScreen
@@ -90,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return PreferredSize(
       preferredSize: const Size.fromHeight(60.0),
       child: AppBar(
-        backgroundColor: const Color(0xFF1E2A4F), 
+        backgroundColor: AppColors.azuleskpe, 
         elevation: 0, 
         centerTitle: true,
         title: const Padding(
@@ -136,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                 final docs = snapshot.data!.docs;
                 return SizedBox(
-                  height: 120, 
+                  height: 140, 
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 15), 
                     scrollDirection: Axis.horizontal, 
@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
   return Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20.0),
     child: GestureDetector(
-      onTap: onTap, // Llamamos a la función que pasamos como parámetro
+      onTap: onTap,
       child: Row(
         children: [
           Text(titulo, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F))),
@@ -242,8 +242,8 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFF1E2A4F), width: 2), 

@@ -1,6 +1,7 @@
 //todas las empresas de la aplicacion
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/empresa_detalle_screen.dart';
 
 class ListaEmpresasScreen extends StatelessWidget {
@@ -11,7 +12,7 @@ class ListaEmpresasScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Todas las Empresas", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF1E2A4F),
+        backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),

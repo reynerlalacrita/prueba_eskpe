@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/utils.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 
-class EmpresaDetalleScreen extends StatelessWidget {
+class EmpresaDetalleScreen extends StatefulWidget {
   final String nombreEmpresa;
   final String rutaAsset;
   final String telefonoEmpresa;
@@ -17,10 +19,50 @@ class EmpresaDetalleScreen extends StatelessWidget {
   });
 
   @override
+  State<EmpresaDetalleScreen> createState() => _EmpresaDetalleScreenState();
+}
+
+class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
+  String _descripcion = '';
+  List<String> _imagenesEmpresa = [];
+  bool _cargandoDatos = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _cargarDatosEmpresa();
+  }
+
+  Future<void> _cargarDatosEmpresa() async {
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(widget.destinoId)
+          .get();
+
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data() as Map<String, dynamic>;
+        setState(() {
+          _descripcion = data['descripcion'] ?? '';
+          if (data['imagenesEmpresa'] != null) {
+            _imagenesEmpresa = List<String>.from(data['imagenesEmpresa']);
+          }
+          _cargandoDatos = false;
+        });
+      } else {
+        setState(() => _cargandoDatos = false);
+      }
+    } catch (e) {
+      debugPrint("Error: $e");
+      setState(() => _cargandoDatos = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Definimos si el teléfono es válido (no vacío y distinto al número que quieres evitar)
     final bool esTelefonoValido =
-        telefonoEmpresa.isNotEmpty && telefonoEmpresa != "584121234567";
+        widget.telefonoEmpresa.isNotEmpty &&
+        widget.telefonoEmpresa != "584121234567";
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -30,25 +72,51 @@ class EmpresaDetalleScreen extends StatelessWidget {
             expandedHeight: 250.0,
             floating: false,
             pinned: true,
-            backgroundColor: const Color(0xFF1E2A4F),
+            backgroundColor: AppColors.azuleskpe,
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                nombreEmpresa,
+                widget.nombreEmpresa,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   shadows: [Shadow(color: Colors.black87, blurRadius: 10)],
                 ),
               ),
-              background: Image.asset(
-                rutaAsset.isNotEmpty
-                    ? rutaAsset
-                    : 'assets/placeholder_playa.jpg',
-                fit: BoxFit.cover,
-                color: Colors.black.withOpacity(0.4),
-                colorBlendMode: BlendMode.darken,
-              ),
+              background: _cargandoDatos
+                  ? const Center(
+                      child: CircularProgressIndicator(color: Colors.white),
+                    )
+                  : (_imagenesEmpresa.isNotEmpty
+                        ? CarouselSlider(
+                            options: CarouselOptions(
+                              height: 250.0,
+                              viewportFraction: 1.0,
+                              autoPlay: true,
+                              autoPlayInterval: const Duration(seconds: 4),
+                            ),
+                            items: _imagenesEmpresa.map((url) {
+                              return Builder(
+                                builder: (BuildContext context) {
+                                  return Image.network(
+                                    url,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    color: Colors.black.withOpacity(0.3),
+                                    colorBlendMode: BlendMode.darken,
+                                  );
+                                },
+                              );
+                            }).toList(),
+                          )
+                        : Image.asset(
+                            widget.rutaAsset.isNotEmpty
+                                ? widget.rutaAsset
+                                : 'assets/placeholder_playa.jpg',
+                            fit: BoxFit.cover,
+                            color: Colors.black.withOpacity(0.4),
+                            colorBlendMode: BlendMode.darken,
+                          )),
             ),
           ),
 
@@ -58,16 +126,14 @@ class EmpresaDetalleScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Botón inteligente que se bloquea si el número no es válido
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: esTelefonoValido
-                          ? () =>
-                                AppUtils.abrirWhatsApp(
-                                  telefonoEmpresa,
-                                  nombreEmpresa,
-                                ) // <--- Ahora pasas ambos
+                          ? () => AppUtils.abrirWhatsApp(
+                              widget.telefonoEmpresa,
+                              widget.nombreEmpresa,
+                            )
                           : () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
@@ -90,6 +156,25 @@ class EmpresaDetalleScreen extends StatelessWidget {
                       ),
                     ),
                   ),
+                  if (_descripcion.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Acerca de nosotros",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF1E2A4F),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      _descripcion,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 25),
                   const Text(
                     "Viajes Programados",
@@ -101,7 +186,7 @@ class EmpresaDetalleScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    "Descubre todo lo que $nombreEmpresa tiene para ti",
+                    "Descubre todo lo que ${widget.nombreEmpresa} tiene para ti",
                     style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 20),
@@ -113,7 +198,7 @@ class EmpresaDetalleScreen extends StatelessWidget {
           StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance
                 .collection('viajes')
-                .where('empresaId', isEqualTo: destinoId)
+                .where('empresaId', isEqualTo: widget.destinoId)
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
@@ -128,7 +213,7 @@ class EmpresaDetalleScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(40.0),
                       child: Text(
-                        "$nombreEmpresa aún no ha publicado viajes.",
+                        "${widget.nombreEmpresa} aún no ha publicado viajes.",
                         style: const TextStyle(color: Colors.grey),
                       ),
                     ),
@@ -152,12 +237,23 @@ class EmpresaDetalleScreen extends StatelessWidget {
                   }
 
                   String precioStr = "\$0";
-                  if (data['planes'] != null && (data['planes'] as List).isNotEmpty) {
+                  if (data['planes'] != null &&
+                      (data['planes'] as List).isNotEmpty) {
                     List planes = data['planes'];
-                    double minPrice = planes.map((p) => double.tryParse(p['precio']?.toString() ?? '0') ?? 0.0).reduce((a, b) => a < b ? a : b);
-                    precioStr = "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
+                    double minPrice = planes
+                        .map(
+                          (p) =>
+                              double.tryParse(p['precio']?.toString() ?? '0') ??
+                              0.0,
+                        )
+                        .reduce((a, b) => a < b ? a : b);
+                    precioStr =
+                        "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
                   } else {
-                    String precio = data['precioPorPuesto']?.toString() ?? data['precio']?.toString() ?? '0';
+                    String precio =
+                        data['precioPorPuesto']?.toString() ??
+                        data['precio']?.toString() ??
+                        '0';
                     precioStr = "\$$precio";
                   }
 
@@ -211,7 +307,9 @@ class EmpresaDetalleScreen extends StatelessWidget {
           return Container(
             height: 110,
             margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
-            child: const Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F))),
+            child: const Center(
+              child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
+            ),
           );
         }
 
@@ -293,12 +391,19 @@ class EmpresaDetalleScreen extends StatelessWidget {
                       Expanded(
                         child: Text(
                           nombreDestino,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
                       Text(
                         precioStr,
-                        style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFFB8860B),
+                          fontSize: 16,
+                        ),
                       ),
                     ],
                   ),
@@ -327,10 +432,14 @@ class EmpresaDetalleScreen extends StatelessWidget {
                           // TODO: Navegar a la futura screen de detalles del viaje
                         },
                         child: const Text(
-                          "Ver detalles >", 
-                          style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold)
+                          "Ver detalles >",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ],

@@ -1,6 +1,7 @@
 //todos los viajes prontos a salir
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 class ListaViajesScreen extends StatelessWidget {
   const ListaViajesScreen({super.key});
@@ -10,7 +11,7 @@ class ListaViajesScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Todos los Viajes", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF1E2A4F),
+        backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),

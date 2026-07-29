@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/reservas_screen.dart';
 
 class DestinoDetalleScreen extends StatelessWidget {
@@ -20,7 +21,7 @@ class DestinoDetalleScreen extends StatelessWidget {
             expandedHeight: 250.0,
             floating: false,
             pinned: true,
-            backgroundColor: const Color(0xFF1E2A4F),
+            backgroundColor: AppColors.azuleskpe,
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(

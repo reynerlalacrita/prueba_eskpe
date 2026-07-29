@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/agregar_viajes_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/historial_reservas_screen.dart';
@@ -83,7 +84,7 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                 Container(
                   height: 160,
                   width: double.infinity,
-                  color: const Color(0xFF1E2A4F),
+                  color: AppColors.azuleskpe,
                 ),
                 // Foto de perfil posicionada en el borde inferior (Dinámica con StreamBuilder)
                 Positioned(

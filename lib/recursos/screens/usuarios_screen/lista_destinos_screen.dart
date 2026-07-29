@@ -1,6 +1,7 @@
 //todos lis destinos de la aplicacion
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/destino_detalle_screen.dart';
 
 class ListaDestinosScreen extends StatelessWidget {
@@ -11,7 +12,7 @@ class ListaDestinosScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text("Todos los Destinos"),
-        backgroundColor: const Color(0xFF1E2A4F),
+        backgroundColor: AppColors.azuleskpe,
       ),
       body: StreamBuilder<QuerySnapshot>(
         // Quitamos el .limit(7) para traer todo

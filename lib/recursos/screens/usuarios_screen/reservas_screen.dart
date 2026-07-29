@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 class ReservarViajeScreen extends StatefulWidget {
   final String viajeId;
@@ -139,7 +140,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
         ),
         actions: [
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E2A4F)),
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.azuleskpe),
             onPressed: () {
               Navigator.pop(context); // Cierra el diálogo
               Navigator.pop(context); // Regresa al detalle del destino
@@ -160,7 +161,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
       backgroundColor: const Color(0xFFF5F6F8),
       appBar: AppBar(
         title: const Text("Detalle de Reserva", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: const Color(0xFF1E2A4F),
+        backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(

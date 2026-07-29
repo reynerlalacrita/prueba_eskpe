@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/agregar_viajes_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/editar_viaje_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/solicitudes_viaje_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/mis_datos_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresas_screens/mis_datos_empresa_screen.dart';
 
 class HomeEmpresaScreen extends StatefulWidget {
   const HomeEmpresaScreen({super.key});
@@ -132,7 +133,7 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
           "Panel de Empresa",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF1E2A4F),
+        backgroundColor: AppColors.azuleskpe,
         elevation: 0,
         actions: [
           IconButton(
@@ -141,7 +142,7 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MisDatosScreen()),
+                MaterialPageRoute(builder: (context) => const MisDatosEmpresaScreen()),
               );
             },
           ),
@@ -152,17 +153,7 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF2E16D1),
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text("Publicar Viaje", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AgregarViajeScreen()),
-          );
-        },
-      ),
+      // floatingActionButton removido
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,19 +194,6 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                       color: Color(0xFF1E2A4F),
                     ),
                   ),
-                  TextButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const AgregarViajeScreen()),
-                      );
-                    },
-                    icon: const Icon(Icons.add_circle, color: Color(0xFF2E16D1), size: 18),
-                    label: const Text(
-                      "Nuevo",
-                      style: TextStyle(color: Color(0xFF2E16D1), fontWeight: FontWeight.bold),
-                    ),
-                  )
                 ],
               ),
             ),
@@ -225,7 +203,7 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
             // Lista de Viajes de la Empresa
             _buildViajesStream(user),
 
-            const SizedBox(height: 80), // Espacio para el FloatingActionButton
+            const SizedBox(height: 20), // Ajuste de espacio al final
           ],
         ),
       ),
@@ -237,7 +215,7 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: const BoxDecoration(
-        color: Color(0xFF1E2A4F),
+        color: AppColors.azuleskpe,
         borderRadius: BorderRadius.vertical(bottom: Radius.circular(25)),
       ),
       child: Row(
@@ -269,9 +247,12 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                   children: [
                     const Icon(Icons.verified, color: Colors.lightBlueAccent, size: 16),
                     const SizedBox(width: 5),
-                    Text(
-                      _rifEmpresa.isNotEmpty ? "RIF: $_rifEmpresa" : "Cuenta de Empresa Aliada",
-                      style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    Expanded(
+                      child: Text(
+                        _rifEmpresa.isNotEmpty ? "RIF: $_rifEmpresa" : "Cuenta de Empresa Aliada",
+                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -316,7 +297,7 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MisDatosScreen()),
+                  MaterialPageRoute(builder: (context) => const MisDatosEmpresaScreen()),
                 );
               },
             ),
@@ -369,11 +350,15 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                 fontSize: 15,
                 color: Color(0xFF1E2A4F),
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
             const SizedBox(height: 4),
             Text(
               subtitle,
               style: const TextStyle(fontSize: 12, color: Colors.grey),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -549,12 +534,12 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
               borderRadius: BorderRadius.circular(12),
               child: Image.asset(
                 rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg',
-                width: 75,
-                height: 75,
+                width: 90,
+                height: 90,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) => Container(
-                  width: 75,
-                  height: 75,
+                  width: 90,
+                  height: 90,
                   color: Colors.grey.shade300,
                   child: const Icon(Icons.image_not_supported, color: Colors.grey),
                 ),
@@ -569,7 +554,8 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 5),
-                Row(
+                Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     const Icon(Icons.calendar_today, size: 13, color: Colors.grey),
                     const SizedBox(width: 4),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:prueba_eskpe/recursos/screens/splash_screen.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,8 +31,15 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner:
           false, // Quita la etiqueta roja de "Debug" en la esquina
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true, // Activa Material 3 para un diseño más moderno
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: AppColors.azuleskpe,
+          primary: AppColors.azuleskpe,
+        ),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.azuleskpe,
+          foregroundColor: Colors.white,
+        ),
+        useMaterial3: true,
       ),
       // CONFIGURA LA PANTALLA INICIAL: SplashScreen verifica la sesión y el rol
       home: const SplashScreen(),
