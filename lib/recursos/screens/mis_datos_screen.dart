@@ -490,7 +490,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                                 backgroundImage: _fotoUrl.isNotEmpty
                                     ? NetworkImage(_fotoUrl) as ImageProvider
                                     : const AssetImage(
-                                        'assets/placeholder_user.jpg',
+                                        'assets/sinfoto.jpg',
                                       ),
                               ),
                             ),

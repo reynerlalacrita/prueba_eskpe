@@ -233,7 +233,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
         // 🛠️ MEJORA: Detecta inteligentemente si viene URL de Firebase (http) o asset local
         backgroundImage: (rutaAsset.startsWith('http') 
             ? NetworkImage(rutaAsset) 
-            : AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg')) as ImageProvider,
+            : AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg')) as ImageProvider,
         backgroundColor: Colors.grey.shade200,
       ),
       title: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),

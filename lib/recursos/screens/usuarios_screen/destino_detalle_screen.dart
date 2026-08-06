@@ -33,7 +33,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                 ),
               ),
               background: Image.asset(
-                rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg',
+                rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
                 fit: BoxFit.cover,
                 color: Colors.black.withOpacity(0.3),
                 colorBlendMode: BlendMode.darken,
@@ -156,71 +156,93 @@ class DestinoDetalleScreen extends StatelessWidget {
     String fecha, 
     String rutaAsset
   ) {
-    return Container(
-      height: 110,
-      margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 110,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-              image: DecorationImage(
-                image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
-                fit: BoxFit.cover,
-              ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ReservarViajeScreen(
+              viajeId: viajeId,
+              datosViaje: datosViaje,
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(empresa, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), overflow: TextOverflow.ellipsis),
+        );
+      },
+      child: Container(
+        height: 110,
+        margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 4)),
+          ],
+        ),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 110,
+              height: double.infinity,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
+                child: (rutaAsset.startsWith('http://') || rutaAsset.startsWith('https://'))
+                    ? Image.network(
+                        rutaAsset,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/sinfoto.jpg',
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Image.asset(
+                        rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/sinfoto.jpg',
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                      const SizedBox(width: 5),
-                      Text(precioStr, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_today, size: 14, color: Color(0xFFB8860B)),
-                      const SizedBox(width: 5),
-                      Text(fecha, style: const TextStyle(fontSize: 12, color: Colors.black54)),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          // TODO: Navegar a la futura screen de detalles del viaje
-                        },
-                        child: const Text(
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(empresa, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), overflow: TextOverflow.ellipsis),
+                        ),
+                        const SizedBox(width: 5),
+                        Text(precioStr, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_today, size: 14, color: Color(0xFFB8860B)),
+                        const SizedBox(width: 5),
+                        Text(fecha, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                      ],
+                    ),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
                           "Ver detalles >", 
                           style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold)
                         ),
-                      )
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          )
-        ],
+            )
+          ],
+        ),
       ),
     );
   }

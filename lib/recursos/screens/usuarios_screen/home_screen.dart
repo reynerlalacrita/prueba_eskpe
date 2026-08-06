@@ -10,6 +10,7 @@ import 'package:prueba_eskpe/recursos/screens/usuarios_screen/empresa_detalle_sc
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_destinos_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_empresas_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_viajes_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/reservas_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/usuario_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -176,9 +177,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     itemBuilder: (context, index) {
                       final doc = docs[index];
                       final data = doc.data() as Map<String, dynamic>;
+                      final String logoUrl = data['fotoUrl'] ??
+                          data['logoUrl'] ??
+                          data['fotoPerfilUrl'] ??
+                          data['imagenUrl'] ??
+                          data['photoURL'] ??
+                          data['rutaAsset'] ??
+                          '';
                       return _buildItemEmpresa(
                         data['nombres'] ?? 'Sin nombre',
-                        data['rutaAsset'] ?? '', // Si luego se guarda imagen
+                        logoUrl,
                         data['telefono'] ?? '584121234567',
                         doc.id,
                       );
@@ -203,8 +211,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   physics: const NeverScrollableScrollPhysics(), 
                   itemCount: docs.length, 
                   itemBuilder: (context, index) {
-                    final data = docs[index].data() as Map<String, dynamic>;
-                    return _buildTarjetaViaje(data);
+                    final doc = docs[index];
+                    final data = doc.data() as Map<String, dynamic>;
+                    return _buildTarjetaViaje(doc.id, data);
                   }
                 );
               },
@@ -248,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFF1E2A4F), width: 2), 
                 image: DecorationImage(
-                  image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
+                  image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -262,24 +271,24 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Diseño de Empresas: Tarjeta interactiva para ir a los detalles
+  // Diseño de Empresas: Tarjeta interactiva para ir a los detalles (¡Ahora Cuadrada!)
   Widget _buildItemEmpresa(String nombre, String rutaAsset, String telefono, String id) { 
-  return GestureDetector(
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          // 2. Ahora pasa los datos obligatorios aquí
-          builder: (context) => EmpresaDetalleScreen(
-            nombreEmpresa: nombre,
-            rutaAsset: rutaAsset,
-            telefonoEmpresa: telefono, // <--- El teléfono que recibes
-            destinoId: id,            // <--- El ID que recibes
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EmpresaDetalleScreen(
+              nombreEmpresa: nombre,
+              rutaAsset: rutaAsset,
+              telefonoEmpresa: telefono, 
+              destinoId: id,            
+            ),
           ),
-        ),
-      );
-    },
+        );
+      },
       child: Container(
-        width: 100,
+        width: 110, // Le damos un ancho que haga juego con la altura para que sea cuadrado
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -288,32 +297,70 @@ class _HomeScreenState extends State<HomeScreen> {
             BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 3)),
           ],
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 45,
-              height: 45,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder.png'),
-                  fit: BoxFit.cover,
+        // Aplicamos ClipRRect aquí para que la imagen respete los bordes redondeados del contenedor principal
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch, // Estira el contenido a los bordes
+            children: [
+              // Expanded hace que la imagen ocupe todo el espacio sobrante arriba del texto
+              Expanded(
+                child: _buildImagenLogoEmpresa(rutaAsset),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+                child: Text(
+                  nombre, 
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600), 
+                  textAlign: TextAlign.center, 
+                  maxLines: 1, 
+                  overflow: TextOverflow.ellipsis
                 ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Text(nombre, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTarjetaViaje(Map<String, dynamic> data) {
+  // Método actualizado para usar 'sinfoto.jpg' en lugar del ícono
+  Widget _buildImagenLogoEmpresa(String ruta) {
+    if (ruta.startsWith('http://') || ruta.startsWith('https://')) {
+      return Image.network(
+        ruta,
+        fit: BoxFit.cover, // Para que rellene el cuadrado sin deformarse
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2)));
+        },
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/sinfoto.jpg',
+          fit: BoxFit.cover,
+        ),
+      );
+    } else if (ruta.isNotEmpty) {
+      return Image.asset(
+        ruta,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/sinfoto.jpg',
+          fit: BoxFit.cover,
+        ),
+      );
+    } else {
+      // Si la ruta está vacía, mostramos la imagen por defecto
+      return Image.asset(
+        'assets/sinfoto.jpg',
+        fit: BoxFit.cover,
+      );
+    }
+  }
+  Widget _buildTarjetaViaje(String viajeId, Map<String, dynamic> data) {
     String destinoId = data['destinoId'] ?? '';
     
     if (destinoId.isEmpty) {
-      return _tarjetaContenido(data, "Destino Desconocido", data['rutaAsset'] ?? '');
+      return _tarjetaContenido(viajeId, data, "Destino Desconocido", data['rutaAsset'] ?? '');
     }
 
     return FutureBuilder<DocumentSnapshot>(
@@ -340,12 +387,12 @@ class _HomeScreenState extends State<HomeScreen> {
           }
         }
         
-        return _tarjetaContenido(data, nombre, ruta);
+        return _tarjetaContenido(viajeId, data, nombre, ruta);
       },
     );
   }
 
-  Widget _tarjetaContenido(Map<String, dynamic> data, String nombreDestino, String rutaAsset) {
+  Widget _tarjetaContenido(String viajeId, Map<String, dynamic> data, String nombreDestino, String rutaAsset) {
     String fechaStr = 'Fecha no definida';
     if (data['fecha'] != null) {
       final dt = (data['fecha'] as Timestamp).toDate();
@@ -365,7 +412,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return GestureDetector(
       onTap: () {
-        // TODO: Navegar a la futura screen de detalles del viaje
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ReservarViajeScreen(
+              viajeId: viajeId,
+              datosViaje: data,
+            ),
+          ),
+        );
       },
       child: Container(
         height: 125,
@@ -379,14 +434,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: Row(
           children: [
-            Container(
+            SizedBox(
               width: 110,
-              decoration: BoxDecoration(
+              height: double.infinity,
+              child: ClipRRect(
                 borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-                image: DecorationImage(
-                  image: AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg'),
-                  fit: BoxFit.cover,
-                ),
+                child: _buildImagenViaje(rutaAsset),
               ),
             ),
             Expanded(
@@ -431,5 +484,46 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildImagenViaje(String ruta, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+    if (ruta.startsWith('http://') || ruta.startsWith('https://')) {
+      return Image.network(
+        ruta,
+        width: width,
+        height: height,
+        fit: fit,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(child: CircularProgressIndicator());
+        },
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/sinfoto.jpg',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else if (ruta.isNotEmpty) {
+      return Image.asset(
+        ruta,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/sinfoto.jpg',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else {
+      return Image.asset(
+        'assets/sinfoto.jpg',
+        width: width,
+        height: height,
+        fit: fit,
+      );
+    }
   }
 }

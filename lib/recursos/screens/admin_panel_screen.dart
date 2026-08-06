@@ -120,7 +120,7 @@ class _AdminScreenState extends State<AdminScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundImage: AssetImage(data['rutaAsset'] ?? 'assets/placeholder.jpg'),
+                    backgroundImage: AssetImage(data['rutaAsset'] ?? 'assets/sinfoto.jpg'),
                   ),
                   title: Text(nombreLugar, style: const TextStyle(fontWeight: FontWeight.bold)),
                   subtitle: Text(data['descripcion'] ?? 'Sin descripción...', 
@@ -195,7 +195,7 @@ class _AdminScreenState extends State<AdminScreen> {
                       await FirebaseFirestore.instance.collection('destinos').add({
                         'nombre': _nombreLugarController.text,
                         'descripcion': _descripcionLugarController.text,
-                        'rutaAsset': _rutaAssetLugarController.text.isEmpty ? 'assets/placeholder_playa.jpg' : _rutaAssetLugarController.text,
+                        'rutaAsset': _rutaAssetLugarController.text.isEmpty ? 'assets/sinfoto.jpg' : _rutaAssetLugarController.text,
                         'etiquetas': [],
                         'fechaCreacion': FieldValue.serverTimestamp(),
                       });

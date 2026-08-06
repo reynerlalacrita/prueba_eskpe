@@ -44,64 +44,110 @@ class ListaEmpresasScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
               
-              // 🛠️ AQUÍ ESTÁ EL CAMBIO: Manejamos valores nulos antes de pasarlos a la función
+              // 🛠️ AQUÍ ESTÁ EL CAMBIO: Extraemos la URL de la imagen del perfil/logo de la empresa (o el asset local como fallback)
               final String nombreSeguro = data['nombres'] ?? 'Sin nombre';
-              final String rutaSegura = data['rutaAsset'] ?? 'assets/MorrocoyTours.jpg';
+              final String rutaSegura = data['fotoUrl'] ??
+                  data['logoUrl'] ??
+                  data['fotoPerfilUrl'] ??
+                  data['imagenUrl'] ??
+                  data['photoURL'] ??
+                  data['rutaAsset'] ??
+                  '';
               
-
-              
-              // Línea 50 corregida:
-            return _buildTarjetaDestino(
+              return _buildTarjetaDestino(
                 context, 
                 nombreSeguro, 
                 rutaSegura, 
                 docs[index].id, 
-                data['telefono'] ?? '584263211350' // Aquí pasas el teléfono o un número por defecto
-);
-              
+                data['telefono'] ?? '584263211350'
+              );
             },
           );
         },
       ),
     );
   }
+
   Widget _buildTarjetaDestino(BuildContext context, String nombre, String ruta, String id, String telefono) {
-  return GestureDetector(
-      // Ejemplo cuando navegas hacia la pantalla de detalle:
-onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => EmpresaDetalleScreen(
-            nombreEmpresa: nombre, // Usas el parámetro 'nombre' que ya recibes
-            rutaAsset: ruta,       // Usas el parámetro 'ruta' que ya recibes
-            telefonoEmpresa: telefono, // <--- Ahora ya lo tienes
-            destinoId: id,         // <--- Ahora ya lo tienes
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EmpresaDetalleScreen(
+              nombreEmpresa: nombre,
+              rutaAsset: ruta,
+              telefonoEmpresa: telefono,
+              destinoId: id,
+            ),
           ),
-        ),
-      );
-    },
+        );
+      },
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
           color: Colors.white,
-          boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5)],
         ),
         child: Column(
           children: [
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.asset(ruta.isNotEmpty ? ruta : 'assets/CaracasTours.jpg', fit: BoxFit.cover, width: double.infinity),
+                child: _buildImagenEmpresa(ruta),
               ),
             ),
             Padding(
               padding: const EdgeInsets.all(10),
-              child: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+              child: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
             ),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildImagenEmpresa(String ruta) {
+    if (ruta.startsWith('http://') || ruta.startsWith('https://')) {
+      return Image.network(
+        ruta,
+        fit: BoxFit.cover,
+        width: double.infinity, // Mantenemos esto para que llene el espacio
+        height: double.infinity,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(child: CircularProgressIndicator());
+        },
+        // 👇 Reemplazo del ícono por la imagen local si hay error en la red
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/sinfoto.jpg',
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        ),
+      );
+    } else if (ruta.isNotEmpty) {
+      return Image.asset(
+        ruta,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+        // 👇 Reemplazo del ícono por la imagen local si la ruta del asset falla
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/sinfoto.jpg',
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+        ),
+      );
+    } else {
+      // 👇 Reemplazo del ícono por la imagen local si la ruta está completamente vacía
+      return Image.asset(
+        'assets/sinfoto.jpg',
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: double.infinity,
+      );
+    }
   }
 }

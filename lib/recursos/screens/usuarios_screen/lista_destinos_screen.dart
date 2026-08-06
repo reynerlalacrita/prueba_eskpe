@@ -64,7 +64,31 @@ class ListaDestinosScreen extends StatelessWidget {
             Expanded(
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.asset(ruta.isNotEmpty ? ruta : 'assets/placeholder_playa.jpg', fit: BoxFit.cover, width: double.infinity),
+                child: (ruta.startsWith('http://') || ruta.startsWith('https://'))
+                    ? Image.network(
+                        ruta,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/sinfoto.jpg',
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
+                      )
+                    : Image.asset(
+                        ruta.isNotEmpty ? ruta : 'assets/sinfoto.jpg',
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/sinfoto.jpg',
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
+                      ),
               ),
             ),
             Padding(

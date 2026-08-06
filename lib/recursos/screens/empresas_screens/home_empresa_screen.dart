@@ -533,7 +533,7 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.asset(
-                rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg',
+                rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
                 width: 90,
                 height: 90,
                 fit: BoxFit.cover,

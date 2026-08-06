@@ -120,7 +120,7 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                           backgroundImage: (fotoUrl != null && fotoUrl.isNotEmpty)
                               ? NetworkImage(fotoUrl) as ImageProvider
                               : const AssetImage(
-                                  'assets/placeholder_user.jpg',
+                                  'assets/sinfoto.jpg',
                                 ),
                         );
                       },
