@@ -7,6 +7,7 @@ import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/historial_reservas_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/viajes_empresa_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/mis_datos_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/support_screen.dart';
 
 class UsuarioScreen extends StatefulWidget {
   const UsuarioScreen({super.key});
@@ -175,7 +176,18 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                       );
                     },
                   ),
-                _buildMenuItem(Icons.help_outline, "Ayuda y Soporte"),
+                _buildMenuItem(
+                  Icons.help_outline,
+                  "Ayuda y Soporte",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SupportScreen(),
+                      ),
+                    );
+                  },
+                ),
                 if (rol == 'empresa') ...[
                   _buildMenuItem(
                     Icons.directions_boat_filled_outlined,

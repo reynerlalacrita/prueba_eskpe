@@ -129,24 +129,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: const Color(0xFF2E16D1), // Fondo azul sólido
       resizeToAvoidBottomInset: true, 
       body: Stack(
         children: [
-          LayoutBuilder(
-            builder: (context, constraints) {
-              return SizedBox(
-                width: size.width,
-                height: size.height,
-                child: Image.asset(
-                  'assets/background_road.jpg',
-                  fit: BoxFit.cover,
-                ),
-              );
-            },
+          // Contenedor con el fondo azul sólido
+          Container(
+            width: size.width,
+            height: size.height,
+            color: const Color(0xFF2E16D1),
           ),
           
-          // Gradiente superpuesto
+          // Gradiente superpuesto para dar profundidad
           Container(
             width: size.width,
             height: size.height,

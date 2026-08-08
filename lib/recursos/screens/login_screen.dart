@@ -113,18 +113,18 @@ class _LoginScreenState extends State<LoginScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7), // Más claro y moderno
+      backgroundColor: const Color(0xFF2E16D1), // Fondo azul sólido
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // Fondo inmutable idéntico al registro
-          SizedBox(
+          // Fondo azul en caso de que el Stack necesite cubrir todo el espacio
+          Container(
             width: size.width,
             height: size.height,
-            child: Image.asset('assets/background_road.jpg', fit: BoxFit.cover),
+            color: const Color(0xFF2E16D1),
           ),
 
-          // Gradiente superpuesto para mejorar la lectura
+          // Gradiente superpuesto para mejorar la lectura y dar profundidad
           Container(
             width: size.width,
             height: size.height,

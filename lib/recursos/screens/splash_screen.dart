@@ -84,45 +84,56 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.azuleskpe,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            // Logo ESK-PE
-            Text(
-              'ESK-PE',
-              style: TextStyle(
-                fontFamily: 'Impact',
-                fontSize: 60,
-                fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.italic,
+      // Ya no usamos el backgroundColor aquí
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            // Reemplaza 'assets/fondo_splash.jpg' con la ruta real de tu imagen
+            image: AssetImage('assets/background_road.jpg'), 
+            fit: BoxFit.cover, // Esto asegura que la imagen cubra toda la pantalla sin deformarse
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // Logo ESK-PE
+              Text(
+                'ESK-PE',
+                style: TextStyle(
+                  fontFamily: 'Impact',
+                  fontSize: 60,
+                  fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.white,
+                  letterSpacing: 3,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.5),
+                      blurRadius: 15,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Tu aventura empieza aquí',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
+                  letterSpacing: 1,
+                ),
+              ),
+              const SizedBox(height: 50),
+              const CircularProgressIndicator(
                 color: Colors.white,
-                letterSpacing: 3,
-                shadows: [
-                  Shadow(
-                    color: Colors.black.withOpacity(0.5),
-                    blurRadius: 15,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                strokeWidth: 3,
               ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Tu aventura empieza aquí',
-              style: TextStyle(
-                color: Colors.white70,
-                fontSize: 16,
-                letterSpacing: 1,
-              ),
-            ),
-            const SizedBox(height: 50),
-            const CircularProgressIndicator(
-              color: Colors.white,
-              strokeWidth: 3,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
