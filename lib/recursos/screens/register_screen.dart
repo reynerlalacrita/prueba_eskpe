@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; 
+import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/home_empresa_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresas_screens/pending_approval_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/verification_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -69,40 +70,52 @@ class _RegisterScreenState extends State<RegisterScreen> {
         'uid': uid,
         'nombres': _nombreController.text.trim(),
         'apellidos': _esEmpresa ? "" : _apellidoController.text.trim(),
-        'cedula': identificacion, // Mantenemos cedula para compatibilidad con pantallas existentes
+        'cedula': identificacion,
         'telefono': _telefonoController.text.trim(),
         'correo': _emailController.text.trim(),
         'rol': rol,
         'fecha_registro': FieldValue.serverTimestamp(),
+        // Empresas requieren aprobación manual; viajeros se activan de inmediato
+        // y su verificación de correo la maneja Firebase Auth de forma nativa.
+        'estado': _esEmpresa ? 'pending' : 'active',
       };
 
       if (_esEmpresa) {
         datosUsuario['rif'] = identificacion;
       }
 
-      // D. Guardar los datos del formulario en Firestore usando ese UID exacto
+      // D. Para viajeros: enviar correo de verificación de Firebase Auth
+      if (!_esEmpresa) {
+        await userCredential.user?.sendEmailVerification();
+      }
+
+      // E. Guardar el perfil en Firestore
       await FirebaseFirestore.instance.collection('usuarios').doc(uid).set(datosUsuario);
-
-
 
       if (!mounted) return;
       Navigator.pop(context); // Quitar el círculo de carga
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('¡Registro exitoso en ESK-PE!'), backgroundColor: Colors.green),
-      );
-
-      // Redirigir según el rol registrado (empresa o usuario)
+      // Redirigir según el rol registrado
       if (_esEmpresa) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registro enviado. Tu cuenta será revisada por el equipo de ESK-PE.'),
+            backgroundColor: Colors.blue,
+          ),
+        );
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const HomeEmpresaScreen()),
+          MaterialPageRoute(builder: (context) => const PendingApprovalScreen()),
           (route) => false,
         );
       } else {
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
+          MaterialPageRoute(
+            builder: (context) => VerificationScreen(
+              email: _emailController.text.trim(),
+            ),
+          ),
           (route) => false,
         );
       }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/home_empresa_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresas_screens/pending_approval_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/verification_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -51,13 +52,43 @@ class _SplashScreenState extends State<SplashScreen> {
         debugPrint("Sesión detectada. Rol de usuario: $rol");
 
         if (rol == 'empresa') {
-          // Redirigir al panel exclusivo de empresa
+          // Para empresas: verificar estado de aprobación
+          final String estado = doc.data()?['estado'] ?? 'pending';
+          if (estado == 'pending') {
+            // Empresa pendiente: mostrar pantalla de espera
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const PendingApprovalScreen()),
+            );
+            return;
+          } else if (estado == 'rejected') {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+            return;
+          }
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeEmpresaScreen()),
           );
         } else {
-          // Redirigir al HomeScreen exclusivo para usuarios/clientes
+          // Para viajeros: usar verificación nativa de Firebase Auth
+          await user.reload();
+          final refreshedUser = FirebaseAuth.instance.currentUser;
+
+          if (refreshedUser != null && !refreshedUser.emailVerified) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => VerificationScreen(
+                  email: refreshedUser.email ?? doc.data()?['correo'] ?? '',
+                ),
+              ),
+            );
+            return;
+          }
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen()),

@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/home_empresa_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresas_screens/pending_approval_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/verification_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -61,24 +63,72 @@ class _LoginScreenState extends State<LoginScreen> {
         print("Usuario autenticado con éxito. Rol: $rol");
 
         if (rol == 'empresa') {
+          // Para empresas: verificar estado de aprobación manual
+          final data = userDoc.data() as Map<String, dynamic>?;
+          final String estado = data?['estado'] ?? 'pending';
+
+          if (estado == 'pending') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Tu cuenta de empresa está pendiente de aprobación por el equipo.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const PendingApprovalScreen()),
+            );
+            return;
+          } else if (estado == 'rejected') {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Tu solicitud de registro de empresa fue rechazada. Contacta a soporte.'),
+                backgroundColor: Colors.red,
+              ),
+            );
+            return;
+          }
+
+          // estado == 'active'
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeEmpresaScreen()),
           );
         } else {
-          // Redirige a HomeScreen para usuarios normales / clientes
+          // Para viajeros: usar la verificación nativa de Firebase Auth
+          await userCredential.user?.reload();
+          final refreshedUser = FirebaseAuth.instance.currentUser;
+
+          if (refreshedUser != null && !refreshedUser.emailVerified) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Debes verificar tu correo antes de ingresar. Revisa tu bandeja de entrada.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => VerificationScreen(
+                  email: refreshedUser.email ?? _emailController.text.trim(),
+                ),
+              ),
+            );
+            return;
+          }
+
+          // Viajero verificado: acceso permitido
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('¡Bienvenido de vuelta a ESK-PE!'),
+              backgroundColor: Colors.green,
+            ),
+          );
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         }
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('¡Bienvenido de vuelta! Perfil: $rol'),
-            backgroundColor: Colors.green,
-          ),
-        );
       } else {
         // Si por algún motivo el usuario está en Auth pero no en Firestore
         ScaffoldMessenger.of(context).showSnackBar(
