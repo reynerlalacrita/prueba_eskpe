@@ -83,25 +83,8 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
               ),
             ),
             const SizedBox(height: 15),
-
-            // FILTROS
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: Row(
-                children: [
-                  _buildFiltroChip("Presupuesto"),
-                  const SizedBox(width: 10),
-                  _buildFiltroChip("Duración"),
-                  const SizedBox(width: 10),
-                  _buildFiltroChip("Tipo"),
-                  const SizedBox(width: 10),
-                  _buildFiltroChip("Clima"),
-                ],
-              ),
-            ),
-            const SizedBox(height: 25),
-
+            //colocar aqui si quieres tener un flito de busqueda personalizado
+            
             // BÚSQUEDAS RECIENTES (Se oculta si la lista está vacía)
             if (_busquedasRecientes.isNotEmpty) ...[
               const Padding(
@@ -233,7 +216,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
         // 🛠️ MEJORA: Detecta inteligentemente si viene URL de Firebase (http) o asset local
         backgroundImage: (rutaAsset.startsWith('http') 
             ? NetworkImage(rutaAsset) 
-            : AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/placeholder_playa.jpg')) as ImageProvider,
+            : AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg')) as ImageProvider,
         backgroundColor: Colors.grey.shade200,
       ),
       title: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),

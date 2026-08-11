@@ -155,7 +155,7 @@ class ViajesEmpresaScreen extends StatelessWidget {
               child: Image.asset(
                 rutaAsset.isNotEmpty 
                     ? rutaAsset 
-                    : 'assets/placeholder_playa.jpg',
+                    : 'assets/sinfoto.jpg',
                 width: 100,
                 height: 120,
                 fit: BoxFit.cover,

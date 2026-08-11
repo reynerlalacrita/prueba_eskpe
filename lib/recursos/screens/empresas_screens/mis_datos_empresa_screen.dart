@@ -541,7 +541,7 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                                 backgroundColor: Colors.grey.shade200,
                                 backgroundImage: _fotoUrl.isNotEmpty
                                     ? NetworkImage(_fotoUrl) as ImageProvider
-                                    : const AssetImage('assets/placeholder_user.jpg'),
+                                    : const AssetImage('assets/sinfoto.jpg'),
                               ),
                             ),
                             if (_subiendoFoto)

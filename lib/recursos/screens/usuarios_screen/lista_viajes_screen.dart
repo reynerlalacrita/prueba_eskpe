@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/reservas_screen.dart';
 
 class ListaViajesScreen extends StatelessWidget {
   const ListaViajesScreen({super.key});
@@ -32,9 +33,10 @@ class ListaViajesScreen extends StatelessWidget {
             padding: const EdgeInsets.all(15),
             itemCount: docs.length,
             itemBuilder: (context, index) {
-              final data = docs[index].data() as Map<String, dynamic>;
+              final doc = docs[index];
+              final data = doc.data() as Map<String, dynamic>;
               
-              return _buildTarjetaViaje(data);
+              return _buildTarjetaViaje(context, doc.id, data);
             },
           );
         },
@@ -42,11 +44,11 @@ class ListaViajesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTarjetaViaje(Map<String, dynamic> data) {
+  Widget _buildTarjetaViaje(BuildContext context, String viajeId, Map<String, dynamic> data) {
     String destinoId = data['destinoId'] ?? '';
     
     if (destinoId.isEmpty) {
-      return _tarjetaContenido(data, "Destino Desconocido", data['rutaAsset'] ?? '');
+      return _tarjetaContenido(context, viajeId, data, "Destino Desconocido", data['rutaAsset'] ?? '');
     }
 
     return FutureBuilder<DocumentSnapshot>(
@@ -73,12 +75,12 @@ class ListaViajesScreen extends StatelessWidget {
           }
         }
         
-        return _tarjetaContenido(data, nombre, ruta);
+        return _tarjetaContenido(context, viajeId, data, nombre, ruta);
       },
     );
   }
 
-  Widget _tarjetaContenido(Map<String, dynamic> data, String nombreDestino, String rutaAsset) {
+  Widget _tarjetaContenido(BuildContext context, String viajeId, Map<String, dynamic> data, String nombreDestino, String rutaAsset) {
     String fechaStr = 'Fecha no disponible';
     if (data['fecha'] != null) {
       final Timestamp timestamp = data['fecha'] as Timestamp;
@@ -98,45 +100,104 @@ class ListaViajesScreen extends StatelessWidget {
 
     String empresaNombre = data['empresaNombre'] ?? data['empresa'] ?? 'Agencia de Viajes';
 
-    return Container(
-      height: 140,
-      margin: const EdgeInsets.only(bottom: 15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 6, offset: const Offset(0, 3))],
-      ),
-      child: Row(
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-            child: Image.asset(rutaAsset.isNotEmpty ? rutaAsset : 'assets/playa1.jpg', 
-              width: 120, height: 140, fit: BoxFit.cover),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(empresaNombre, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  Text(nombreDestino, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1E2A4F)), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 5),
-                  Row(
-                    children: [
-                      const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
-                      const SizedBox(width: 5),
-                      Expanded(child: Text(fechaStr, style: const TextStyle(color: Colors.grey, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                    ],
-                  ),
-                  Text(precioStr, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 18), maxLines: 1, overflow: TextOverflow.ellipsis),
-                ],
-              ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ReservarViajeScreen(
+              viajeId: viajeId,
+              datosViaje: data,
             ),
           ),
-        ],
+        );
+      },
+      child: Container(
+        height: 140,
+        margin: const EdgeInsets.only(bottom: 15),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3))],
+        ),
+        child: Row(
+          children: [
+            ClipRRect(
+              borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
+              child: _buildImagenViaje(rutaAsset, width: 120, height: 140, fit: BoxFit.cover),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(empresaNombre, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(nombreDestino, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1E2A4F)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                        const SizedBox(width: 5),
+                        Expanded(child: Text(fechaStr, style: const TextStyle(color: Colors.grey, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                      ],
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(precioStr, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 18), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        const Text("Ver detalles >", style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  Widget _buildImagenViaje(String ruta, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+    if (ruta.startsWith('http://') || ruta.startsWith('https://')) {
+      return Image.network(
+        ruta,
+        width: width,
+        height: height,
+        fit: fit,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return const Center(child: CircularProgressIndicator());
+        },
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/sinfoto.jpg',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else if (ruta.isNotEmpty) {
+      return Image.asset(
+        ruta,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => Image.asset(
+          'assets/sinfoto.jpg',
+          width: width,
+          height: height,
+          fit: fit,
+        ),
+      );
+    } else {
+      return Image.asset(
+        'assets/sinfoto.jpg',
+        width: width,
+        height: height,
+        fit: fit,
+      );
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/utils.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/reservas_screen.dart';
 
 class EmpresaDetalleScreen extends StatefulWidget {
   final String nombreEmpresa;
@@ -109,14 +110,29 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                               );
                             }).toList(),
                           )
-                        : Image.asset(
-                            widget.rutaAsset.isNotEmpty
-                                ? widget.rutaAsset
-                                : 'assets/placeholder_playa.jpg',
-                            fit: BoxFit.cover,
-                            color: Colors.black.withOpacity(0.4),
-                            colorBlendMode: BlendMode.darken,
-                          )),
+                        : (widget.rutaAsset.startsWith('http://') || widget.rutaAsset.startsWith('https://')
+                            ? Image.network(
+                                widget.rutaAsset,
+                                fit: BoxFit.cover,
+                                color: Colors.black.withOpacity(0.4),
+                                colorBlendMode: BlendMode.darken,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: AppColors.azuleskpe,
+                                  child: const Icon(Icons.business, size: 60, color: Colors.white),
+                                ),
+                              )
+                            : Image.asset(
+                                widget.rutaAsset.isNotEmpty
+                                    ? widget.rutaAsset
+                                    : 'assets/sinfoto.jpg',
+                                fit: BoxFit.cover,
+                                color: Colors.black.withOpacity(0.4),
+                                colorBlendMode: BlendMode.darken,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  color: AppColors.azuleskpe,
+                                  child: const Icon(Icons.business, size: 60, color: Colors.white),
+                                ),
+                              ))),
             ),
           ),
 
@@ -346,92 +362,100 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
     String fecha,
     String rutaAsset,
   ) {
-    return Container(
-      height: 110,
-      margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.08),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 110,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.horizontal(
-                left: Radius.circular(15),
-              ),
-              image: DecorationImage(
-                image: AssetImage(
-                  rutaAsset.isNotEmpty
-                      ? rutaAsset
-                      : 'assets/placeholder_playa.jpg',
-                ),
-                fit: BoxFit.cover,
-              ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ReservarViajeScreen(
+              viajeId: viajeId,
+              datosViaje: datosViaje,
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          nombreDestino,
+        );
+      },
+      child: Container(
+        height: 110,
+        margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 110,
+              decoration: BoxDecoration(
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(15),
+                ),
+                image: DecorationImage(
+                  image: AssetImage(
+                    rutaAsset.isNotEmpty
+                        ? rutaAsset
+                        : 'assets/sinfoto.jpg',
+                  ),
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            nombreDestino,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          precioStr,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
+                            color: Color(0xFFB8860B),
                             fontSize: 16,
                           ),
                         ),
-                      ),
-                      Text(
-                        precioStr,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 14,
                           color: Color(0xFFB8860B),
-                          fontSize: 16,
                         ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_today,
-                        size: 14,
-                        color: Color(0xFFB8860B),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        fecha.isEmpty ? "Fechas por definir" : fecha,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.black54,
+                        const SizedBox(width: 5),
+                        Text(
+                          fecha.isEmpty ? "Fechas por definir" : fecha,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          // TODO: Navegar a la futura screen de detalles del viaje
-                        },
-                        child: const Text(
+                      ],
+                    ),
+                    const Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
                           "Ver detalles >",
                           style: TextStyle(
                             color: Colors.grey,
@@ -439,14 +463,14 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
