@@ -15,6 +15,7 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
 
   final TextEditingController _puestosController = TextEditingController();
   final TextEditingController _detallesController = TextEditingController();
+  final TextEditingController _descripcionController = TextEditingController();
 
   String? _destinoIdSeleccionado;
   DateTime? _fechaSeleccionada;
@@ -38,6 +39,7 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
   void dispose() {
     _puestosController.dispose();
     _detallesController.dispose();
+    _descripcionController.dispose();
     super.dispose();
   }
 
@@ -85,6 +87,7 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
     String nombrePlan = 'Básico';
     final List<String> opcionesPlanes = ['Básico', 'Premium', 'Premium+', 'Premium ++'];
     final TextEditingController precioPlanController = TextEditingController();
+    final TextEditingController descripcionPlanController = TextEditingController();
     final TextEditingController beneficioController = TextEditingController();
     List<String> beneficiosAgregados = [];
 
@@ -116,12 +119,22 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                       decoration: const InputDecoration(labelText: "Precio del Plan", prefixIcon: Icon(Icons.attach_money)),
                     ),
                     const SizedBox(height: 10),
+                    TextField(
+                      controller: descripcionPlanController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: "Descripción del Plan / Servicios incluidos",
+                        hintText: "Ej. Incluye transporte ida y vuelta + hospedaje + desayuno",
+                        prefixIcon: Icon(Icons.description),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
                           child: TextField(
                             controller: beneficioController,
-                            decoration: const InputDecoration(labelText: "Agregar beneficio", prefixIcon: Icon(Icons.card_giftcard)),
+                            decoration: const InputDecoration(labelText: "Agregar beneficio individual", prefixIcon: Icon(Icons.card_giftcard)),
                             onSubmitted: (val) {
                               if (val.trim().isNotEmpty) {
                                 setStateDialog(() {
@@ -177,6 +190,7 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                         _planes.add({
                           'nombre': nombrePlan,
                           'precio': double.tryParse(precioPlanController.text) ?? 0.0,
+                          'descripcion': descripcionPlanController.text.trim(),
                           'beneficios': List<String>.from(beneficiosAgregados),
                         });
                       });
@@ -219,6 +233,10 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
     setState(() => _subiendo = true);
 
     try {
+      final String descrip = _descripcionController.text.trim().isNotEmpty
+          ? _descripcionController.text.trim()
+          : _detallesController.text.trim();
+
       // Subimos el nuevo viaje organizado a Firestore
       await FirebaseFirestore.instance.collection('viajes').add({
         'destinoId': _destinoIdSeleccionado,
@@ -228,8 +246,9 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
         'puestosTotales': int.parse(_puestosController.text),
         'puestosDisponibles': int.parse(_puestosController.text),
         'fecha': Timestamp.fromDate(_fechaSeleccionada!),
-        'detallesViaje': _detallesController.text,
-        'planes': _planes, // Nuevo arreglo de planes
+        'descripcion': descrip,
+        'detallesViaje': descrip,
+        'planes': _planes,
       });
 
       if (mounted) {
@@ -338,9 +357,16 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Precio: \$${plan['precio']}"),
+                                  Text("Precio: \$${plan['precio']}", style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E2A4F))),
+                                  if (plan['descripcion'] != null && plan['descripcion'].toString().isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "Incluye: ${plan['descripcion']}",
+                                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                    ),
+                                  ],
                                   const SizedBox(height: 5),
-                                  if (plan['beneficios'] is List)
+                                  if (plan['beneficios'] is List && (plan['beneficios'] as List).isNotEmpty)
                                     Wrap(
                                       spacing: 4,
                                       runSpacing: 4,
@@ -349,7 +375,7 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                                         padding: EdgeInsets.zero,
                                       )).toList(),
                                     )
-                                  else if (plan['beneficios'] is String)
+                                  else if (plan['beneficios'] is String && plan['beneficios'].toString().isNotEmpty)
                                     Text("Beneficios: ${plan['beneficios']}"),
                                 ],
                               ),
@@ -400,14 +426,29 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                     ),
                     const SizedBox(height: 20),
 
-                    // 5. Detalles Adicionales
+                    // 5. Descripción del Viaje / Destino (Detallada)
                     TextFormField(
-                      controller: _detallesController,
-                      maxLines: 3,
+                      controller: _descripcionController,
+                      maxLines: 4,
                       decoration: const InputDecoration(
-                        labelText: "Detalles del viaje (Opcional)",
+                        labelText: "Descripción del Viaje / Destino",
+                        hintText: "Itinerario general, qué incluye la experiencia, puntos de salida, recomendaciones...",
                         alignLabelWithHint: true,
                         prefixIcon: Icon(Icons.description),
+                      ),
+                      validator: (v) =>
+                          v == null || v.trim().isEmpty ? "Ingresa una descripción del viaje" : null,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Detalles Adicionales
+                    TextFormField(
+                      controller: _detallesController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: "Notas o detalles adicionales (Opcional)",
+                        alignLabelWithHint: true,
+                        prefixIcon: Icon(Icons.note_alt_outlined),
                       ),
                     ),
                     const SizedBox(height: 40),

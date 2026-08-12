@@ -21,6 +21,7 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
 
   late TextEditingController _puestosController;
   late TextEditingController _detallesController;
+  late TextEditingController _descripcionController;
 
   DateTime? _fechaSeleccionada;
   bool _guardando = false;
@@ -43,6 +44,7 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
         {
           'nombre': 'Plan Único',
           'precio': double.tryParse(precio) ?? 0.0,
+          'descripcion': 'Servicios básicos incluidos',
           'beneficios': 'Beneficios por defecto'
         }
       ];
@@ -54,6 +56,9 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
 
     _puestosController = TextEditingController(
       text: _puestosTotalesOriginales.toString(),
+    );
+    _descripcionController = TextEditingController(
+      text: widget.datosViaje['descripcion'] ?? widget.datosViaje['detallesViaje'] ?? '',
     );
     _detallesController = TextEditingController(
       text: widget.datosViaje['detallesViaje'] ?? '',
@@ -68,6 +73,7 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
   void dispose() {
     _puestosController.dispose();
     _detallesController.dispose();
+    _descripcionController.dispose();
     super.dispose();
   }
 
@@ -88,6 +94,7 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
     String nombrePlan = 'Básico';
     final List<String> opcionesPlanes = ['Básico', 'Premium', 'Premium+', 'Premium ++'];
     final TextEditingController precioPlanController = TextEditingController();
+    final TextEditingController descripcionPlanController = TextEditingController();
     final TextEditingController beneficioController = TextEditingController();
     List<String> beneficiosAgregados = [];
 
@@ -119,12 +126,22 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                       decoration: const InputDecoration(labelText: "Precio del Plan", prefixIcon: Icon(Icons.attach_money)),
                     ),
                     const SizedBox(height: 10),
+                    TextField(
+                      controller: descripcionPlanController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: "Descripción del Plan / Servicios incluidos",
+                        hintText: "Ej. Incluye pasaje ida y vuelta + hospedaje + desayuno",
+                        prefixIcon: Icon(Icons.description),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
                     Row(
                       children: [
                         Expanded(
                           child: TextField(
                             controller: beneficioController,
-                            decoration: const InputDecoration(labelText: "Agregar beneficio", prefixIcon: Icon(Icons.card_giftcard)),
+                            decoration: const InputDecoration(labelText: "Agregar beneficio individual", prefixIcon: Icon(Icons.card_giftcard)),
                             onSubmitted: (val) {
                               if (val.trim().isNotEmpty) {
                                 setStateDialog(() {
@@ -180,6 +197,7 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                         _planes.add({
                           'nombre': nombrePlan,
                           'precio': double.tryParse(precioPlanController.text) ?? 0.0,
+                          'descripcion': descripcionPlanController.text.trim(),
                           'beneficios': List<String>.from(beneficiosAgregados),
                         });
                       });
@@ -239,6 +257,10 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
         return;
       }
 
+      final String descrip = _descripcionController.text.trim().isNotEmpty
+          ? _descripcionController.text.trim()
+          : _detallesController.text.trim();
+
       await FirebaseFirestore.instance
           .collection('viajes')
           .doc(widget.viajeId)
@@ -246,7 +268,8 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
             'puestosTotales': nuevosTotales,
             'puestosDisponibles': nuevosDisponibles,
             'fecha': Timestamp.fromDate(_fechaSeleccionada!),
-            'detallesViaje': _detallesController.text,
+            'descripcion': descrip,
+            'detallesViaje': descrip,
             'planes': _planes,
           });
 
@@ -353,9 +376,16 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Precio: \$${plan['precio']}"),
+                                  Text("Precio: \$${plan['precio']}", style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E2A4F))),
+                                  if (plan['descripcion'] != null && plan['descripcion'].toString().isNotEmpty) ...[
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "Incluye: ${plan['descripcion']}",
+                                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                    ),
+                                  ],
                                   const SizedBox(height: 5),
-                                  if (plan['beneficios'] is List)
+                                  if (plan['beneficios'] is List && (plan['beneficios'] as List).isNotEmpty)
                                     Wrap(
                                       spacing: 4,
                                       runSpacing: 4,
@@ -364,7 +394,7 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                                         padding: EdgeInsets.zero,
                                       )).toList(),
                                     )
-                                  else if (plan['beneficios'] is String)
+                                  else if (plan['beneficios'] is String && plan['beneficios'].toString().isNotEmpty)
                                     Text("Beneficios: ${plan['beneficios']}"),
                                 ],
                               ),
@@ -419,14 +449,29 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                     ),
                     const SizedBox(height: 20),
 
+                    // Descripción del Viaje / Destino (Detallada)
+                    TextFormField(
+                      controller: _descripcionController,
+                      maxLines: 4,
+                      decoration: const InputDecoration(
+                        labelText: "Descripción del Viaje / Destino",
+                        hintText: "Itinerario general, qué incluye la experiencia, puntos de salida, recomendaciones...",
+                        alignLabelWithHint: true,
+                        prefixIcon: Icon(Icons.description),
+                      ),
+                      validator: (v) =>
+                          v == null || v.trim().isEmpty ? "Ingresa una descripción del viaje" : null,
+                    ),
+                    const SizedBox(height: 20),
+
                     // Detalles Adicionales
                     TextFormField(
                       controller: _detallesController,
-                      maxLines: 3,
+                      maxLines: 2,
                       decoration: const InputDecoration(
-                        labelText: "Detalles del viaje (Opcional)",
+                        labelText: "Notas o detalles adicionales (Opcional)",
                         alignLabelWithHint: true,
-                        prefixIcon: Icon(Icons.description),
+                        prefixIcon: Icon(Icons.note_alt_outlined),
                       ),
                     ),
                     const SizedBox(height: 40),

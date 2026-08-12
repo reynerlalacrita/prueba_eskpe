@@ -176,16 +176,65 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(widget.datosViaje['empresaNombre'] ?? 'Agencia de Viajes', 
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F))),
+                  Text(
+                    widget.datosViaje['empresaNombre'] ?? 'Agencia de Viajes',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+                  ),
                   const Divider(height: 25),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text("Puestos disponibles:", style: TextStyle(fontSize: 16, color: Colors.grey)),
-                      Text("$maxPuestos", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: maxPuestos < 5 ? Colors.orange : Colors.green)),
+                      Text(
+                        "$maxPuestos",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: maxPuestos < 5 ? Colors.orange : Colors.green,
+                        ),
+                      ),
                     ],
                   ),
+                  if ((widget.datosViaje['descripcion'] ?? widget.datosViaje['detallesViaje'] ?? '').toString().trim().isNotEmpty) ...[
+                    const SizedBox(height: 14),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF2E16D1).withOpacity(0.04),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF2E16D1).withOpacity(0.12)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Row(
+                            children: [
+                              Icon(Icons.info_outline, size: 16, color: Color(0xFF2E16D1)),
+                              SizedBox(width: 6),
+                              Text(
+                                "Descripción del viaje:",
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF2E16D1),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            (widget.datosViaje['descripcion'] ?? widget.datosViaje['detallesViaje'] ?? '').toString().trim(),
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              color: Colors.grey[800],
+                              height: 1.45,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -201,6 +250,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
               itemBuilder: (context, index) {
                 final plan = _planesDisponibles[index];
                 final bool isSelected = _planSeleccionado == plan;
+                final String descPlan = (plan['descripcion'] ?? plan['descripcionPlan'] ?? '').toString().trim();
 
                 return GestureDetector(
                   onTap: () {
@@ -243,8 +293,15 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                                   Text("\$${plan['precio']}", style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFA53030), fontSize: 16)),
                                 ],
                               ),
-                              const SizedBox(height: 5),
-                              if (plan['beneficios'] is List)
+                              if (descPlan.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  "Servicios incluidos: $descPlan",
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[700], height: 1.3),
+                                ),
+                              ],
+                              const SizedBox(height: 6),
+                              if (plan['beneficios'] is List && (plan['beneficios'] as List).isNotEmpty)
                                 Wrap(
                                   spacing: 4,
                                   runSpacing: 4,
@@ -254,8 +311,8 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                                     visualDensity: VisualDensity.compact,
                                   )).toList(),
                                 )
-                              else if (plan['beneficios'] is String)
-                                Text(plan['beneficios'], style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                              else if (plan['beneficios'] is String && plan['beneficios'].toString().isNotEmpty)
+                                Text(plan['beneficios'], style: TextStyle(color: Colors.grey[700], fontSize: 12)),
                             ],
                           ),
                         ),
