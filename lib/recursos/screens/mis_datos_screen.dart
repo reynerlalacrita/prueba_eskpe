@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 
 class MisDatosScreen extends StatefulWidget {
@@ -87,14 +89,29 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
     setState(() => _subiendoFoto = true);
 
     try {
-      File archivo = File(imagen.path);
+      File archivoOriginal = File(imagen.path);
       String uid = _usuario.uid;
+      
+      // Comprimir a .webp
+      final tempDir = await getTemporaryDirectory();
+      final targetPath = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.webp';
+      
+      final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
+        archivoOriginal.path,
+        targetPath,
+        format: CompressFormat.webp,
+        quality: 80,
+      );
+
+      if (compressedFile == null) throw Exception("Error al comprimir la imagen");
+      File archivoAsubir = File(compressedFile.path);
+
       Reference ref = FirebaseStorage.instance
           .ref()
           .child('perfiles')
-          .child('$uid.jpg');
+          .child('$uid.webp');
 
-      UploadTask uploadTask = ref.putFile(archivo);
+      UploadTask uploadTask = ref.putFile(archivoAsubir);
       TaskSnapshot snapshot = await uploadTask;
       String urlDescarga = await snapshot.ref.getDownloadURL();
 

@@ -99,6 +99,8 @@ class ListaViajesScreen extends StatelessWidget {
     }
 
     String empresaNombre = data['empresaNombre'] ?? data['empresa'] ?? 'Agencia de Viajes';
+    String puntoSalida = data['puntoSalida'] ?? 'No especificado';
+    String horaSalida = data['horaSalida'] ?? 'No especificada';
 
     return GestureDetector(
       onTap: () {
@@ -113,7 +115,7 @@ class ListaViajesScreen extends StatelessWidget {
         );
       },
       child: Container(
-        height: 140,
+        height: 160,
         margin: const EdgeInsets.only(bottom: 15),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -124,7 +126,7 @@ class ListaViajesScreen extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-              child: _buildImagenViaje(rutaAsset, width: 120, height: 140, fit: BoxFit.cover),
+              child: _buildImagenViaje(rutaAsset, width: 120, height: 160, fit: BoxFit.cover),
             ),
             Expanded(
               child: Padding(
@@ -141,6 +143,20 @@ class ListaViajesScreen extends StatelessWidget {
                         const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
                         const SizedBox(width: 5),
                         Expanded(child: Text(fechaStr, style: const TextStyle(color: Colors.grey, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                        const SizedBox(width: 5),
+                        Expanded(child: Text(horaSalida, style: const TextStyle(color: Colors.grey, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                        const SizedBox(width: 5),
+                        Expanded(child: Text(puntoSalida, style: const TextStyle(color: Colors.grey, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
                       ],
                     ),
                     Row(

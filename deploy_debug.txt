@@ -1,0 +1,442 @@
+[2026-08-14T01:03:40.624Z] ----------------------------------------------------------------------
+[2026-08-14T01:03:40.633Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\jrodr\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions --debug
+[2026-08-14T01:03:40.634Z] CLI Version:   15.27.0
+[2026-08-14T01:03:40.634Z] Platform:      win32
+[2026-08-14T01:03:40.635Z] Node Version:  v24.19.0
+[2026-08-14T01:03:40.635Z] Detected Agent: antigravity
+[2026-08-14T01:03:40.636Z] Time:          Thu Aug 13 2026 21:03:40 GMT-0400 (hora de Venezuela)
+[2026-08-14T01:03:40.637Z] ----------------------------------------------------------------------
+
+[2026-08-14T01:03:44.564Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[2026-08-14T01:03:44.565Z] > authorizing via signed-in user (reyneralejand@gmail.com)
+[2026-08-14T01:03:44.566Z] [iam] checking project trabajo-5aecf for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[2026-08-14T01:03:44.601Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:44.601Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:44.604Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf:testIamPermissions [none]
+[2026-08-14T01:03:44.605Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf:testIamPermissions  x-goog-user-project=trabajo-5aecf
+[2026-08-14T01:03:44.605Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[2026-08-14T01:03:45.067Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf:testIamPermissions 200
+[2026-08-14T01:03:45.068Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[2026-08-14T01:03:45.070Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:45.071Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:45.071Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/trabajo-5aecf/serviceAccounts/trabajo-5aecf@appspot.gserviceaccount.com:testIamPermissions [none]
+[2026-08-14T01:03:45.072Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/trabajo-5aecf/serviceAccounts/trabajo-5aecf@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[2026-08-14T01:03:45.504Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/trabajo-5aecf/serviceAccounts/trabajo-5aecf@appspot.gserviceaccount.com:testIamPermissions 200
+[2026-08-14T01:03:45.505Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/trabajo-5aecf/serviceAccounts/trabajo-5aecf@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+
+=== Deploying to 'trabajo-5aecf'...
+
+i  deploying functions 
+[2026-08-14T01:03:45.512Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:45.512Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:45.512Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf [none]
+[2026-08-14T01:03:45.659Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf 200
+[2026-08-14T01:03:45.659Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf {"projectNumber":"143524415006","projectId":"trabajo-5aecf","lifecycleState":"ACTIVE","name":"trabajo","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-06-21T03:39:33.893Z"}
+i  functions: preparing codebase default for deployment 
+i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[2026-08-14T01:03:45.670Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:45.670Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:45.671Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/trabajo-5aecf/adminSdkConfig [none]
+[2026-08-14T01:03:46.207Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/trabajo-5aecf/adminSdkConfig 200
+[2026-08-14T01:03:46.208Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/trabajo-5aecf/adminSdkConfig {"projectId":"trabajo-5aecf","storageBucket":"trabajo-5aecf.firebasestorage.app"}
+[2026-08-14T01:03:46.209Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:46.210Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:46.210Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/trabajo-5aecf/configs [none]
+[2026-08-14T01:03:46.745Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/trabajo-5aecf/configs 200
+[2026-08-14T01:03:46.745Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/trabajo-5aecf/configs {}
+[2026-08-14T01:03:46.750Z] Validating nodejs source
+[2026-08-14T01:03:50.087Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Eskpe App",
+  "scripts": {
+    "lint": "eslint",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "firebase-admin": "^14.2.0",
+    "firebase-functions": "^7.3.2"
+  },
+  "devDependencies": {
+    "eslint": "^8.9.0",
+    "eslint-config-google": "^0.14.0"
+  },
+  "private": true
+}
+[2026-08-14T01:03:50.088Z] Building nodejs source
+i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[2026-08-14T01:03:50.094Z] Could not find functions.yaml. Must use http discovery
+[2026-08-14T01:03:50.125Z] Found firebase-functions binary at 'C:\Users\jrodr\Music\prueba_eskpe\functions\node_modules\.bin\firebase-functions'
+Serving at port 8399
+
+[2026-08-14T01:03:52.018Z] Got response from /__/functions.yaml {"endpoints":{"notificarNuevaReserva":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"eventTrigger":{"eventType":"google.cloud.firestore.document.v1.created","eventFilters":{"database":"(default)","namespace":"(default)"},"eventFilterPathPatterns":{"document":"reservaciones/{reservaId}"},"retry":false},"entryPoint":"notificarNuevaReserva"},"notificarCambioEstadoReserva":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"eventTrigger":{"eventType":"google.cloud.firestore.document.v1.updated","eventFilters":{"database":"(default)","namespace":"(default)"},"eventFilterPathPatterns":{"document":"reservaciones/{reservaId}"},"retry":false},"entryPoint":"notificarCambioEstadoReserva"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[2026-08-14T01:03:55.084Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:55.085Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:55.086Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/trabajo-5aecf/locations/-/functions [none]
+[2026-08-14T01:03:55.993Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/trabajo-5aecf/locations/-/functions 200
+[2026-08-14T01:03:55.993Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/trabajo-5aecf/locations/-/functions {}
+[2026-08-14T01:03:55.994Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:55.994Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:56.014Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/-/functions filter=environment%3D%22GEN_2%22
+[2026-08-14T01:03:56.579Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/-/functions 200
+[2026-08-14T01:03:56.579Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/-/functions {}
+i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[2026-08-14T01:03:56.584Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:56.585Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:56.585Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/firebaseextensions.googleapis.com [none]
+[2026-08-14T01:03:56.585Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/firebaseextensions.googleapis.com  x-goog-user-project=trabajo-5aecf
+[2026-08-14T01:03:57.176Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/firebaseextensions.googleapis.com 200
+[2026-08-14T01:03:57.176Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/firebaseextensions.googleapis.com [omitted]
+!  extensions: missing required API firebaseextensions.googleapis.com. Enabling now... 
+[2026-08-14T01:03:57.177Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:57.178Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:03:57.178Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/firebaseextensions.googleapis.com:enable [none]
+[2026-08-14T01:03:57.178Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/firebaseextensions.googleapis.com:enable  x-goog-user-project=trabajo-5aecf
+[2026-08-14T01:03:57.827Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/firebaseextensions.googleapis.com:enable 200
+[2026-08-14T01:03:57.828Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/firebaseextensions.googleapis.com:enable [omitted]
+[2026-08-14T01:04:07.865Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[2026-08-14T01:04:07.866Z] > authorizing via signed-in user (reyneralejand@gmail.com)
+[2026-08-14T01:04:07.866Z] [iam] checking project trabajo-5aecf for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[2026-08-14T01:04:07.867Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:07.867Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:07.867Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf:testIamPermissions [none]
+[2026-08-14T01:04:07.867Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf:testIamPermissions  x-goog-user-project=trabajo-5aecf
+[2026-08-14T01:04:07.867Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[2026-08-14T01:04:08.197Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf:testIamPermissions 200
+[2026-08-14T01:04:08.197Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[2026-08-14T01:04:08.198Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:08.199Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:08.199Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/trabajo-5aecf/instances pageSize=100&pageToken=
+[2026-08-14T01:04:10.682Z] <<< [apiv2][status] GET https://firebaseextensions.googleapis.com/v1beta/projects/trabajo-5aecf/instances 200
+[2026-08-14T01:04:10.682Z] <<< [apiv2][body] GET https://firebaseextensions.googleapis.com/v1beta/projects/trabajo-5aecf/instances {}
+[2026-08-14T01:04:10.686Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:10.686Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:10.687Z] >>> [apiv2][query] GET https://firestore.googleapis.com/v1/projects/trabajo-5aecf/databases/(default) [none]
+[2026-08-14T01:04:11.197Z] <<< [apiv2][status] GET https://firestore.googleapis.com/v1/projects/trabajo-5aecf/databases/(default) 200
+[2026-08-14T01:04:11.197Z] <<< [apiv2][body] GET https://firestore.googleapis.com/v1/projects/trabajo-5aecf/databases/(default) {"name":"projects/trabajo-5aecf/databases/(default)","uid":"50750dad-f43e-4c7b-9558-cfeaabca3525","createTime":"2026-06-21T05:12:07.393756Z","updateTime":"2026-06-21T05:12:07.393756Z","locationId":"nam5","type":"FIRESTORE_NATIVE","concurrencyMode":"PESSIMISTIC","versionRetentionPeriod":"3600s","earliestVersionTime":"2026-08-14T00:04:10.060861Z","appEngineIntegrationMode":"DISABLED","keyPrefix":"s","pointInTimeRecoveryEnablement":"POINT_IN_TIME_RECOVERY_DISABLED","deleteProtectionState":"DELETE_PROTECTION_DISABLED","databaseEdition":"STANDARD","freeTier":true,"realtimeUpdatesMode":"REALTIME_UPDATES_MODE_ENABLED","etag":"IKrDm6/2npYDMNiqnZ64mJUD"}
+[2026-08-14T01:04:11.198Z] Attempting to merge .env secret bindings {} into declared secrets...)}
+[2026-08-14T01:04:11.198Z] notificarNuevaReserva declared secrets: undefined
+[2026-08-14T01:04:11.198Z] notificarCambioEstadoReserva declared secrets: undefined
+i  functions: preparing functions directory for uploading... 
+i  functions: packaged C:\Users\jrodr\Music\prueba_eskpe\functions (46.19 KB) for uploading 
+i  functions: ensuring required API run.googleapis.com is enabled... 
+[2026-08-14T01:04:11.305Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:11.306Z] Checked if tokens are valid: true, expires at: 1786671226759
+i  functions: ensuring required API eventarc.googleapis.com is enabled... 
+[2026-08-14T01:04:11.307Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:11.307Z] Checked if tokens are valid: true, expires at: 1786671226759
+i  functions: ensuring required API pubsub.googleapis.com is enabled... 
+[2026-08-14T01:04:11.309Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:11.309Z] Checked if tokens are valid: true, expires at: 1786671226759
+i  functions: ensuring required API storage.googleapis.com is enabled... 
+[2026-08-14T01:04:11.311Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:11.311Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:11.311Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/run.googleapis.com [none]
+[2026-08-14T01:04:11.311Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/run.googleapis.com  x-goog-user-project=143524415006
+[2026-08-14T01:04:11.313Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/eventarc.googleapis.com [none]
+[2026-08-14T01:04:11.313Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/eventarc.googleapis.com  x-goog-user-project=143524415006
+[2026-08-14T01:04:11.314Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/pubsub.googleapis.com [none]
+[2026-08-14T01:04:11.314Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/pubsub.googleapis.com  x-goog-user-project=143524415006
+[2026-08-14T01:04:11.315Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/storage.googleapis.com [none]
+[2026-08-14T01:04:11.315Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/storage.googleapis.com  x-goog-user-project=143524415006
+[2026-08-14T01:04:11.826Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/pubsub.googleapis.com 200
+[2026-08-14T01:04:11.827Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/pubsub.googleapis.com [omitted]
++  functions: required API pubsub.googleapis.com is enabled 
+[2026-08-14T01:04:11.849Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/eventarc.googleapis.com 200
+[2026-08-14T01:04:11.849Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/eventarc.googleapis.com [omitted]
+!  functions: missing required API eventarc.googleapis.com. Enabling now... 
+[2026-08-14T01:04:11.850Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:11.850Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:11.850Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/143524415006/services/eventarc.googleapis.com:enable [none]
+[2026-08-14T01:04:11.850Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/143524415006/services/eventarc.googleapis.com:enable  x-goog-user-project=143524415006
+[2026-08-14T01:04:11.863Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/storage.googleapis.com 200
+[2026-08-14T01:04:11.863Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/storage.googleapis.com [omitted]
++  functions: required API storage.googleapis.com is enabled 
+[2026-08-14T01:04:12.049Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/run.googleapis.com 200
+[2026-08-14T01:04:12.049Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/143524415006/services/run.googleapis.com [omitted]
+!  functions: missing required API run.googleapis.com. Enabling now... 
+[2026-08-14T01:04:12.050Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:12.050Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:12.050Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/143524415006/services/run.googleapis.com:enable [none]
+[2026-08-14T01:04:12.051Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/143524415006/services/run.googleapis.com:enable  x-goog-user-project=143524415006
+[2026-08-14T01:04:12.497Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/143524415006/services/eventarc.googleapis.com:enable 200
+[2026-08-14T01:04:12.498Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/143524415006/services/eventarc.googleapis.com:enable [omitted]
+[2026-08-14T01:04:12.775Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/143524415006/services/run.googleapis.com:enable 200
+[2026-08-14T01:04:12.775Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/143524415006/services/run.googleapis.com:enable [omitted]
+i  functions: generating the service identity for pubsub.googleapis.com... 
+[2026-08-14T01:04:22.832Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:22.833Z] Checked if tokens are valid: true, expires at: 1786671226759
+i  functions: generating the service identity for eventarc.googleapis.com... 
+[2026-08-14T01:04:22.833Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:22.833Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:22.834Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/143524415006/services/pubsub.googleapis.com:generateServiceIdentity [none]
+[2026-08-14T01:04:22.834Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1beta1/projects/143524415006/services/pubsub.googleapis.com:generateServiceIdentity  x-goog-user-project=143524415006
+[2026-08-14T01:04:22.834Z] >>> [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/143524415006/services/pubsub.googleapis.com:generateServiceIdentity {}
+[2026-08-14T01:04:22.835Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/143524415006/services/eventarc.googleapis.com:generateServiceIdentity [none]
+[2026-08-14T01:04:22.835Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1beta1/projects/143524415006/services/eventarc.googleapis.com:generateServiceIdentity  x-goog-user-project=143524415006
+[2026-08-14T01:04:22.835Z] >>> [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/143524415006/services/eventarc.googleapis.com:generateServiceIdentity {}
+[2026-08-14T01:04:23.616Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/143524415006/services/eventarc.googleapis.com:generateServiceIdentity 200
+[2026-08-14T01:04:23.617Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/143524415006/services/eventarc.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-143524415006@gcp-sa-eventarc.iam.gserviceaccount.com","uniqueId":"102657426432822164760"}}
+[2026-08-14T01:04:23.735Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/143524415006/services/pubsub.googleapis.com:generateServiceIdentity 200
+[2026-08-14T01:04:23.735Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/143524415006/services/pubsub.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-143524415006@gcp-sa-pubsub.iam.gserviceaccount.com","uniqueId":"114813118591260561523"}}
+[2026-08-14T01:04:23.739Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:23.739Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:23.740Z] >>> [apiv2][query] GET https://compute.googleapis.com/compute/v1/projects/143524415006 [none]
+[2026-08-14T01:04:24.081Z] <<< [apiv2][status] GET https://compute.googleapis.com/compute/v1/projects/143524415006 403
+[2026-08-14T01:04:24.082Z] <<< [apiv2][body] GET https://compute.googleapis.com/compute/v1/projects/143524415006 {"error":{"code":403,"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006","service":"compute.googleapis.com","consumer":"projects/143524415006","serviceTitle":"Compute Engine API","containerInfo":"143524415006"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006"}]}]}}
+[2026-08-14T01:04:24.083Z] unable to look up default compute service account. Falling back to 143524415006-compute@developer.gserviceaccount.com. Error: {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":403,"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006","service":"compute.googleapis.com","consumer":"projects/143524415006","serviceTitle":"Compute Engine API","containerInfo":"143524415006"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006"}]}]}},"response":{"statusCode":403}},"exit":1,"message":"Request to https://compute.googleapis.com/compute/v1/projects/143524415006 had HTTP Error: 403, Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":403}
+[2026-08-14T01:04:24.084Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:24.084Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:24.085Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/143524415006:getIamPolicy [none]
+[2026-08-14T01:04:24.565Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/143524415006:getIamPolicy 200
+[2026-08-14T01:04:24.566Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/143524415006:getIamPolicy {"version":1,"etag":"BwZY92YpIFo=","bindings":[{"role":"roles/cloudbuild.builds.builder","members":["serviceAccount:143524415006@cloudbuild.gserviceaccount.com"]},{"role":"roles/cloudbuild.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-cloudbuild.iam.gserviceaccount.com"]},{"role":"roles/cloudfunctions.serviceAgent","members":["serviceAccount:service-143524415006@gcf-admin-robot.iam.gserviceaccount.com"]},{"role":"roles/containerregistry.ServiceAgent","members":["serviceAccount:service-143524415006@containerregistry.iam.gserviceaccount.com"]},{"role":"roles/editor","members":["serviceAccount:143524415006-compute@developer.gserviceaccount.com","serviceAccount:143524415006@cloudservices.gserviceaccount.com","serviceAccount:trabajo-5aecf@appspot.gserviceaccount.com","user:greyberth4@gmail.com"]},{"role":"roles/firebase.managementServiceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firebase.iam.gserviceaccount.com"]},{"role":"roles/firebase.sdkAdminServiceAgent","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com"]},{"role":"roles/firebaseauth.admin","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com"]},{"role":"roles/firebasemods.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firebasemods.iam.gserviceaccount.com"]},{"role":"roles/firebaserules.system","members":["serviceAccount:service-143524415006@firebase-rules.iam.gserviceaccount.com"]},{"role":"roles/firebasestorage.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firebasestorage.iam.gserviceaccount.com"]},{"role":"roles/firestore.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firestore.iam.gserviceaccount.com"]},{"role":"roles/iam.serviceAccountTokenCreator","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com"]},{"role":"roles/owner","members":["user:reyneralejand@gmail.com"]},{"role":"roles/run.serviceAgent","members":["serviceAccount:service-143524415006@serverless-robot-prod.iam.gserviceaccount.com"]},{"role":"roles/storage.admin","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com"]}]}
+[2026-08-14T01:04:24.567Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:24.567Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:24.567Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/143524415006:setIamPolicy [none]
+[2026-08-14T01:04:24.567Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/143524415006:setIamPolicy {"policy":{"version":1,"etag":"BwZY92YpIFo=","bindings":[{"role":"roles/cloudbuild.builds.builder","members":["serviceAccount:143524415006@cloudbuild.gserviceaccount.com"]},{"role":"roles/cloudbuild.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-cloudbuild.iam.gserviceaccount.com"]},{"role":"roles/cloudfunctions.serviceAgent","members":["serviceAccount:service-143524415006@gcf-admin-robot.iam.gserviceaccount.com"]},{"role":"roles/containerregistry.ServiceAgent","members":["serviceAccount:service-143524415006@containerregistry.iam.gserviceaccount.com"]},{"role":"roles/editor","members":["serviceAccount:143524415006-compute@developer.gserviceaccount.com","serviceAccount:143524415006@cloudservices.gserviceaccount.com","serviceAccount:trabajo-5aecf@appspot.gserviceaccount.com","user:greyberth4@gmail.com"]},{"role":"roles/firebase.managementServiceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firebase.iam.gserviceaccount.com"]},{"role":"roles/firebase.sdkAdminServiceAgent","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com"]},{"role":"roles/firebaseauth.admin","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com"]},{"role":"roles/firebasemods.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firebasemods.iam.gserviceaccount.com"]},{"role":"roles/firebaserules.system","members":["serviceAccount:service-143524415006@firebase-rules.iam.gserviceaccount.com"]},{"role":"roles/firebasestorage.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firebasestorage.iam.gserviceaccount.com"]},{"role":"roles/firestore.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firestore.iam.gserviceaccount.com"]},{"role":"roles/iam.serviceAccountTokenCreator","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com","serviceAccount:service-143524415006@gcp-sa-pubsub.iam.gserviceaccount.com"]},{"role":"roles/owner","members":["user:reyneralejand@gmail.com"]},{"role":"roles/run.serviceAgent","members":["serviceAccount:service-143524415006@serverless-robot-prod.iam.gserviceaccount.com"]},{"role":"roles/storage.admin","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com"]},{"role":"roles/run.invoker","members":["serviceAccount:143524415006-compute@developer.gserviceaccount.com"]},{"role":"roles/eventarc.eventReceiver","members":["serviceAccount:143524415006-compute@developer.gserviceaccount.com"]}]},"updateMask":"bindings"}
+[2026-08-14T01:04:25.666Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/143524415006:setIamPolicy 200
+[2026-08-14T01:04:25.667Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/143524415006:setIamPolicy {"version":1,"etag":"BwZY92bDb2Q=","bindings":[{"role":"roles/cloudbuild.builds.builder","members":["serviceAccount:143524415006@cloudbuild.gserviceaccount.com"]},{"role":"roles/cloudbuild.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-cloudbuild.iam.gserviceaccount.com"]},{"role":"roles/cloudfunctions.serviceAgent","members":["serviceAccount:service-143524415006@gcf-admin-robot.iam.gserviceaccount.com"]},{"role":"roles/containerregistry.ServiceAgent","members":["serviceAccount:service-143524415006@containerregistry.iam.gserviceaccount.com"]},{"role":"roles/editor","members":["serviceAccount:143524415006-compute@developer.gserviceaccount.com","serviceAccount:143524415006@cloudservices.gserviceaccount.com","serviceAccount:trabajo-5aecf@appspot.gserviceaccount.com","user:greyberth4@gmail.com"]},{"role":"roles/eventarc.eventReceiver","members":["serviceAccount:143524415006-compute@developer.gserviceaccount.com"]},{"role":"roles/firebase.managementServiceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firebase.iam.gserviceaccount.com"]},{"role":"roles/firebase.sdkAdminServiceAgent","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com"]},{"role":"roles/firebaseauth.admin","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com"]},{"role":"roles/firebasemods.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firebasemods.iam.gserviceaccount.com"]},{"role":"roles/firebaserules.system","members":["serviceAccount:service-143524415006@firebase-rules.iam.gserviceaccount.com"]},{"role":"roles/firebasestorage.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firebasestorage.iam.gserviceaccount.com"]},{"role":"roles/firestore.serviceAgent","members":["serviceAccount:service-143524415006@gcp-sa-firestore.iam.gserviceaccount.com"]},{"role":"roles/iam.serviceAccountTokenCreator","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com","serviceAccount:service-143524415006@gcp-sa-pubsub.iam.gserviceaccount.com"]},{"role":"roles/owner","members":["user:reyneralejand@gmail.com"]},{"role":"roles/run.invoker","members":["serviceAccount:143524415006-compute@developer.gserviceaccount.com"]},{"role":"roles/run.serviceAgent","members":["serviceAccount:service-143524415006@serverless-robot-prod.iam.gserviceaccount.com"]},{"role":"roles/storage.admin","members":["serviceAccount:firebase-adminsdk-fbsvc@trabajo-5aecf.iam.gserviceaccount.com"]}]}
+[2026-08-14T01:04:25.672Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:25.673Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:25.673Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf [none]
+[2026-08-14T01:04:25.844Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf 200
+[2026-08-14T01:04:25.845Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/trabajo-5aecf {"projectNumber":"143524415006","projectId":"trabajo-5aecf","lifecycleState":"ACTIVE","name":"trabajo","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-06-21T03:39:33.893Z"}
+[2026-08-14T01:04:25.845Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:25.845Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:25.845Z] >>> [apiv2][query] GET https://compute.googleapis.com/compute/v1/projects/143524415006 [none]
+[2026-08-14T01:04:26.072Z] <<< [apiv2][status] GET https://compute.googleapis.com/compute/v1/projects/143524415006 403
+[2026-08-14T01:04:26.072Z] <<< [apiv2][body] GET https://compute.googleapis.com/compute/v1/projects/143524415006 {"error":{"code":403,"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"service":"compute.googleapis.com","consumer":"projects/143524415006","containerInfo":"143524415006","serviceTitle":"Compute Engine API","activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006"}]}]}}
+[2026-08-14T01:04:26.073Z] unable to look up default compute service account. Falling back to 143524415006-compute@developer.gserviceaccount.com. Error: {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":403,"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"service":"compute.googleapis.com","consumer":"projects/143524415006","containerInfo":"143524415006","serviceTitle":"Compute Engine API","activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006"}]}]}},"response":{"statusCode":403}},"exit":1,"message":"Request to https://compute.googleapis.com/compute/v1/projects/143524415006 had HTTP Error: 403, Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":403}
+[2026-08-14T01:04:26.073Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:26.073Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:26.074Z] >>> [apiv2][query] GET https://compute.googleapis.com/compute/v1/projects/143524415006 [none]
+[2026-08-14T01:04:26.196Z] <<< [apiv2][status] GET https://compute.googleapis.com/compute/v1/projects/143524415006 403
+[2026-08-14T01:04:26.197Z] <<< [apiv2][body] GET https://compute.googleapis.com/compute/v1/projects/143524415006 {"error":{"code":403,"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"consumer":"projects/143524415006","containerInfo":"143524415006","service":"compute.googleapis.com","activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006","serviceTitle":"Compute Engine API"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006"}]}]}}
+[2026-08-14T01:04:26.197Z] unable to look up default compute service account. Falling back to 143524415006-compute@developer.gserviceaccount.com. Error: {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":403,"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"consumer":"projects/143524415006","containerInfo":"143524415006","service":"compute.googleapis.com","activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006","serviceTitle":"Compute Engine API"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006"}]}]}},"response":{"statusCode":403}},"exit":1,"message":"Request to https://compute.googleapis.com/compute/v1/projects/143524415006 had HTTP Error: 403, Compute Engine API has not been used in project 143524415006 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=143524415006 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":403}
+[2026-08-14T01:04:26.202Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:26.202Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:26.202Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/cloudbilling.googleapis.com [none]
+[2026-08-14T01:04:26.203Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/cloudbilling.googleapis.com  x-goog-user-project=trabajo-5aecf
+[2026-08-14T01:04:26.475Z] <<< [apiv2][status] GET https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/cloudbilling.googleapis.com 200
+[2026-08-14T01:04:26.476Z] <<< [apiv2][body] GET https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/cloudbilling.googleapis.com [omitted]
+[2026-08-14T01:04:26.476Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:26.476Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:26.477Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/cloudbilling.googleapis.com:enable [none]
+[2026-08-14T01:04:26.477Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/cloudbilling.googleapis.com:enable  x-goog-user-project=trabajo-5aecf
+[2026-08-14T01:04:27.297Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/cloudbilling.googleapis.com:enable 200
+[2026-08-14T01:04:27.298Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1/projects/trabajo-5aecf/services/cloudbilling.googleapis.com:enable [omitted]
+[2026-08-14T01:04:37.342Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:37.342Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:37.343Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/trabajo-5aecf/billingInfo [none]
+[2026-08-14T01:04:37.343Z] >>> [apiv2][(partial)header] GET https://cloudbilling.googleapis.com/v1/projects/trabajo-5aecf/billingInfo  x-goog-user-project=trabajo-5aecf
+[2026-08-14T01:04:37.769Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/trabajo-5aecf/billingInfo 200
+[2026-08-14T01:04:37.769Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/trabajo-5aecf/billingInfo {"name":"projects/trabajo-5aecf/billingInfo","projectId":"trabajo-5aecf","billingAccountName":"billingAccounts/015739-A72BA7-5E6C6C","billingEnabled":true}
+[2026-08-14T01:04:37.772Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:37.773Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:37.773Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions:generateUploadUrl [none]
+[2026-08-14T01:04:39.734Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions:generateUploadUrl 200
+[2026-08-14T01:04:39.734Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions:generateUploadUrl {"uploadUrl":"https://storage.googleapis.com/gcf-v2-uploads-143524415006.us-central1.cloudfunctions.appspot.com/8e680c29-5cba-47f8-bfec-763982f7f53d.zip?GoogleAccessId=service-143524415006@gcf-admin-robot.iam.gserviceaccount.com&Expires=1786671278&Signature=MgKt1brLDiUxLFYPiwPyFMr83j8QODVFdIbEOl2pm6VndwBz4mFxybEOTxSG%2BgEZsciQ%2FMoqm5TZcTHOynIw4fYdGMGczhwqYCzPxJmAlW4%2BxpkGz309S%2BjcUkB%2BjebmeyMa4fIMGWYG47imbKL%2BsVExZVBNXHABd3nqmNcYfibD%2FGj64xOupUH1QqoTSewho6XI83fy3rhzrk9hGafEMi5Y5sN9PoJlJw93EhQGWwsSQKmvKknTVrXMAaNmz7Z5cWBnTZZ5X3bMLGvDWEmYgtuLDDlNrLXRetZtmjfwSoL2%2F8ojDYDY3JpHZdnnvlxrfuLukdwYBe1YYYtMG59fFg%3D%3D","storageSource":{"bucket":"gcf-v2-uploads-143524415006.us-central1.cloudfunctions.appspot.com","object":"8e680c29-5cba-47f8-bfec-763982f7f53d.zip"}}
+[2026-08-14T01:04:39.736Z] >>> [apiv2][query] PUT https://storage.googleapis.com/gcf-v2-uploads-143524415006.us-central1.cloudfunctions.appspot.com/8e680c29-5cba-47f8-bfec-763982f7f53d.zip GoogleAccessId=service-143524415006%40gcf-admin-robot.iam.gserviceaccount.com&Expires=1786671278&Signature=MgKt1brLDiUxLFYPiwPyFMr83j8QODVFdIbEOl2pm6VndwBz4mFxybEOTxSG%2BgEZsciQ%2FMoqm5TZcTHOynIw4fYdGMGczhwqYCzPxJmAlW4%2BxpkGz309S%2BjcUkB%2BjebmeyMa4fIMGWYG47imbKL%2BsVExZVBNXHABd3nqmNcYfibD%2FGj64xOupUH1QqoTSewho6XI83fy3rhzrk9hGafEMi5Y5sN9PoJlJw93EhQGWwsSQKmvKknTVrXMAaNmz7Z5cWBnTZZ5X3bMLGvDWEmYgtuLDDlNrLXRetZtmjfwSoL2%2F8ojDYDY3JpHZdnnvlxrfuLukdwYBe1YYYtMG59fFg%3D%3D
+[2026-08-14T01:04:39.736Z] >>> [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-143524415006.us-central1.cloudfunctions.appspot.com/8e680c29-5cba-47f8-bfec-763982f7f53d.zip [stream]
+[2026-08-14T01:04:40.298Z] <<< [apiv2][status] PUT https://storage.googleapis.com/gcf-v2-uploads-143524415006.us-central1.cloudfunctions.appspot.com/8e680c29-5cba-47f8-bfec-763982f7f53d.zip 200
+[2026-08-14T01:04:40.299Z] <<< [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-143524415006.us-central1.cloudfunctions.appspot.com/8e680c29-5cba-47f8-bfec-763982f7f53d.zip [omitted]
++  functions: functions source uploaded successfully 
+i  functions: creating Node.js 22 (2nd Gen) function notificarNuevaReserva(us-central1)... 
+i  functions: creating Node.js 22 (2nd Gen) function notificarCambioEstadoReserva(us-central1)... 
+[2026-08-14T01:04:40.308Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:40.309Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:40.309Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions functionId=notificarNuevaReserva
+[2026-08-14T01:04:40.309Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions {"name":"projects/trabajo-5aecf/locations/us-central1/functions/notificarNuevaReserva","buildConfig":{"runtime":"nodejs22","entryPoint":"notificarNuevaReserva","source":{"storageSource":{"bucket":"gcf-v2-uploads-143524415006.us-central1.cloudfunctions.appspot.com","object":"8e680c29-5cba-47f8-bfec-763982f7f53d.zip"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""}},"serviceConfig":{"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"trabajo-5aecf\",\"storageBucket\":\"trabajo-5aecf.firebasestorage.app\"}","GCLOUD_PROJECT":"trabajo-5aecf","EVENTARC_CLOUD_EVENT_SOURCE":"projects/trabajo-5aecf/locations/us-central1/services/notificarNuevaReserva","FUNCTION_REGION":"us-central1","FUNCTION_SIGNATURE_TYPE":"cloudevent","FUNCTION_TARGET":"notificarNuevaReserva","LOG_EXECUTION_ID":"true"},"ingressSettings":null,"timeoutSeconds":null,"serviceAccountEmail":null,"availableMemory":"256Mi","minInstanceCount":null,"maxInstanceCount":null,"maxInstanceRequestConcurrency":80,"availableCpu":"1","vpcConnector":null,"vpcConnectorEgressSettings":null,"directVpcNetworkInterface":null,"directVpcEgress":null},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"58e29e70c7caa9a41efcbaf5bee3e3c80840c49a"},"eventTrigger":{"eventType":"google.cloud.firestore.document.v1.created","retryPolicy":"RETRY_POLICY_DO_NOT_RETRY","eventFilters":[{"attribute":"database","value":"(default)"},{"attribute":"namespace","value":"(default)"},{"attribute":"document","value":"reservaciones/{reservaId}","operator":"match-path-pattern"}],"triggerRegion":"nam5"}}
+[2026-08-14T01:04:57.080Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions 400
+[2026-08-14T01:04:57.081Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions {"error":{"code":400,"message":"Validation failed for trigger projects/trabajo-5aecf/locations/nam5/triggers/notificarnuevareserva-736076: Invalid resource state for \"\": Permission denied while using the Eventarc Service Agent. If you recently started to use Eventarc, it may take a few minutes before all necessary permissions are propagated to the Service Agent. Otherwise, verify that it has Eventarc Service Agent role.","status":"FAILED_PRECONDITION"}}
+!  functions: Request to https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions?functionId=notificarNuevaReserva had HTTP Error: 400, Validation failed for trigger projects/trabajo-5aecf/locations/nam5/triggers/notificarnuevareserva-736076: Invalid resource state for "": Permission denied while using the Eventarc Service Agent. If you recently started to use Eventarc, it may take a few minutes before all necessary permissions are propagated to the Service Agent. Otherwise, verify that it has Eventarc Service Agent role. 
+!  functions: Since this is your first time using 2nd gen functions, we need a little bit longer to finish setting everything up. Retry the deployment in a few minutes. 
+!  functions:  failed to create function projects/trabajo-5aecf/locations/us-central1/functions/notificarNuevaReserva 
+Failed to create function projects/trabajo-5aecf/locations/us-central1/functions/notificarNuevaReserva
+[2026-08-14T01:04:57.086Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:57.088Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:04:57.089Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions functionId=notificarCambioEstadoReserva
+[2026-08-14T01:04:57.089Z] >>> [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions {"name":"projects/trabajo-5aecf/locations/us-central1/functions/notificarCambioEstadoReserva","buildConfig":{"runtime":"nodejs22","entryPoint":"notificarCambioEstadoReserva","source":{"storageSource":{"bucket":"gcf-v2-uploads-143524415006.us-central1.cloudfunctions.appspot.com","object":"8e680c29-5cba-47f8-bfec-763982f7f53d.zip"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""}},"serviceConfig":{"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"trabajo-5aecf\",\"storageBucket\":\"trabajo-5aecf.firebasestorage.app\"}","GCLOUD_PROJECT":"trabajo-5aecf","EVENTARC_CLOUD_EVENT_SOURCE":"projects/trabajo-5aecf/locations/us-central1/services/notificarCambioEstadoReserva","FUNCTION_REGION":"us-central1","FUNCTION_SIGNATURE_TYPE":"cloudevent","FUNCTION_TARGET":"notificarCambioEstadoReserva","LOG_EXECUTION_ID":"true"},"ingressSettings":null,"timeoutSeconds":null,"serviceAccountEmail":null,"availableMemory":"256Mi","minInstanceCount":null,"maxInstanceCount":null,"maxInstanceRequestConcurrency":80,"availableCpu":"1","vpcConnector":null,"vpcConnectorEgressSettings":null,"directVpcNetworkInterface":null,"directVpcEgress":null},"labels":{"deployment-tool":"cli-firebase","firebase-functions-hash":"58e29e70c7caa9a41efcbaf5bee3e3c80840c49a"},"eventTrigger":{"eventType":"google.cloud.firestore.document.v1.updated","retryPolicy":"RETRY_POLICY_DO_NOT_RETRY","eventFilters":[{"attribute":"database","value":"(default)"},{"attribute":"namespace","value":"(default)"},{"attribute":"document","value":"reservaciones/{reservaId}","operator":"match-path-pattern"}],"triggerRegion":"nam5"}}
+[2026-08-14T01:05:12.390Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions 400
+[2026-08-14T01:05:12.391Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions {"error":{"code":400,"message":"Validation failed for trigger projects/trabajo-5aecf/locations/nam5/triggers/notificarcambioestadoreserva-358337: Invalid resource state for \"\": Permission denied while using the Eventarc Service Agent. If you recently started to use Eventarc, it may take a few minutes before all necessary permissions are propagated to the Service Agent. Otherwise, verify that it has Eventarc Service Agent role.","status":"FAILED_PRECONDITION"}}
+!  functions: Request to https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions?functionId=notificarCambioEstadoReserva had HTTP Error: 400, Validation failed for trigger projects/trabajo-5aecf/locations/nam5/triggers/notificarcambioestadoreserva-358337: Invalid resource state for "": Permission denied while using the Eventarc Service Agent. If you recently started to use Eventarc, it may take a few minutes before all necessary permissions are propagated to the Service Agent. Otherwise, verify that it has Eventarc Service Agent role. 
+!  functions: Since this is your first time using 2nd gen functions, we need a little bit longer to finish setting everything up. Retry the deployment in a few minutes. 
+!  functions:  failed to create function projects/trabajo-5aecf/locations/us-central1/functions/notificarCambioEstadoReserva 
+Failed to create function projects/trabajo-5aecf/locations/us-central1/functions/notificarCambioEstadoReserva
+!  functions: Deploys failed. Skipping deletes. 
+[2026-08-14T01:05:12.412Z] Total Function Deployment time: 32088
+[2026-08-14T01:05:12.413Z] 2 Functions Deployed
+[2026-08-14T01:05:12.413Z] 2 Functions Errored
+[2026-08-14T01:05:12.413Z] 0 Function Deployments Aborted
+[2026-08-14T01:05:12.413Z] Average Function Deployment time: 24435
+
+Functions deploy had errors with the following functions:
+	notificarCambioEstadoReserva(us-central1)
+	notificarNuevaReserva(us-central1)
+[2026-08-14T01:05:12.671Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:05:12.671Z] Checked if tokens are valid: true, expires at: 1786671226759
+[2026-08-14T01:05:12.671Z] >>> [apiv2][query] GET https://artifactregistry.googleapis.com/v1/projects/trabajo-5aecf/locations/us-central1/repositories/gcf-artifacts [none]
+[2026-08-14T01:05:13.275Z] <<< [apiv2][status] GET https://artifactregistry.googleapis.com/v1/projects/trabajo-5aecf/locations/us-central1/repositories/gcf-artifacts 404
+[2026-08-14T01:05:13.275Z] <<< [apiv2][body] GET https://artifactregistry.googleapis.com/v1/projects/trabajo-5aecf/locations/us-central1/repositories/gcf-artifacts {"error":{"code":404,"message":"Requested entity was not found.","status":"NOT_FOUND"}}
+[2026-08-14T01:05:13.276Z] Failed to check artifact cleanup policy for region us-central1: Request to https://artifactregistry.googleapis.com/v1/projects/trabajo-5aecf/locations/us-central1/repositories/gcf-artifacts had HTTP Error: 404, Requested entity was not found. {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":404,"message":"Requested entity was not found.","status":"NOT_FOUND"}},"response":{"statusCode":404}},"exit":1,"message":"Request to https://artifactregistry.googleapis.com/v1/projects/trabajo-5aecf/locations/us-central1/repositories/gcf-artifacts had HTTP Error: 404, Requested entity was not found.","status":404}
+[2026-08-14T01:05:13.277Z] Functions deploy failed.
+[2026-08-14T01:05:13.277Z] {
+  "endpoint": {
+    "id": "notificarNuevaReserva",
+    "project": "trabajo-5aecf",
+    "region": "us-central1",
+    "entryPoint": "notificarNuevaReserva",
+    "platform": "gcfv2",
+    "runtime": "nodejs22",
+    "eventTrigger": {
+      "eventType": "google.cloud.firestore.document.v1.created",
+      "retry": false,
+      "eventFilters": {
+        "database": "(default)",
+        "namespace": "(default)"
+      },
+      "eventFilterPathPatterns": {
+        "document": "reservaciones/{reservaId}"
+      },
+      "region": "nam5"
+    },
+    "labels": {
+      "deployment-tool": "cli-firebase"
+    },
+    "serviceAccount": null,
+    "ingressSettings": null,
+    "availableMemoryMb": null,
+    "timeoutSeconds": null,
+    "maxInstances": null,
+    "minInstances": null,
+    "concurrency": 80,
+    "vpc": null,
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"trabajo-5aecf\",\"storageBucket\":\"trabajo-5aecf.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "trabajo-5aecf",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/trabajo-5aecf/locations/us-central1/services/notificarNuevaReserva",
+      "FUNCTION_REGION": "us-central1"
+    },
+    "codebase": "default",
+    "cpu": 1,
+    "targetedByOnly": false,
+    "hash": "58e29e70c7caa9a41efcbaf5bee3e3c80840c49a"
+  },
+  "op": "create",
+  "original": {
+    "name": "FirebaseError",
+    "children": [],
+    "context": {
+      "function": "projects/trabajo-5aecf/locations/us-central1/functions/notificarNuevaReserva"
+    },
+    "exit": 1,
+    "message": "Failed to create function projects/trabajo-5aecf/locations/us-central1/functions/notificarNuevaReserva",
+    "original": {
+      "name": "FirebaseError",
+      "children": [],
+      "context": {
+        "body": {
+          "error": {
+            "code": 400,
+            "message": "Validation failed for trigger projects/trabajo-5aecf/locations/nam5/triggers/notificarnuevareserva-736076: Invalid resource state for \"\": Permission denied while using the Eventarc Service Agent. If you recently started to use Eventarc, it may take a few minutes before all necessary permissions are propagated to the Service Agent. Otherwise, verify that it has Eventarc Service Agent role.",
+            "status": "FAILED_PRECONDITION"
+          }
+        },
+        "response": {
+          "statusCode": 400
+        }
+      },
+      "exit": 1,
+      "message": "Request to https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions?functionId=notificarNuevaReserva had HTTP Error: 400, Validation failed for trigger projects/trabajo-5aecf/locations/nam5/triggers/notificarnuevareserva-736076: Invalid resource state for \"\": Permission denied while using the Eventarc Service Agent. If you recently started to use Eventarc, it may take a few minutes before all necessary permissions are propagated to the Service Agent. Otherwise, verify that it has Eventarc Service Agent role.",
+      "status": 400
+    },
+    "status": 400,
+    "code": 400
+  }
+}
+[2026-08-14T01:05:13.278Z] {
+  "endpoint": {
+    "id": "notificarCambioEstadoReserva",
+    "project": "trabajo-5aecf",
+    "region": "us-central1",
+    "entryPoint": "notificarCambioEstadoReserva",
+    "platform": "gcfv2",
+    "runtime": "nodejs22",
+    "eventTrigger": {
+      "eventType": "google.cloud.firestore.document.v1.updated",
+      "retry": false,
+      "eventFilters": {
+        "database": "(default)",
+        "namespace": "(default)"
+      },
+      "eventFilterPathPatterns": {
+        "document": "reservaciones/{reservaId}"
+      },
+      "region": "nam5"
+    },
+    "labels": {
+      "deployment-tool": "cli-firebase"
+    },
+    "serviceAccount": null,
+    "ingressSettings": null,
+    "availableMemoryMb": null,
+    "timeoutSeconds": null,
+    "maxInstances": null,
+    "minInstances": null,
+    "concurrency": 80,
+    "vpc": null,
+    "environmentVariables": {
+      "FIREBASE_CONFIG": "{\"projectId\":\"trabajo-5aecf\",\"storageBucket\":\"trabajo-5aecf.firebasestorage.app\"}",
+      "GCLOUD_PROJECT": "trabajo-5aecf",
+      "EVENTARC_CLOUD_EVENT_SOURCE": "projects/trabajo-5aecf/locations/us-central1/services/notificarCambioEstadoReserva",
+      "FUNCTION_REGION": "us-central1"
+    },
+    "codebase": "default",
+    "cpu": 1,
+    "targetedByOnly": false,
+    "hash": "58e29e70c7caa9a41efcbaf5bee3e3c80840c49a"
+  },
+  "op": "create",
+  "original": {
+    "name": "FirebaseError",
+    "children": [],
+    "context": {
+      "function": "projects/trabajo-5aecf/locations/us-central1/functions/notificarCambioEstadoReserva"
+    },
+    "exit": 1,
+    "message": "Failed to create function projects/trabajo-5aecf/locations/us-central1/functions/notificarCambioEstadoReserva",
+    "original": {
+      "name": "FirebaseError",
+      "children": [],
+      "context": {
+        "body": {
+          "error": {
+            "code": 400,
+            "message": "Validation failed for trigger projects/trabajo-5aecf/locations/nam5/triggers/notificarcambioestadoreserva-358337: Invalid resource state for \"\": Permission denied while using the Eventarc Service Agent. If you recently started to use Eventarc, it may take a few minutes before all necessary permissions are propagated to the Service Agent. Otherwise, verify that it has Eventarc Service Agent role.",
+            "status": "FAILED_PRECONDITION"
+          }
+        },
+        "response": {
+          "statusCode": 400
+        }
+      },
+      "exit": 1,
+      "message": "Request to https://cloudfunctions.googleapis.com/v2/projects/trabajo-5aecf/locations/us-central1/functions?functionId=notificarCambioEstadoReserva had HTTP Error: 400, Validation failed for trigger projects/trabajo-5aecf/locations/nam5/triggers/notificarcambioestadoreserva-358337: Invalid resource state for \"\": Permission denied while using the Eventarc Service Agent. If you recently started to use Eventarc, it may take a few minutes before all necessary permissions are propagated to the Service Agent. Otherwise, verify that it has Eventarc Service Agent role.",
+      "status": 400
+    },
+    "status": 400,
+    "code": 400
+  }
+}
+Error: There was an error deploying functions:
+- Error Failed to create function notificarNuevaReserva in region us-central1
+- Error Failed to create function notificarCambioEstadoReserva in region us-central1

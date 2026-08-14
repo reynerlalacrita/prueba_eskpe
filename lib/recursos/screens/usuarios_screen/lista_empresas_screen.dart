@@ -90,16 +90,22 @@ class ListaEmpresasScreen extends StatelessWidget {
           boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5)],
         ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(
+            AspectRatio(
+              aspectRatio: 1.2, // Relación de aspecto más horizontal para no cortar logos
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
                 child: _buildImagenEmpresa(ruta),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(10),
-              child: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
+                ),
+              ),
             ),
           ],
         ),

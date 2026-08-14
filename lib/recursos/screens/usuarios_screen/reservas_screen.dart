@@ -152,10 +152,13 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     double precioIndividual = (widget.datosViaje['precioPorPuesto'] ?? 0).toDouble();
     int maxPuestos = widget.datosViaje['puestosDisponibles'] ?? 0;
+    
+    String logoUrl = widget.datosViaje['empresaLogoUrl'] ?? widget.datosViaje['fotoUrl'] ?? widget.datosViaje['logoUrl'] ?? '';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F6F8),
@@ -176,9 +179,23 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    widget.datosViaje['empresaNombre'] ?? 'Agencia de Viajes',
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+                  Row(
+                    children: [
+                      if (logoUrl.isNotEmpty && (logoUrl.startsWith('http://') || logoUrl.startsWith('https://'))) ...[
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.grey[200],
+                          backgroundImage: NetworkImage(logoUrl),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        child: Text(
+                          widget.datosViaje['empresaNombre'] ?? 'Agencia de Viajes',
+                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+                        ),
+                      ),
+                    ],
                   ),
                   const Divider(height: 25),
                   Row(

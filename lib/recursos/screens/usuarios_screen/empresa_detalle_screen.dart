@@ -25,6 +25,7 @@ class EmpresaDetalleScreen extends StatefulWidget {
 
 class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
   String _descripcion = '';
+  String _portadaUrl = '';
   List<String> _imagenesEmpresa = [];
   bool _cargandoDatos = true;
 
@@ -45,6 +46,7 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
         final data = doc.data() as Map<String, dynamic>;
         setState(() {
           _descripcion = data['descripcion'] ?? '';
+          _portadaUrl = data['portadaUrl'] ?? '';
           if (data['imagenesEmpresa'] != null) {
             _imagenesEmpresa = List<String>.from(data['imagenesEmpresa']);
           }
@@ -76,6 +78,7 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
             backgroundColor: AppColors.azuleskpe,
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
+              titlePadding: const EdgeInsets.only(left: 110, bottom: 16),
               title: Text(
                 widget.nombreEmpresa,
                 style: const TextStyle(
@@ -88,51 +91,48 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                   ? const Center(
                       child: CircularProgressIndicator(color: Colors.white),
                     )
-                  : (_imagenesEmpresa.isNotEmpty
-                        ? CarouselSlider(
-                            options: CarouselOptions(
-                              height: 250.0,
-                              viewportFraction: 1.0,
-                              autoPlay: true,
-                              autoPlayInterval: const Duration(seconds: 4),
-                            ),
-                            items: _imagenesEmpresa.map((url) {
-                              return Builder(
-                                builder: (BuildContext context) {
-                                  return Image.network(
-                                    url,
-                                    fit: BoxFit.cover,
-                                    width: double.infinity,
-                                    color: Colors.black.withOpacity(0.3),
-                                    colorBlendMode: BlendMode.darken,
-                                  );
-                                },
-                              );
-                            }).toList(),
+                  : Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Cover photo (portadaUrl)
+                        if (_portadaUrl.isNotEmpty)
+                          Image.network(
+                            _portadaUrl,
+                            fit: BoxFit.cover,
+                            color: Colors.black.withOpacity(0.3),
+                            colorBlendMode: BlendMode.darken,
                           )
-                        : (widget.rutaAsset.startsWith('http://') || widget.rutaAsset.startsWith('https://')
-                            ? Image.network(
-                                widget.rutaAsset,
-                                fit: BoxFit.cover,
-                                color: Colors.black.withOpacity(0.4),
-                                colorBlendMode: BlendMode.darken,
-                                errorBuilder: (context, error, stackTrace) => Container(
-                                  color: AppColors.azuleskpe,
-                                  child: const Icon(Icons.business, size: 60, color: Colors.white),
-                                ),
-                              )
-                            : Image.asset(
-                                widget.rutaAsset.isNotEmpty
-                                    ? widget.rutaAsset
-                                    : 'assets/sinfoto.jpg',
-                                fit: BoxFit.cover,
-                                color: Colors.black.withOpacity(0.4),
-                                colorBlendMode: BlendMode.darken,
-                                errorBuilder: (context, error, stackTrace) => Container(
-                                  color: AppColors.azuleskpe,
-                                  child: const Icon(Icons.business, size: 60, color: Colors.white),
-                                ),
-                              ))),
+                        else
+                          Container(
+                            color: AppColors.azuleskpe,
+                          ),
+                        // Circular Logo on the bottom left
+                        Positioned(
+                          bottom: 20,
+                          left: 20,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 3),
+                              boxShadow: const [
+                                BoxShadow(
+                                  color: Colors.black26,
+                                  blurRadius: 8,
+                                  offset: Offset(0, 4),
+                                )
+                              ],
+                            ),
+                            child: CircleAvatar(
+                              radius: 40,
+                              backgroundColor: Colors.white,
+                              backgroundImage: widget.rutaAsset.startsWith('http')
+                                  ? NetworkImage(widget.rutaAsset) as ImageProvider
+                                  : AssetImage(widget.rutaAsset.isNotEmpty ? widget.rutaAsset : 'assets/sinfoto.jpg'),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
 
@@ -189,6 +189,32 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                         fontSize: 14,
                         color: Colors.black87,
                       ),
+                    ),
+                  ],
+                  if (_imagenesEmpresa.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    CarouselSlider(
+                      options: CarouselOptions(
+                        height: 200.0,
+                        viewportFraction: 0.9,
+                        enlargeCenterPage: true,
+                        autoPlay: true,
+                        autoPlayInterval: const Duration(seconds: 4),
+                      ),
+                      items: _imagenesEmpresa.map((url) {
+                        return Builder(
+                          builder: (BuildContext context) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.circular(15),
+                              child: Image.network(
+                                url,
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                              ),
+                            );
+                          },
+                        );
+                      }).toList(),
                     ),
                   ],
                   const SizedBox(height: 25),
@@ -362,6 +388,9 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
     String fecha,
     String rutaAsset,
   ) {
+    String puntoSalida = datosViaje['puntoSalida'] ?? 'No especificado';
+    String horaSalida = datosViaje['horaSalida'] ?? 'No especificada';
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -375,7 +404,7 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
         );
       },
       child: Container(
-        height: 110,
+        height: 140,
         margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -423,6 +452,7 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Text(
@@ -452,15 +482,39 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                         ),
                       ],
                     ),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                    Row(
                       children: [
+                        const Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: Color(0xFFB8860B),
+                        ),
+                        const SizedBox(width: 5),
                         Text(
-                          "Ver detalles >",
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
+                          horaSalida,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: Color(0xFFB8860B),
+                        ),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            puntoSalida,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],

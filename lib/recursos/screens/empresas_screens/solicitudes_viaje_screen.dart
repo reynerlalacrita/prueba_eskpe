@@ -30,12 +30,13 @@ class _SolicitudesViajeScreenState extends State<SolicitudesViajeScreen> {
             });
           }
 
-          transaction.update(reservaRef, {'estado': nuevoEstado});
+          transaction.update(reservaRef, {'estado': nuevoEstado, 'leida': false});
         });
       } else {
         // Si es Aceptada, solo actualizamos el estado
         await FirebaseFirestore.instance.collection('reservaciones').doc(reservaId).update({
-          'estado': nuevoEstado
+          'estado': nuevoEstado,
+          'leida': false
         });
       }
 

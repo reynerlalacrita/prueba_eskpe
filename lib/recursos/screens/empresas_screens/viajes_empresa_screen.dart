@@ -150,16 +150,25 @@ class ViajesEmpresaScreen extends StatelessWidget {
         ),
         child: Row(
           children: [
-            ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-              child: Image.asset(
-                rutaAsset.isNotEmpty 
-                    ? rutaAsset 
-                    : 'assets/sinfoto.jpg',
-                width: 100,
-                height: 120,
-                fit: BoxFit.cover,
-              ),
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
+                  child: Image.asset(
+                    rutaAsset.isNotEmpty 
+                        ? rutaAsset 
+                        : 'assets/sinfoto.jpg',
+                    width: 100,
+                    height: 120,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: _buildBadgeReservasPendientes(viajeId),
+                ),
+              ],
             ),
             Expanded(
               child: Padding(
@@ -236,6 +245,36 @@ class ViajesEmpresaScreen extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildBadgeReservasPendientes(String viajeId) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('reservaciones')
+          .where('viajeId', isEqualTo: viajeId)
+          .where('estado', isEqualTo: 'Pendiente')
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const SizedBox(); 
+        }
+        int cantidadPendientes = snapshot.data!.docs.length;
+        
+        return Container(
+          padding: const EdgeInsets.all(6),
+          decoration: BoxDecoration(
+            color: Colors.red,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+          ),
+          child: Text(
+            cantidadPendientes.toString(),
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          ),
+        );
+      },
     );
   }
 }

@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 
@@ -19,6 +21,7 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
   final User? _usuario = FirebaseAuth.instance.currentUser;
   bool _cargandoDatos = true;
   bool _subiendoFoto = false;
+  bool _subiendoPortada = false;
   bool _subiendoGaleria = false;
 
   // Controladores de texto
@@ -28,6 +31,7 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
   final TextEditingController _cedulaController = TextEditingController();
 
   String _fotoUrl = '';
+  String _portadaUrl = '';
   List<String> _imagenesEmpresa = [];
 
   @override
@@ -60,6 +64,7 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
         _telefonoController.text = datos['telefono'] ?? '';
         _cedulaController.text = datos['cedula'] ?? datos['rif'] ?? '';
         _fotoUrl = datos['fotoUrl'] ?? _usuario.photoURL ?? '';
+        _portadaUrl = datos['portadaUrl'] ?? '';
         
         if (datos['imagenesEmpresa'] != null) {
           _imagenesEmpresa = List<String>.from(datos['imagenesEmpresa']);
@@ -93,14 +98,28 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
     setState(() => _subiendoFoto = true);
 
     try {
-      File archivo = File(imagen.path);
+      File archivoOriginal = File(imagen.path);
       String uid = _usuario.uid;
+      
+      final tempDir = await getTemporaryDirectory();
+      final targetPath = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.webp';
+      
+      final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
+        archivoOriginal.path,
+        targetPath,
+        format: CompressFormat.webp,
+        quality: 80,
+      );
+
+      if (compressedFile == null) throw Exception("Error al comprimir la imagen");
+      File archivoAsubir = File(compressedFile.path);
+
       Reference ref = FirebaseStorage.instance
           .ref()
           .child('perfiles')
-          .child('$uid.jpg');
+          .child('$uid.webp');
 
-      UploadTask uploadTask = ref.putFile(archivo);
+      UploadTask uploadTask = ref.putFile(archivoAsubir);
       TaskSnapshot snapshot = await uploadTask;
       String urlDescarga = await snapshot.ref.getDownloadURL();
 
@@ -132,6 +151,78 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
     } finally {
       if (mounted) {
         setState(() => _subiendoFoto = false);
+      }
+    }
+  }
+
+  // 1.2 LÓGICA PARA CAMBIAR FOTO DE PORTADA
+  Future<void> _seleccionarYSubirPortada() async {
+    if (_usuario == null) return;
+
+    final ImagePicker picker = ImagePicker();
+    final XFile? imagen = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 85,
+      maxWidth: 1200,
+    );
+
+    if (imagen == null) return;
+
+    setState(() => _subiendoPortada = true);
+
+    try {
+      File archivoOriginal = File(imagen.path);
+      String uid = _usuario.uid;
+
+      final tempDir = await getTemporaryDirectory();
+      final targetPath = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.webp';
+      
+      final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
+        archivoOriginal.path,
+        targetPath,
+        format: CompressFormat.webp,
+        quality: 85,
+      );
+
+      if (compressedFile == null) throw Exception("Error al comprimir la portada");
+      File archivoAsubir = File(compressedFile.path);
+
+      Reference ref = FirebaseStorage.instance
+          .ref()
+          .child('portadas')
+          .child('${uid}_portada.webp');
+
+      UploadTask uploadTask = ref.putFile(archivoAsubir);
+      TaskSnapshot snapshot = await uploadTask;
+      String urlDescarga = await snapshot.ref.getDownloadURL();
+
+      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set(
+        {'portadaUrl': urlDescarga},
+        SetOptions(merge: true),
+      );
+
+      if (!mounted) return;
+      setState(() {
+        _portadaUrl = urlDescarga;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Foto de portada actualizada correctamente.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al subir la portada: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _subiendoPortada = false);
       }
     }
   }
@@ -169,15 +260,29 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
       List<String> nuevasUrls = [];
 
       for (var img in imagenesASubir) {
-        File archivo = File(img.path);
+        File archivoOriginal = File(img.path);
         String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+        
+        final tempDir = await getTemporaryDirectory();
+        final targetPath = '${tempDir.path}/$fileName.webp';
+        
+        final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
+          archivoOriginal.path,
+          targetPath,
+          format: CompressFormat.webp,
+          quality: 80,
+        );
+
+        if (compressedFile == null) throw Exception("Error al comprimir imagen de la galería");
+        File archivoAsubir = File(compressedFile.path);
+
         Reference ref = FirebaseStorage.instance
             .ref()
             .child('empresas_imagenes')
             .child(uid)
-            .child('$fileName.jpg');
+            .child('$fileName.webp');
 
-        UploadTask uploadTask = ref.putFile(archivo);
+        UploadTask uploadTask = ref.putFile(archivoAsubir);
         TaskSnapshot snapshot = await uploadTask;
         String urlDescarga = await snapshot.ref.getDownloadURL();
         nuevasUrls.add(urlDescarga);
@@ -516,67 +621,138 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Column(
                 children: [
-                  // LOGO DE EMPRESA
+                  // PORTADA Y LOGO DE EMPRESA
                   _buildCard(
                     child: Column(
                       children: [
-                        Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black12,
-                                    blurRadius: 10,
-                                    offset: Offset(0, 4),
-                                  )
-                                ],
-                              ),
-                              child: CircleAvatar(
-                                radius: 55,
-                                backgroundColor: Colors.grey.shade200,
-                                backgroundImage: _fotoUrl.isNotEmpty
-                                    ? NetworkImage(_fotoUrl) as ImageProvider
-                                    : const AssetImage('assets/sinfoto.jpg'),
-                              ),
-                            ),
-                            if (_subiendoFoto)
-                              Container(
-                                width: 110,
-                                height: 110,
-                                decoration: const BoxDecoration(
-                                  color: Colors.black45,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Center(
-                                  child: CircularProgressIndicator(color: Colors.white),
-                                ),
-                              ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: InkWell(
-                                onTap: _subiendoFoto ? null : _seleccionarYSubirFoto,
-                                child: Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: const BoxDecoration(
-                                    color: Color(0xFF1E2A4F),
-                                    shape: BoxShape.circle,
+                        SizedBox(
+                          height: 200,
+                          child: Stack(
+                            children: [
+                              // 1. FOTO DE PORTADA
+                              Positioned(
+                                top: 0,
+                                left: 0,
+                                right: 0,
+                                height: 160,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(15),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      _portadaUrl.isNotEmpty
+                                          ? Image.network(_portadaUrl, fit: BoxFit.cover)
+                                          : Container(
+                                              color: Colors.grey.shade300,
+                                              child: const Center(
+                                                child: Text("Sin Foto de Portada", style: TextStyle(color: Colors.grey)),
+                                              ),
+                                            ),
+                                      if (_subiendoPortada)
+                                        Container(
+                                          color: Colors.black45,
+                                          child: const Center(
+                                            child: CircularProgressIndicator(color: Colors.white),
+                                          ),
+                                        ),
+                                    ],
                                   ),
-                                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
                                 ),
                               ),
-                            ),
-                          ],
+                              // Botón para editar portada
+                              Positioned(
+                                top: 10,
+                                right: 10,
+                                child: InkWell(
+                                  onTap: _subiendoPortada ? null : _seleccionarYSubirPortada,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.black54,
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                                        SizedBox(width: 5),
+                                        Text("Portada", style: TextStyle(color: Colors.white, fontSize: 12)),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              
+                              // 2. LOGO DE LA EMPRESA (Abajo a la izquierda)
+                              Positioned(
+                                bottom: 0,
+                                left: 20,
+                                child: Stack(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: const BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black12,
+                                            blurRadius: 10,
+                                            offset: Offset(0, 4),
+                                          )
+                                        ],
+                                      ),
+                                      child: CircleAvatar(
+                                        radius: 40,
+                                        backgroundColor: Colors.grey.shade200,
+                                        backgroundImage: _fotoUrl.isNotEmpty
+                                            ? NetworkImage(_fotoUrl) as ImageProvider
+                                            : const AssetImage('assets/sinfoto.jpg'),
+                                      ),
+                                    ),
+                                    if (_subiendoFoto)
+                                      Container(
+                                        width: 88,
+                                        height: 88,
+                                        decoration: const BoxDecoration(
+                                          color: Colors.black45,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Center(
+                                          child: CircularProgressIndicator(color: Colors.white),
+                                        ),
+                                      ),
+                                    Positioned(
+                                      bottom: 0,
+                                      right: 0,
+                                      child: InkWell(
+                                        onTap: _subiendoFoto ? null : _seleccionarYSubirFoto,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFF1E2A4F),
+                                            shape: BoxShape.circle,
+                                            border: Border(
+                                                top: BorderSide(color: Colors.white, width: 2),
+                                                bottom: BorderSide(color: Colors.white, width: 2),
+                                                left: BorderSide(color: Colors.white, width: 2),
+                                                right: BorderSide(color: Colors.white, width: 2),
+                                            )
+                                          ),
+                                          child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                         const SizedBox(height: 12),
                         const Text(
-                          "Logo de la empresa",
-                          style: TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.w500),
+                          "Personaliza tu perfil con una foto de portada y tu logo.",
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                          textAlign: TextAlign.center,
                         ),
                       ],
                     ),

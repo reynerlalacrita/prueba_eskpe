@@ -8,7 +8,12 @@ class DestinoDetalleScreen extends StatelessWidget {
   final String destinoId;
   final String rutaAsset;
 
-  const DestinoDetalleScreen({super.key, required this.nombre, required this.rutaAsset, required this.destinoId});
+  const DestinoDetalleScreen({
+    super.key,
+    required this.nombre,
+    required this.rutaAsset,
+    required this.destinoId,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +45,7 @@ class DestinoDetalleScreen extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Cuerpo con los viajes de Firebase
           SliverToBoxAdapter(
             child: Padding(
@@ -50,7 +55,11 @@ class DestinoDetalleScreen extends StatelessWidget {
                 children: [
                   const Text(
                     "Viajes Disponibles",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E2A4F),
+                    ),
                   ),
                   const SizedBox(height: 5),
                   Text(
@@ -72,7 +81,9 @@ class DestinoDetalleScreen extends StatelessWidget {
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SliverToBoxAdapter(
-                  child: Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F))),
+                  child: Center(
+                    child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
+                  ),
                 );
               }
 
@@ -83,7 +94,11 @@ class DestinoDetalleScreen extends StatelessWidget {
                       padding: const EdgeInsets.all(40.0),
                       child: Column(
                         children: [
-                          Icon(Icons.sailing_outlined, size: 60, color: Colors.grey.shade400),
+                          Icon(
+                            Icons.sailing_outlined,
+                            size: 60,
+                            color: Colors.grey.shade400,
+                          ),
                           const SizedBox(height: 15),
                           const Text(
                             "Aún no hay viajes programados para este destino.",
@@ -100,46 +115,59 @@ class DestinoDetalleScreen extends StatelessWidget {
               final docs = snapshot.data!.docs;
 
               return SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final doc = docs[index];
-                    final data = doc.data() as Map<String, dynamic>;
-                    
-                    // Convertimos la fecha de forma segura
-                    String fechaTexto = 'Fechas por definir';
-                    if (data['fecha'] != null) {
-                      final Timestamp timestamp = data['fecha'] as Timestamp;
-                      final DateTime fechaDateTime = timestamp.toDate();
-                      fechaTexto = "${fechaDateTime.day}/${fechaDateTime.month}/${fechaDateTime.year}";
-                    }
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final doc = docs[index];
+                  final data = doc.data() as Map<String, dynamic>;
 
-                    String precioStr = "\$0";
-                    if (data['planes'] != null && (data['planes'] as List).isNotEmpty) {
-                      List planes = data['planes'];
-                      double minPrice = planes.map((p) => double.tryParse(p['precio']?.toString() ?? '0') ?? 0.0).reduce((a, b) => a < b ? a : b);
-                      precioStr = "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
-                    } else {
-                      String precio = data['precioPorPuesto']?.toString() ?? data['precio']?.toString() ?? '0';
-                      precioStr = "\$$precio";
-                    }
+                  // Convertimos la fecha de forma segura
+                  String fechaTexto = 'Fechas por definir';
+                  if (data['fecha'] != null) {
+                    final Timestamp timestamp = data['fecha'] as Timestamp;
+                    final DateTime fechaDateTime = timestamp.toDate();
+                    fechaTexto =
+                        "${fechaDateTime.day}/${fechaDateTime.month}/${fechaDateTime.year}";
+                  }
 
-                    // 🛠️ SOLUCIÓN: Pasamos el context, el doc.id y el mapa de datos completo
-                    return _buildTarjetaViaje(
-                      context,
-                      doc.id, 
-                      data,
-                      data['empresaNombre'] ?? data['empresa'] ?? 'Empresa', // Compatible con ambos campos
-                      precioStr,
-                      fechaTexto,
-                      data['rutaAsset'] ?? '',
-                    );
-                  },
-                  childCount: docs.length,
-                ),
+                  String precioStr = "\$0";
+                  if (data['planes'] != null &&
+                      (data['planes'] as List).isNotEmpty) {
+                    List planes = data['planes'];
+                    double minPrice = planes
+                        .map(
+                          (p) =>
+                              double.tryParse(p['precio']?.toString() ?? '0') ??
+                              0.0,
+                        )
+                        .reduce((a, b) => a < b ? a : b);
+                    precioStr =
+                        "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
+                  } else {
+                    String precio =
+                        data['precioPorPuesto']?.toString() ??
+                        data['precio']?.toString() ??
+                        '0';
+                    precioStr = "\$$precio";
+                  }
+
+                  // 🛠️ SOLUCIÓN: Pasamos el context, el doc.id y el mapa de datos completo
+                  return _buildTarjetaViaje(
+                    context,
+                    doc.id,
+                    data,
+                    data['empresaNombre'] ?? data['empresa'] ?? 'Empresa',
+                    precioStr,
+                    fechaTexto,
+                    data['empresaLogoUrl'] ??
+                        data['fotoUrl'] ??
+                        data['logoUrl'] ??
+                        data['rutaAsset'] ??
+                        '',
+                  );
+                }, childCount: docs.length),
               );
             },
           ),
-          
+
           const SliverToBoxAdapter(child: SizedBox(height: 40)),
         ],
       ),
@@ -148,34 +176,39 @@ class DestinoDetalleScreen extends StatelessWidget {
 
   // 🛠️ SOLUCIÓN: Agregamos context, viajeId y datosViaje a los parámetros de la tarjeta
   Widget _buildTarjetaViaje(
-    BuildContext context, 
-    String viajeId, 
-    Map<String, dynamic> datosViaje, 
-    String empresa, 
-    String precioStr, 
-    String fecha, 
-    String rutaAsset
+    BuildContext context,
+    String viajeId,
+    Map<String, dynamic> datosViaje,
+    String empresa,
+    String precioStr,
+    String fecha,
+    String rutaAsset,
   ) {
+    String puntoSalida = datosViaje['puntoSalida'] ?? 'No especificado';
+    String horaSalida = datosViaje['horaSalida'] ?? 'No especificada';
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ReservarViajeScreen(
-              viajeId: viajeId,
-              datosViaje: datosViaje,
-            ),
+            builder: (context) =>
+                ReservarViajeScreen(viajeId: viajeId, datosViaje: datosViaje),
           ),
         );
       },
       child: Container(
-        height: 110,
+        height: 140,
         margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 4)),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 4),
+            ),
           ],
         ),
         child: Row(
@@ -184,24 +217,22 @@ class DestinoDetalleScreen extends StatelessWidget {
               width: 110,
               height: double.infinity,
               child: ClipRRect(
-                borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-                child: (rutaAsset.startsWith('http://') || rutaAsset.startsWith('https://'))
+                borderRadius: const BorderRadius.horizontal(
+                  left: Radius.circular(15),
+                ),
+                child:
+                    (rutaAsset.startsWith('http://') ||
+                        rutaAsset.startsWith('https://'))
                     ? Image.network(
                         rutaAsset,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Image.asset(
-                          'assets/sinfoto.jpg',
-                          fit: BoxFit.cover,
-                        ),
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset(
+                              'assets/sinfoto.jpg',
+                              fit: BoxFit.cover,
+                            ),
                       )
-                    : Image.asset(
-                        rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Image.asset(
-                          'assets/sinfoto.jpg',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
+                    : Image.asset('assets/sinfoto.jpg', fit: BoxFit.cover),
               ),
             ),
             Expanded(
@@ -215,32 +246,84 @@ class DestinoDetalleScreen extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Text(empresa, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16), overflow: TextOverflow.ellipsis),
+                          child: Text(
+                            empresa,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         const SizedBox(width: 5),
-                        Text(precioStr, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 16)),
+                        Text(
+                          precioStr,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFB8860B),
+                            fontSize: 16,
+                          ),
+                        ),
                       ],
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.calendar_today, size: 14, color: Color(0xFFB8860B)),
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 14,
+                          color: Color(0xFFB8860B),
+                        ),
                         const SizedBox(width: 5),
-                        Text(fecha, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                        Text(
+                          fecha,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
+                        ),
                       ],
                     ),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                    Row(
                       children: [
+                        const Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: Color(0xFFB8860B),
+                        ),
+                        const SizedBox(width: 5),
                         Text(
-                          "Ver detalles >", 
-                          style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold)
+                          horaSalida,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: Color(0xFFB8860B),
+                        ),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(
+                            puntoSalida,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
                   ],
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

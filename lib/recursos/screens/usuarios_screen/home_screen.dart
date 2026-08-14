@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
-import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/busqueda_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/destino_detalle_screen.dart';
@@ -12,6 +11,7 @@ import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_empresas_scr
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/lista_viajes_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/reservas_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/usuario_screen.dart';
+import 'package:prueba_eskpe/recursos/fcm_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,6 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _obtenerRolDesdeFirebase();
+    FCMService.inicializarFCM();
     _pantallas = [
       _buildCuerpoHome(),
       const BusquedaScreen(),
@@ -78,10 +79,10 @@ class _HomeScreenState extends State<HomeScreen> {
             _indiceActual = index;
           });
         },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled, size: 30), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search, size: 30), label: 'Buscar'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline, size: 30), label: 'Usuario'),
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.home_filled, size: 30), label: 'Home'),
+          const BottomNavigationBarItem(icon: Icon(Icons.search, size: 30), label: 'Buscar'),
+          BottomNavigationBarItem(icon: _buildBadgeNavegacionUsuario(), label: 'Usuario'),
         ],
       ),
     );
@@ -99,6 +100,43 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Text('ESK-PE', style: TextStyle(fontFamily: 'Impact', fontSize: 36, fontStyle: FontStyle.italic, color: Colors.white, letterSpacing: 2)),
         ),
       ),
+    );
+  }
+
+  Widget _buildBadgeNavegacionUsuario() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return const Icon(Icons.person_outline, size: 30);
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('reservaciones')
+          .where('usuarioId', isEqualTo: user.uid)
+          .where('estado', whereIn: ['Aceptada', 'Rechazada', 'Cancelada'])
+          .where('leida', isEqualTo: false) 
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+          return const Icon(Icons.person_outline, size: 30); 
+        }
+        
+        return Stack(
+          children: [
+            const Icon(Icons.person_outline, size: 30),
+            Positioned(
+              right: 0,
+              top: 0,
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                constraints: const BoxConstraints(minWidth: 12, minHeight: 12),
+              ),
+            )
+          ],
+        );
+      },
     );
   }
 
@@ -137,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
                 final docs = snapshot.data!.docs;
                 return SizedBox(
-                  height: 140, 
+                  height: 160, 
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 15), 
                     scrollDirection: Axis.horizontal, 
@@ -169,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   );
                 }
                 return SizedBox(
-                  height: 120, 
+                  height: 130, 
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 15), 
                     scrollDirection: Axis.horizontal, 
@@ -249,10 +287,11 @@ class _HomeScreenState extends State<HomeScreen> {
           Navigator.push(context, MaterialPageRoute(builder: (context) => DestinoDetalleScreen(nombre: nombre, rutaAsset: rutaAsset, destinoId: destinoId,)));
         },
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 100,
-              height: 100,
+              width: 108,
+              height: 108,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: const Color(0xFF1E2A4F), width: 2), 
@@ -262,8 +301,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
-            Text(nombre, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            SizedBox(
+              width: 108,
+              child: Text(
+                nombre,
+                style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),
@@ -271,7 +319,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   // Diseño de Empresas: Tarjeta interactiva para ir a los detalles
-  // Diseño de Empresas: Tarjeta interactiva para ir a los detalles (¡Ahora Cuadrada!)
   Widget _buildItemEmpresa(String nombre, String rutaAsset, String telefono, String id) { 
     return GestureDetector(
       onTap: () {
@@ -288,7 +335,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
       child: Container(
-        width: 110, // Le damos un ancho que haga juego con la altura para que sea cuadrado
+        width: 110,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -297,24 +344,28 @@ class _HomeScreenState extends State<HomeScreen> {
             BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: const Offset(0, 3)),
           ],
         ),
-        // Aplicamos ClipRRect aquí para que la imagen respete los bordes redondeados del contenedor principal
         child: ClipRRect(
           borderRadius: BorderRadius.circular(15),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch, // Estira el contenido a los bordes
+            crossAxisAlignment: CrossAxisAlignment.stretch, 
             children: [
-              // Expanded hace que la imagen ocupe todo el espacio sobrante arriba del texto
               Expanded(
+                flex: 3,
                 child: _buildImagenLogoEmpresa(rutaAsset),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-                child: Text(
-                  nombre, 
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600), 
-                  textAlign: TextAlign.center, 
-                  maxLines: 1, 
-                  overflow: TextOverflow.ellipsis
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Text(
+                      nombre, 
+                      style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600), 
+                      textAlign: TextAlign.center, 
+                      maxLines: 2, 
+                      overflow: TextOverflow.ellipsis
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -407,8 +458,9 @@ class _HomeScreenState extends State<HomeScreen> {
       String precio = data['precioPorPuesto']?.toString() ?? data['precio']?.toString() ?? '0';
       precioStr = "\$$precio";
     }
-
     String empresaNombre = data['empresaNombre'] ?? data['empresa'] ?? 'Agencia de Viajes';
+    String puntoSalida = data['puntoSalida'] ?? 'No especificado';
+    String horaSalida = data['horaSalida'] ?? 'No especificada';
 
     return GestureDetector(
       onTap: () {
@@ -423,7 +475,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       },
       child: Container(
-        height: 125,
+        height: 145,
         margin: const EdgeInsets.only(bottom: 15, left: 20, right: 20),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -467,13 +519,18 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text(fechaStr, style: const TextStyle(fontSize: 12, color: Colors.black54)),
                       ],
                     ),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
+                    Row(
                       children: [
-                        Text(
-                          "Ver detalles >", 
-                          style: TextStyle(color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold)
-                        )
+                        const Icon(Icons.access_time, size: 14, color: Color(0xFFB8860B)),
+                        const SizedBox(width: 5),
+                        Text(horaSalida, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Icon(Icons.location_on, size: 14, color: Color(0xFFB8860B)),
+                        const SizedBox(width: 5),
+                        Expanded(child: Text(puntoSalida, style: const TextStyle(fontSize: 12, color: Colors.black54), overflow: TextOverflow.ellipsis)),
                       ],
                     ),
                   ],

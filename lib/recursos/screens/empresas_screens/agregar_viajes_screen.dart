@@ -16,9 +16,11 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
   final TextEditingController _puestosController = TextEditingController();
   final TextEditingController _detallesController = TextEditingController();
   final TextEditingController _descripcionController = TextEditingController();
+  final TextEditingController _puntoSalidaController = TextEditingController();
 
   String? _destinoIdSeleccionado;
   DateTime? _fechaSeleccionada;
+  TimeOfDay? _horaSalidaSeleccionada;
   bool _subiendo = false;
 
   // Lista para almacenar los planes agregados
@@ -40,6 +42,7 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
     _puestosController.dispose();
     _detallesController.dispose();
     _descripcionController.dispose();
+    _puntoSalidaController.dispose();
     super.dispose();
   }
 
@@ -80,6 +83,17 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
     );
     if (picked != null) {
       setState(() => _fechaSeleccionada = picked);
+    }
+  }
+
+  // Función para abrir el selector de hora
+  void _seleccionarHora() async {
+    TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null) {
+      setState(() => _horaSalidaSeleccionada = picked);
     }
   }
 
@@ -210,7 +224,8 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
   void _guardarViaje() async {
     if (!_formKey.currentState!.validate() ||
         _destinoIdSeleccionado == null ||
-        _fechaSeleccionada == null) {
+        _fechaSeleccionada == null ||
+        _horaSalidaSeleccionada == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text("Por favor, completa todos los campos."),
@@ -246,6 +261,8 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
         'puestosTotales': int.parse(_puestosController.text),
         'puestosDisponibles': int.parse(_puestosController.text),
         'fecha': Timestamp.fromDate(_fechaSeleccionada!),
+        'puntoSalida': _puntoSalidaController.text.trim(),
+        'horaSalida': '${_horaSalidaSeleccionada!.hour.toString().padLeft(2, '0')}:${_horaSalidaSeleccionada!.minute.toString().padLeft(2, '0')}',
         'descripcion': descrip,
         'detallesViaje': descrip,
         'planes': _planes,
@@ -423,6 +440,39 @@ class _AgregarViajeScreenState extends State<AgregarViajeScreen> {
                       ),
                       trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                       onTap: _seleccionarFecha,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Selector de Hora de Salida
+                    ListTile(
+                      tileColor: Colors.grey[100],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      leading: const Icon(
+                        Icons.access_time,
+                        color: Color(0xFF1E2A4F),
+                      ),
+                      title: Text(
+                        _horaSalidaSeleccionada == null
+                            ? "Seleccionar Hora de Salida"
+                            : "Hora de Salida: ${_horaSalidaSeleccionada!.format(context)}",
+                      ),
+                      trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+                      onTap: _seleccionarHora,
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Punto de Salida
+                    TextFormField(
+                      controller: _puntoSalidaController,
+                      decoration: const InputDecoration(
+                        labelText: "Punto de Salida",
+                        hintText: "Ej. Plaza Altamira",
+                        prefixIcon: Icon(Icons.location_on),
+                      ),
+                      validator: (v) =>
+                          v == null || v.trim().isEmpty ? "Ingresa el punto de salida" : null,
                     ),
                     const SizedBox(height: 20),
 

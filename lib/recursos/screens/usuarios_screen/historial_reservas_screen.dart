@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
+import 'package:prueba_eskpe/recursos/utils.dart';
 
 class HistorialReservasScreen extends StatelessWidget {
   const HistorialReservasScreen({super.key});
@@ -9,47 +10,81 @@ class HistorialReservasScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
-    
+
     if (user == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text("Mis Reservas"), backgroundColor: const Color(0xFF1E2A4F)),
-        body: const Center(child: Text("Debes iniciar sesión para ver tus reservas.")),
+        appBar: AppBar(
+          title: const Text("Mis Reservas"),
+          backgroundColor: const Color(0xFF1E2A4F),
+        ),
+        body: const Center(
+          child: Text("Debes iniciar sesión para ver tus reservas."),
+        ),
       );
     }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
-      appBar: AppBar(
-        title: const Text("Mis Reservas", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        backgroundColor: AppColors.azuleskpe,
-        iconTheme: const IconThemeData(color: Colors.white),
-        elevation: 0,
-      ),
-      body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance
-            .collection('reservaciones')
-            .where('usuarioId', isEqualTo: user.uid)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F)));
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return _buildEmptyState();
-          }
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('reservaciones')
+          .where('usuarioId', isEqualTo: user.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        int noLeidas = 0;
+        if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+          noLeidas = snapshot.data!.docs.where((r) {
+             final d = r.data() as Map<String, dynamic>;
+             return (d['estado'] == 'Aceptada' || d['estado'] == 'Cancelada' || d['estado'] == 'Rechazada') && d['leida'] == false;
+          }).length;
+        }
 
-          final reservas = snapshot.data!.docs;
+        return Scaffold(
+          backgroundColor: const Color(0xFFF5F5F7),
+          appBar: AppBar(
+            title: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text("Mis Reservas", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                if (noLeidas > 0) ...[
+                  const SizedBox(width: 10),
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                    child: Text(noLeidas.toString(), style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                  ),
+                ]
+              ],
+            ),
+            backgroundColor: AppColors.azuleskpe,
+            iconTheme: const IconThemeData(color: Colors.white),
+            elevation: 0,
+          ),
+          body: () {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F)));
+            }
+            if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+              return _buildEmptyState();
+            }
 
-          return ListView.builder(
-            padding: const EdgeInsets.all(15),
-            itemCount: reservas.length,
-            itemBuilder: (context, index) {
-              final data = reservas[index].data() as Map<String, dynamic>;
-              return _buildTarjetaReserva(context, reservas[index].id, data);
-            },
-          );
-        },
-      ),
+            final reservas = snapshot.data!.docs;
+            return ListView.builder(
+              padding: const EdgeInsets.all(15),
+              itemCount: reservas.length,
+              itemBuilder: (context, index) {
+                final data = reservas[index].data() as Map<String, dynamic>;
+                return GestureDetector(
+                  onTap: () {
+                    if (data['leida'] == false) {
+                      FirebaseFirestore.instance.collection('reservaciones').doc(reservas[index].id).update({'leida': true});
+                    }
+                  },
+                  child: _buildTarjetaReserva(context, reservas[index].id, data),
+                );
+              },
+            );
+          }(),
+        );
+      },
     );
   }
 
@@ -58,11 +93,19 @@ class HistorialReservasScreen extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.receipt_long_outlined, size: 80, color: Colors.grey.shade400),
+          Icon(
+            Icons.receipt_long_outlined,
+            size: 80,
+            color: Colors.grey.shade400,
+          ),
           const SizedBox(height: 20),
           const Text(
             "No tienes reservas aún",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
           ),
           const SizedBox(height: 10),
           const Text(
@@ -74,7 +117,11 @@ class HistorialReservasScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTarjetaReserva(BuildContext context, String reservaId, Map<String, dynamic> data) {
+  Widget _buildTarjetaReserva(
+    BuildContext context,
+    String reservaId,
+    Map<String, dynamic> data,
+  ) {
     String estado = data['estado'] ?? 'Pendiente';
     Color colorEstado = Colors.orange;
     IconData iconoEstado = Icons.pending_actions;
@@ -104,21 +151,40 @@ class HistorialReservasScreen extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (data['leida'] == false && (estado == 'Aceptada' || estado == 'Cancelada' || estado == 'Rechazada')) ...[
+            Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(5)),
+              child: const Text("ACTUALIZACIÓN", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+            ),
+          ],
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
                 data['empresaNombre'] ?? 'Empresa',
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E2A4F)),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: Color(0xFF1E2A4F),
+                ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: colorEstado.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(20),
@@ -129,7 +195,11 @@ class HistorialReservasScreen extends StatelessWidget {
                     const SizedBox(width: 5),
                     Text(
                       estado,
-                      style: TextStyle(color: colorEstado, fontWeight: FontWeight.bold, fontSize: 12),
+                      style: TextStyle(
+                        color: colorEstado,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
                     ),
                   ],
                 ),
@@ -138,37 +208,117 @@ class HistorialReservasScreen extends StatelessWidget {
           ),
           const Divider(height: 25),
           FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance.collection('destinos').doc(data['destino']).get(),
+            future: FirebaseFirestore.instance
+                .collection('destinos')
+                .doc(data['destino'])
+                .get(),
             builder: (context, snapshot) {
               String nombreDestino = data['destino'] ?? 'Desconocido';
-              if (snapshot.connectionState == ConnectionState.done && snapshot.hasData && snapshot.data!.exists) {
+              if (snapshot.connectionState == ConnectionState.done &&
+                  snapshot.hasData &&
+                  snapshot.data!.exists) {
                 nombreDestino = snapshot.data!['nombre'] ?? nombreDestino;
               }
               return _buildInfoRow(Icons.map, "Destino", nombreDestino);
             },
           ),
           const SizedBox(height: 10),
-          _buildInfoRow(Icons.group, "Puestos reservados", "${data['puestosReservados'] ?? 0}"),
+          if (data['viajeId'] != null)
+            FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('viajes')
+                  .doc(data['viajeId'])
+                  .get(),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done &&
+                    snapshot.hasData &&
+                    snapshot.data!.exists) {
+                  final viajeData =
+                      snapshot.data!.data() as Map<String, dynamic>;
+                  String puntoSalida =
+                      viajeData['puntoSalida'] ?? 'No especificado';
+                  String horaSalida =
+                      viajeData['horaSalida'] ?? 'No especificada';
+                  return Column(
+                    children: [
+                      _buildInfoRow(
+                        Icons.location_on,
+                        "Punto de salida",
+                        puntoSalida,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildInfoRow(
+                        Icons.access_time,
+                        "Hora de salida",
+                        horaSalida,
+                      ),
+                    ],
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
           const SizedBox(height: 10),
-          _buildInfoRow(Icons.star, "Plan", data['planSeleccionado'] ?? 'Único'),
+          _buildInfoRow(
+            Icons.group,
+            "Puestos reservados",
+            "${data['puestosReservados'] ?? 0}",
+          ),
           const SizedBox(height: 10),
-          _buildInfoRow(Icons.payments, "Total a pagar", "\$${data['totalPago'] ?? 0}"),
+          _buildInfoRow(
+            Icons.star,
+            "Plan",
+            data['planSeleccionado'] ?? 'Único',
+          ),
+          const SizedBox(height: 10),
+          _buildInfoRow(
+            Icons.payments,
+            "Total a pagar",
+            "\$${data['totalPago'] ?? 0}",
+          ),
           const SizedBox(height: 10),
           _buildInfoRow(Icons.calendar_today, "Fecha de solicitud", fechaStr),
           if (estado == 'Pendiente' || estado == 'Aceptada') ...[
             const SizedBox(height: 15),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => _confirmarCancelacion(context, reservaId, data),
-                icon: const Icon(Icons.cancel_outlined, color: Colors.red, size: 18),
-                label: const Text("Cancelar Solicitud", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-                  backgroundColor: Colors.red.withOpacity(0.1),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () => _abrirWhatsAppEmpresa(
+                    context,
+                    data['empresaId'],
+                    data['empresaNombre'] ?? 'Empresa',
+                  ),
+                  icon: const Icon(Icons.message, color: Color(0xFF25D366)),
+                  tooltip: "Contactar por WhatsApp",
                 ),
-              ),
+                TextButton.icon(
+                  onPressed: () =>
+                      _confirmarCancelacion(context, reservaId, data),
+                  icon: const Icon(
+                    Icons.cancel_outlined,
+                    color: Colors.red,
+                    size: 18,
+                  ),
+                  label: const Text(
+                    "Cancelar Solicitud",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 15,
+                      vertical: 8,
+                    ),
+                    backgroundColor: Colors.red.withOpacity(0.1),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ],
         ],
@@ -176,13 +326,54 @@ class HistorialReservasScreen extends StatelessWidget {
     );
   }
 
-  void _confirmarCancelacion(BuildContext context, String reservaId, Map<String, dynamic> data) {
+  Future<void> _abrirWhatsAppEmpresa(
+    BuildContext context,
+    String? empresaId,
+    String empresaNombre,
+  ) async {
+    if (empresaId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("No se pudo obtener el contacto de la empresa."),
+        ),
+      );
+      return;
+    }
+    try {
+      DocumentSnapshot doc = await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(empresaId)
+          .get();
+      if (doc.exists && doc.data() != null) {
+        String telefono = doc.get('telefono') ?? '';
+        if (telefono.isNotEmpty) {
+          AppUtils.abrirWhatsApp(telefono, empresaNombre);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("La empresa no tiene teléfono registrado."),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint("Error obteniendo teléfono: $e");
+    }
+  }
+
+  void _confirmarCancelacion(
+    BuildContext context,
+    String reservaId,
+    Map<String, dynamic> data,
+  ) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: const Text("Cancelar Reservación"),
-        content: const Text("¿Estás seguro de que deseas cancelar esta reservación? Esta acción no se puede deshacer."),
+        content: const Text(
+          "¿Estás seguro de que deseas cancelar esta reservación? Esta acción no se puede deshacer.",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -194,26 +385,39 @@ class HistorialReservasScreen extends StatelessWidget {
               Navigator.pop(context);
               _cancelarReserva(context, reservaId, data);
             },
-            child: const Text("Sí, cancelar", style: TextStyle(color: Colors.white)),
-          )
+            child: const Text(
+              "Sí, cancelar",
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Future<void> _cancelarReserva(BuildContext context, String reservaId, Map<String, dynamic> data) async {
+  Future<void> _cancelarReserva(
+    BuildContext context,
+    String reservaId,
+    Map<String, dynamic> data,
+  ) async {
     try {
       String viajeId = data['viajeId'];
       int puestosLiberados = data['puestosReservados'] ?? 0;
 
-      DocumentReference viajeRef = FirebaseFirestore.instance.collection('viajes').doc(viajeId);
-      DocumentReference reservaRef = FirebaseFirestore.instance.collection('reservaciones').doc(reservaId);
+      DocumentReference viajeRef = FirebaseFirestore.instance
+          .collection('viajes')
+          .doc(viajeId);
+      DocumentReference reservaRef = FirebaseFirestore.instance
+          .collection('reservaciones')
+          .doc(reservaId);
 
       await FirebaseFirestore.instance.runTransaction((transaction) async {
         DocumentSnapshot reservaSnap = await transaction.get(reservaRef);
         DocumentSnapshot viajeSnap = await transaction.get(viajeRef);
 
-        if (!reservaSnap.exists || reservaSnap['estado'] == 'Cancelada' || reservaSnap['estado'] == 'Rechazada') {
+        if (!reservaSnap.exists ||
+            reservaSnap['estado'] == 'Cancelada' ||
+            reservaSnap['estado'] == 'Rechazada') {
           throw Exception("La reserva ya fue cancelada o rechazada.");
         }
 
@@ -221,19 +425,27 @@ class HistorialReservasScreen extends StatelessWidget {
 
         if (viajeSnap.exists) {
           int disponibles = viajeSnap['puestosDisponibles'] ?? 0;
-          transaction.update(viajeRef, {'puestosDisponibles': disponibles + puestosLiberados});
+          transaction.update(viajeRef, {
+            'puestosDisponibles': disponibles + puestosLiberados,
+          });
         }
       });
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Reservación cancelada con éxito"), backgroundColor: Colors.green),
+          const SnackBar(
+            content: Text("Reservación cancelada con éxito"),
+            backgroundColor: Colors.green,
+          ),
         );
       }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error al cancelar: $e"), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text("Error al cancelar: $e"),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -244,7 +456,10 @@ class HistorialReservasScreen extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: Colors.grey),
         const SizedBox(width: 8),
-        Text("$label:", style: const TextStyle(color: Colors.grey, fontSize: 14)),
+        Text(
+          "$label:",
+          style: const TextStyle(color: Colors.grey, fontSize: 14),
+        ),
         const SizedBox(width: 5),
         Expanded(
           child: Text(

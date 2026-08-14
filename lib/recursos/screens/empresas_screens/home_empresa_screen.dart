@@ -7,6 +7,7 @@ import 'package:prueba_eskpe/recursos/screens/empresas_screens/editar_viaje_scre
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/solicitudes_viaje_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/mis_datos_empresa_screen.dart';
+import 'package:prueba_eskpe/recursos/fcm_service.dart';
 
 class HomeEmpresaScreen extends StatefulWidget {
   const HomeEmpresaScreen({super.key});
@@ -24,6 +25,7 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
   void initState() {
     super.initState();
     _cargarDatosEmpresa();
+    FCMService.inicializarFCM();
   }
 
   Future<void> _cargarDatosEmpresa() async {
