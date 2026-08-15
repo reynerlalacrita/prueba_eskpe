@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
-import 'package:prueba_eskpe/recursos/screens/usuarios_screen/destino_detalle_screen.dart'; 
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/destino_detalle_screen.dart';
 
 class BusquedaScreen extends StatefulWidget {
   const BusquedaScreen({super.key});
@@ -13,7 +13,7 @@ class BusquedaScreen extends StatefulWidget {
 class _BusquedaScreenState extends State<BusquedaScreen> {
   // Variable de estado para controlar la lista de búsquedas
   final List<String> _busquedasRecientes = [];
-  
+
   // 🛠️ CONTROLADOR AGREGADO: Para escuchar lo que el usuario escribe
   final TextEditingController _searchController = TextEditingController();
 
@@ -42,9 +42,12 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.blancofondo,
       appBar: AppBar(
-        title: const Text("Buscar destinos", style: TextStyle(color: Colors.white)), 
+        title: const Text(
+          "Buscar destinos",
+          style: TextStyle(color: Colors.white),
+        ),
         backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
@@ -54,7 +57,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 15),
-            
+
             // BARRA DE BÚSQUEDA
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
@@ -68,34 +71,36 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                   fillColor: Colors.white,
                   contentPadding: const EdgeInsets.symmetric(vertical: 0),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30), 
-                    borderSide: BorderSide(color: Colors.grey.shade300)
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30), 
-                    borderSide: BorderSide(color: Colors.grey.shade300)
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide(color: Colors.grey.shade300),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30), 
-                    borderSide: const BorderSide(color: Color(0xFF1E2A4F))
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: const BorderSide(color: Color(0xFF1E2A4F)),
                   ),
                 ),
               ),
             ),
             const SizedBox(height: 15),
             //colocar aqui si quieres tener un flito de busqueda personalizado
-            
+
             // BÚSQUEDAS RECIENTES (Se oculta si la lista está vacía)
             if (_busquedasRecientes.isNotEmpty) ...[
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 15.0),
                 child: Text(
-                  "Búsquedas Recientes", 
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                  "Búsquedas Recientes",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
               const SizedBox(height: 5),
-              ..._busquedasRecientes.map((busqueda) => _buildBusquedaReciente(busqueda)),
+              ..._busquedasRecientes.map(
+                (busqueda) => _buildBusquedaReciente(busqueda),
+              ),
               const SizedBox(height: 25),
             ],
 
@@ -103,8 +108,13 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
               child: Text(
-                _searchController.text.isEmpty ? "Sugerencias para ti" : "Resultados de búsqueda", 
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)
+                _searchController.text.isEmpty
+                    ? "Sugerencias para ti"
+                    : "Resultados de búsqueda",
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
             const SizedBox(height: 10),
@@ -125,7 +135,9 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(20.0),
-                      child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF1E2A4F),
+                      ),
                     ),
                   );
                 }
@@ -137,7 +149,9 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                 if (query.isNotEmpty) {
                   docsSugerencias = docsSugerencias.where((doc) {
                     final datos = doc.data() as Map<String, dynamic>;
-                    final String nombreDestino = (datos['nombre'] ?? '').toString().toLowerCase();
+                    final String nombreDestino = (datos['nombre'] ?? '')
+                        .toString()
+                        .toLowerCase();
                     return nombreDestino.contains(query);
                   }).toList();
                 }
@@ -145,29 +159,33 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                 if (docsSugerencias.isEmpty) {
                   return const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 15.0),
-                    child: Text('No se encontraron destinos disponibles', style: TextStyle(color: Colors.grey)),
+                    child: Text(
+                      'No se encontraron destinos disponibles',
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   );
                 }
 
                 return ListView.builder(
-                  shrinkWrap: true, 
-                  physics: const NeverScrollableScrollPhysics(), 
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: docsSugerencias.length,
                   itemBuilder: (context, index) {
-                    final doc = docsSugerencias[index]; // Obtenemos el documento individual
+                    final doc =
+                        docsSugerencias[index]; // Obtenemos el documento individual
                     final datosSugerencia = doc.data() as Map<String, dynamic>;
-                    
+
                     // 🛠️ CORRECCIÓN: Ahora pasamos los 3 parámetros requeridos, incluyendo el doc.id
                     return _buildSugerencia(
-                      datosSugerencia['nombre'] ?? 'Sin nombre', 
+                      datosSugerencia['nombre'] ?? 'Sin nombre',
                       datosSugerencia['rutaAsset'] ?? '',
-                      doc.id // 🌟 Enviamos el ID único aquí
+                      doc.id, // 🌟 Enviamos el ID único aquí
                     );
                   },
                 );
               },
             ),
-            
+
             const SizedBox(height: 30),
           ],
         ),
@@ -186,7 +204,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: Text(
-        texto, 
+        texto,
         style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
       ),
     );
@@ -196,7 +214,10 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
     return ListTile(
       visualDensity: VisualDensity.compact,
       leading: const Icon(Icons.history, color: Colors.black54),
-      title: Text(texto, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+      title: Text(
+        texto,
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+      ),
       trailing: IconButton(
         icon: const Icon(Icons.close, color: Colors.grey, size: 20),
         onPressed: () => _eliminarBusqueda(texto),
@@ -214,12 +235,19 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
       leading: CircleAvatar(
         radius: 18,
         // 🛠️ MEJORA: Detecta inteligentemente si viene URL de Firebase (http) o asset local
-        backgroundImage: (rutaAsset.startsWith('http') 
-            ? NetworkImage(rutaAsset) 
-            : AssetImage(rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg')) as ImageProvider,
+        backgroundImage:
+            (rutaAsset.startsWith('http')
+                    ? NetworkImage(rutaAsset)
+                    : AssetImage(
+                        rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
+                      ))
+                as ImageProvider,
         backgroundColor: Colors.grey.shade200,
       ),
-      title: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+      title: Text(
+        nombre,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+      ),
       onTap: () {
         // Agrega la palabra seleccionada a búsquedas recientes si no existe ya
         if (!_busquedasRecientes.contains(nombre)) {
@@ -234,11 +262,11 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
           MaterialPageRoute(
             builder: (context) => DestinoDetalleScreen(
               destinoId: destinoId, // 🌟 Pasado sin problemas
-              nombre: nombre, 
-              rutaAsset: rutaAsset
-            )
+              nombre: nombre,
+              rutaAsset: rutaAsset,
+            ),
           ),
-        ); 
+        );
       },
     );
   }

@@ -70,9 +70,8 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
     User? usuarioActual = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      backgroundColor: const Color(
-        0xFFF5F6F8,
-      ), // Fondo gris muy claro para resaltar las tarjetas blancas
+      backgroundColor: AppColors
+          .blancofondo, // Fondo gris muy claro para resaltar las tarjetas blancas
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -99,9 +98,9 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                     child: StreamBuilder<DocumentSnapshot>(
                       stream: usuarioActual != null
                           ? FirebaseFirestore.instance
-                              .collection('usuarios')
-                              .doc(usuarioActual.uid)
-                              .snapshots()
+                                .collection('usuarios')
+                                .doc(usuarioActual.uid)
+                                .snapshots()
                           : null,
                       builder: (context, snapshot) {
                         String? fotoUrl;
@@ -118,11 +117,10 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                         return CircleAvatar(
                           radius: 50,
                           backgroundColor: Colors.grey.shade200,
-                          backgroundImage: (fotoUrl != null && fotoUrl.isNotEmpty)
+                          backgroundImage:
+                              (fotoUrl != null && fotoUrl.isNotEmpty)
                               ? NetworkImage(fotoUrl) as ImageProvider
-                              : const AssetImage(
-                                  'assets/sinfoto.jpg',
-                                ),
+                              : const AssetImage('assets/sinfoto.jpg'),
                         );
                       },
                     ),

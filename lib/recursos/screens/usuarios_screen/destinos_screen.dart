@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/destino_detalle_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
 
@@ -31,13 +32,18 @@ class _DestinosScreenState extends State<DestinosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.blancofondo,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, top: 40, bottom: 20),
+              padding: const EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 40,
+                bottom: 20,
+              ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -48,15 +54,20 @@ class _DestinosScreenState extends State<DestinosScreen> {
                   TextButton(
                     onPressed: () {
                       Navigator.pushReplacement(
-                        context, 
-                        MaterialPageRoute(builder: (context) => const HomeScreen())
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HomeScreen(),
+                        ),
                       );
                     },
-                    child: const Text("Omitir", style: TextStyle(fontSize: 16, color: Color(0xFF1E2A4F))),
+                    child: const Text(
+                      "Omitir",
+                      style: TextStyle(fontSize: 16, color: Color(0xFF1E2A4F)),
+                    ),
                   ),
                 ],
               ),
-            ),      
+            ),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: TextField(
@@ -64,22 +75,32 @@ class _DestinosScreenState extends State<DestinosScreen> {
                 decoration: InputDecoration(
                   hintText: "Buscar destino...",
                   prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                 ),
               ),
             ),
-            
+
             Expanded(
               // 🛠️ Conexión con Firebase Firestore a la colección 'destinos'
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('destinos').snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('destinos')
+                    .snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F)));
+                    return const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF1E2A4F),
+                      ),
+                    );
                   }
 
                   if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-                    return const Center(child: Text("No hay destinos disponibles por ahora."));
+                    return const Center(
+                      child: Text("No hay destinos disponibles por ahora."),
+                    );
                   }
 
                   // Obtenemos los documentos originales de Firebase
@@ -90,30 +111,38 @@ class _DestinosScreenState extends State<DestinosScreen> {
                   if (query.isNotEmpty) {
                     documentosDestinos = documentosDestinos.where((doc) {
                       final datos = doc.data() as Map<String, dynamic>;
-                      final String nombreDestino = (datos['nombre'] ?? '').toString().toLowerCase();
+                      final String nombreDestino = (datos['nombre'] ?? '')
+                          .toString()
+                          .toLowerCase();
                       return nombreDestino.contains(query);
                     }).toList();
                   }
 
                   if (documentosDestinos.isEmpty) {
-                    return const Center(child: Text("No se encontraron resultados."));
+                    return const Center(
+                      child: Text("No se encontraron resultados."),
+                    );
                   }
 
                   return GridView.builder(
                     padding: const EdgeInsets.all(20),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2, 
-                      crossAxisSpacing: 15,
-                      mainAxisSpacing: 15,
-                      childAspectRatio: 0.8,
-                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 15,
+                          mainAxisSpacing: 15,
+                          childAspectRatio: 0.8,
+                        ),
                     itemCount: documentosDestinos.length,
                     itemBuilder: (context, index) {
                       // Extraemos la información de cada destino
-                      final docData = documentosDestinos[index].data() as Map<String, dynamic>;
+                      final docData =
+                          documentosDestinos[index].data()
+                              as Map<String, dynamic>;
                       final String nombre = docData['nombre'] ?? 'Destino';
                       // Buscamos el campo de imagen (sea 'imagenUrl' o 'rutaAsset' en tu Firebase)
-                      final String imagen = docData['imagenUrl'] ?? docData['rutaAsset'] ?? '';
+                      final String imagen =
+                          docData['imagenUrl'] ?? docData['rutaAsset'] ?? '';
 
                       return GestureDetector(
                         onTap: () {
@@ -133,9 +162,15 @@ class _DestinosScreenState extends State<DestinosScreen> {
                             borderRadius: BorderRadius.circular(20),
                             image: DecorationImage(
                               // 🛠️ Si el String empieza con http es red (Firebase), de lo contrario es local asset
-                              image: (imagen.startsWith('http') 
-                                  ? NetworkImage(imagen) 
-                                  : AssetImage(imagen.isNotEmpty ? imagen : 'assets/background_road.jpg')) as ImageProvider, 
+                              image:
+                                  (imagen.startsWith('http')
+                                          ? NetworkImage(imagen)
+                                          : AssetImage(
+                                              imagen.isNotEmpty
+                                                  ? imagen
+                                                  : 'assets/background_road.jpg',
+                                            ))
+                                      as ImageProvider,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -146,14 +181,25 @@ class _DestinosScreenState extends State<DestinosScreen> {
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(20),
                                   color: Colors.black.withOpacity(0.3),
-                                )
-                              ), 
+                                ),
+                              ),
                               Text(
                                 nombre,
-                                style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                ),
                                 textAlign: TextAlign.center,
                               ),
-                              const Positioned(bottom: 10, child: Icon(Icons.location_on, color: Color.fromARGB(255, 193, 0, 0), size: 30)),
+                              const Positioned(
+                                bottom: 10,
+                                child: Icon(
+                                  Icons.location_on,
+                                  color: Color.fromARGB(255, 193, 0, 0),
+                                  size: 30,
+                                ),
+                              ),
                             ],
                           ),
                         ),

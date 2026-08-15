@@ -68,7 +68,7 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
         widget.telefonoEmpresa != "584121234567";
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.blancofondo,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
@@ -103,9 +103,7 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                             colorBlendMode: BlendMode.darken,
                           )
                         else
-                          Container(
-                            color: AppColors.azuleskpe,
-                          ),
+                          Container(color: AppColors.azuleskpe),
                         // Circular Logo on the bottom left
                         Positioned(
                           bottom: 20,
@@ -119,15 +117,21 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                                   color: Colors.black26,
                                   blurRadius: 8,
                                   offset: Offset(0, 4),
-                                )
+                                ),
                               ],
                             ),
                             child: CircleAvatar(
                               radius: 40,
                               backgroundColor: Colors.white,
-                              backgroundImage: widget.rutaAsset.startsWith('http')
-                                  ? NetworkImage(widget.rutaAsset) as ImageProvider
-                                  : AssetImage(widget.rutaAsset.isNotEmpty ? widget.rutaAsset : 'assets/sinfoto.jpg'),
+                              backgroundImage:
+                                  widget.rutaAsset.startsWith('http')
+                                  ? NetworkImage(widget.rutaAsset)
+                                        as ImageProvider
+                                  : AssetImage(
+                                      widget.rutaAsset.isNotEmpty
+                                          ? widget.rutaAsset
+                                          : 'assets/sinfoto.jpg',
+                                    ),
                             ),
                           ),
                         ),
@@ -396,10 +400,8 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ReservarViajeScreen(
-              viajeId: viajeId,
-              datosViaje: datosViaje,
-            ),
+            builder: (context) =>
+                ReservarViajeScreen(viajeId: viajeId, datosViaje: datosViaje),
           ),
         );
       },
@@ -427,9 +429,7 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                 ),
                 image: DecorationImage(
                   image: AssetImage(
-                    rutaAsset.isNotEmpty
-                        ? rutaAsset
-                        : 'assets/sinfoto.jpg',
+                    rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
                   ),
                   fit: BoxFit.cover,
                 ),

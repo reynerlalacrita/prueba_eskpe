@@ -18,7 +18,7 @@ class DestinoDetalleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.blancofondo,
       body: CustomScrollView(
         slivers: [
           // Encabezado con la imagen del destino
@@ -37,12 +37,19 @@ class DestinoDetalleScreen extends StatelessWidget {
                   shadows: [Shadow(color: Colors.black87, blurRadius: 10)],
                 ),
               ),
-              background: Image.asset(
-                rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
-                fit: BoxFit.cover,
-                color: Colors.black.withOpacity(0.3),
-                colorBlendMode: BlendMode.darken,
-              ),
+              background: rutaAsset.startsWith('http')
+                  ? Image.network(
+                      rutaAsset,
+                      fit: BoxFit.cover,
+                      color: Colors.black.withOpacity(0.3),
+                      colorBlendMode: BlendMode.darken,
+                    )
+                  : Image.asset(
+                      rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
+                      fit: BoxFit.cover,
+                      color: Colors.black.withOpacity(0.3),
+                      colorBlendMode: BlendMode.darken,
+                    ),
             ),
           ),
 
@@ -271,7 +278,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                         const Icon(
                           Icons.calendar_today,
                           size: 14,
-                          color: Color(0xFFB8860B),
+                          color: AppColors.azul1,
                         ),
                         const SizedBox(width: 5),
                         Text(
@@ -288,7 +295,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                         const Icon(
                           Icons.access_time,
                           size: 14,
-                          color: Color(0xFFB8860B),
+                          color: AppColors.azul3,
                         ),
                         const SizedBox(width: 5),
                         Text(
@@ -305,7 +312,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                         const Icon(
                           Icons.location_on,
                           size: 14,
-                          color: Color(0xFFB8860B),
+                          color: Color.fromARGB(255, 219, 3, 3),
                         ),
                         const SizedBox(width: 5),
                         Expanded(

@@ -32,26 +32,45 @@ class HistorialReservasScreen extends StatelessWidget {
         int noLeidas = 0;
         if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
           noLeidas = snapshot.data!.docs.where((r) {
-             final d = r.data() as Map<String, dynamic>;
-             return (d['estado'] == 'Aceptada' || d['estado'] == 'Cancelada' || d['estado'] == 'Rechazada') && d['leida'] == false;
+            final d = r.data() as Map<String, dynamic>;
+            return (d['estado'] == 'Aceptada' ||
+                    d['estado'] == 'Cancelada' ||
+                    d['estado'] == 'Rechazada') &&
+                d['leida'] == false;
           }).length;
         }
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF5F5F7),
+          backgroundColor: AppColors.blancofondo,
           appBar: AppBar(
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text("Mis Reservas", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                const Text(
+                  "Mis Reservas",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 if (noLeidas > 0) ...[
                   const SizedBox(width: 10),
                   Container(
                     padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                    child: Text(noLeidas.toString(), style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
+                    decoration: const BoxDecoration(
+                      color: Colors.red,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      noLeidas.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
-                ]
+                ],
               ],
             ),
             backgroundColor: AppColors.azuleskpe,
@@ -60,7 +79,9 @@ class HistorialReservasScreen extends StatelessWidget {
           ),
           body: () {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F)));
+              return const Center(
+                child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
+              );
             }
             if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
               return _buildEmptyState();
@@ -75,10 +96,17 @@ class HistorialReservasScreen extends StatelessWidget {
                 return GestureDetector(
                   onTap: () {
                     if (data['leida'] == false) {
-                      FirebaseFirestore.instance.collection('reservaciones').doc(reservas[index].id).update({'leida': true});
+                      FirebaseFirestore.instance
+                          .collection('reservaciones')
+                          .doc(reservas[index].id)
+                          .update({'leida': true});
                     }
                   },
-                  child: _buildTarjetaReserva(context, reservas[index].id, data),
+                  child: _buildTarjetaReserva(
+                    context,
+                    reservas[index].id,
+                    data,
+                  ),
                 );
               },
             );
@@ -161,12 +189,25 @@ class HistorialReservasScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (data['leida'] == false && (estado == 'Aceptada' || estado == 'Cancelada' || estado == 'Rechazada')) ...[
+          if (data['leida'] == false &&
+              (estado == 'Aceptada' ||
+                  estado == 'Cancelada' ||
+                  estado == 'Rechazada')) ...[
             Container(
               margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(5)),
-              child: const Text("ACTUALIZACIÓN", style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(5),
+              ),
+              child: const Text(
+                "ACTUALIZACIÓN",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
           Row(
@@ -219,7 +260,12 @@ class HistorialReservasScreen extends StatelessWidget {
                   snapshot.data!.exists) {
                 nombreDestino = snapshot.data!['nombre'] ?? nombreDestino;
               }
-              return _buildInfoRow(Icons.map, "Destino", nombreDestino);
+              return _buildInfoRow(
+                Icons.map,
+                "Destino",
+                nombreDestino,
+                color: const Color.fromARGB(210, 47, 225, 160),
+              );
             },
           ),
           const SizedBox(height: 10),
@@ -245,12 +291,14 @@ class HistorialReservasScreen extends StatelessWidget {
                         Icons.location_on,
                         "Punto de salida",
                         puntoSalida,
+                        color: Colors.red,
                       ),
                       const SizedBox(height: 10),
                       _buildInfoRow(
                         Icons.access_time,
                         "Hora de salida",
                         horaSalida,
+                        color: AppColors.azul3,
                       ),
                     ],
                   );
@@ -263,21 +311,29 @@ class HistorialReservasScreen extends StatelessWidget {
             Icons.group,
             "Puestos reservados",
             "${data['puestosReservados'] ?? 0}",
+            color: Colors.grey.shade600,
           ),
           const SizedBox(height: 10),
           _buildInfoRow(
             Icons.star,
             "Plan",
             data['planSeleccionado'] ?? 'Único',
+            color: Colors.yellow.shade700,
           ),
           const SizedBox(height: 10),
           _buildInfoRow(
             Icons.payments,
             "Total a pagar",
             "\$${data['totalPago'] ?? 0}",
+            color: Colors.green,
           ),
           const SizedBox(height: 10),
-          _buildInfoRow(Icons.calendar_today, "Fecha de solicitud", fechaStr),
+          _buildInfoRow(
+            Icons.calendar_today,
+            "Fecha de solicitud",
+            fechaStr,
+            color: AppColors.azul1,
+          ),
           if (estado == 'Pendiente' || estado == 'Aceptada') ...[
             const SizedBox(height: 15),
             Row(
@@ -451,10 +507,15 @@ class HistorialReservasScreen extends StatelessWidget {
     }
   }
 
-  Widget _buildInfoRow(IconData icon, String label, String value) {
+  Widget _buildInfoRow(
+    IconData icon,
+    String label,
+    String value, {
+    Color color = Colors.grey,
+  }) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: Colors.grey),
+        Icon(icon, size: 16, color: color),
         const SizedBox(width: 8),
         Text(
           "$label:",

@@ -37,7 +37,7 @@ class MyApp extends StatelessWidget {
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: AppColors.azuleskpe,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.blancofondo,
         ),
         useMaterial3: true,
       ),
@@ -45,4 +45,4 @@ class MyApp extends StatelessWidget {
       home: const SplashScreen(),
     );
   }
-}
+}

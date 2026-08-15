@@ -34,19 +34,22 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
   @override
   void initState() {
     super.initState();
-    
+
     // Cargar planes existentes o migrar el precio antiguo
     if (widget.datosViaje['planes'] != null) {
       _planes = List<Map<String, dynamic>>.from(widget.datosViaje['planes']);
     } else {
-      String precio = widget.datosViaje['precioPorPuesto']?.toString() ?? widget.datosViaje['precio']?.toString() ?? '0';
+      String precio =
+          widget.datosViaje['precioPorPuesto']?.toString() ??
+          widget.datosViaje['precio']?.toString() ??
+          '0';
       _planes = [
         {
           'nombre': 'Plan Único',
           'precio': double.tryParse(precio) ?? 0.0,
           'descripcion': 'Servicios básicos incluidos',
-          'beneficios': 'Beneficios por defecto'
-        }
+          'beneficios': 'Beneficios por defecto',
+        },
       ];
     }
 
@@ -58,7 +61,10 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
       text: _puestosTotalesOriginales.toString(),
     );
     _descripcionController = TextEditingController(
-      text: widget.datosViaje['descripcion'] ?? widget.datosViaje['detallesViaje'] ?? '',
+      text:
+          widget.datosViaje['descripcion'] ??
+          widget.datosViaje['detallesViaje'] ??
+          '',
     );
     _detallesController = TextEditingController(
       text: widget.datosViaje['detallesViaje'] ?? '',
@@ -92,9 +98,15 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
 
   void _mostrarDialogoAgregarPlan() {
     String nombrePlan = 'Básico';
-    final List<String> opcionesPlanes = ['Básico', 'Premium', 'Premium+', 'Premium ++'];
+    final List<String> opcionesPlanes = [
+      'Básico',
+      'Premium',
+      'Premium+',
+      'Premium ++',
+    ];
     final TextEditingController precioPlanController = TextEditingController();
-    final TextEditingController descripcionPlanController = TextEditingController();
+    final TextEditingController descripcionPlanController =
+        TextEditingController();
     final TextEditingController beneficioController = TextEditingController();
     List<String> beneficiosAgregados = [];
 
@@ -111,7 +123,10 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                   children: [
                     DropdownButtonFormField<String>(
                       value: nombrePlan,
-                      decoration: const InputDecoration(labelText: "Selecciona el Plan", prefixIcon: Icon(Icons.star)),
+                      decoration: const InputDecoration(
+                        labelText: "Selecciona el Plan",
+                        prefixIcon: Icon(Icons.star),
+                      ),
                       items: opcionesPlanes.map((plan) {
                         return DropdownMenuItem(value: plan, child: Text(plan));
                       }).toList(),
@@ -123,7 +138,10 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                     TextField(
                       controller: precioPlanController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(labelText: "Precio del Plan", prefixIcon: Icon(Icons.attach_money)),
+                      decoration: const InputDecoration(
+                        labelText: "Precio del Plan",
+                        prefixIcon: Icon(Icons.attach_money),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     TextField(
@@ -131,7 +149,8 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                       maxLines: 2,
                       decoration: const InputDecoration(
                         labelText: "Descripción del Plan / Servicios incluidos",
-                        hintText: "Ej. Incluye pasaje ida y vuelta + hospedaje + desayuno",
+                        hintText:
+                            "Ej. Incluye pasaje ida y vuelta + hospedaje + desayuno",
                         prefixIcon: Icon(Icons.description),
                       ),
                     ),
@@ -141,7 +160,10 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                         Expanded(
                           child: TextField(
                             controller: beneficioController,
-                            decoration: const InputDecoration(labelText: "Agregar beneficio individual", prefixIcon: Icon(Icons.card_giftcard)),
+                            decoration: const InputDecoration(
+                              labelText: "Agregar beneficio individual",
+                              prefixIcon: Icon(Icons.card_giftcard),
+                            ),
                             onSubmitted: (val) {
                               if (val.trim().isNotEmpty) {
                                 setStateDialog(() {
@@ -153,16 +175,21 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.add_circle, color: Color(0xFF1E2A4F)),
+                          icon: const Icon(
+                            Icons.add_circle,
+                            color: Color(0xFF1E2A4F),
+                          ),
                           onPressed: () {
                             if (beneficioController.text.trim().isNotEmpty) {
                               setStateDialog(() {
-                                beneficiosAgregados.add(beneficioController.text.trim());
+                                beneficiosAgregados.add(
+                                  beneficioController.text.trim(),
+                                );
                                 beneficioController.clear();
                               });
                             }
                           },
-                        )
+                        ),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -180,23 +207,29 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                           },
                         );
                       }).toList(),
-                    )
+                    ),
                   ],
                 ),
               ),
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
+                  child: const Text(
+                    "Cancelar",
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.azuleskpe),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.azuleskpe,
+                  ),
                   onPressed: () {
                     if (precioPlanController.text.isNotEmpty) {
                       setState(() {
                         _planes.add({
                           'nombre': nombrePlan,
-                          'precio': double.tryParse(precioPlanController.text) ?? 0.0,
+                          'precio':
+                              double.tryParse(precioPlanController.text) ?? 0.0,
                           'descripcion': descripcionPlanController.text.trim(),
                           'beneficios': List<String>.from(beneficiosAgregados),
                         });
@@ -204,11 +237,14 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text("Agregar", style: TextStyle(color: Colors.white)),
+                  child: const Text(
+                    "Agregar",
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
               ],
             );
-          }
+          },
         );
       },
     );
@@ -330,11 +366,24 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                           const SizedBox(width: 10),
                           Expanded(
                             child: FutureBuilder<DocumentSnapshot>(
-                              future: FirebaseFirestore.instance.collection('destinos').doc(widget.datosViaje['destinoId']).get(),
+                              future: FirebaseFirestore.instance
+                                  .collection('destinos')
+                                  .doc(widget.datosViaje['destinoId'])
+                                  .get(),
                               builder: (context, snapshot) {
-                                String nombreDestino = widget.datosViaje['destinoId'] ?? 'Desconocido';
-                                if (snapshot.connectionState == ConnectionState.done && snapshot.hasData && snapshot.data!.exists) {
-                                  nombreDestino = snapshot.data!['nombre'] ?? nombreDestino;
+                                String nombreDestino = 'Cargando destino...';
+                                if (snapshot.connectionState ==
+                                    ConnectionState.done) {
+                                  if (snapshot.hasData &&
+                                      snapshot.data!.exists) {
+                                    nombreDestino =
+                                        snapshot.data!['nombre'] ??
+                                        'Destino Desconocido';
+                                  } else {
+                                    nombreDestino =
+                                        widget.datosViaje['destinoId'] ??
+                                        'Destino Desconocido';
+                                  }
                                 }
                                 return Text(
                                   "Destino: $nombreDestino\n(El destino no se puede editar)",
@@ -352,16 +401,28 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text("Planes de Precios", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                        const Text(
+                          "Planes de Precios",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
                         TextButton.icon(
                           onPressed: _mostrarDialogoAgregarPlan,
                           icon: const Icon(Icons.add, color: Color(0xFF1E2A4F)),
-                          label: const Text("Agregar Plan", style: TextStyle(color: Color(0xFF1E2A4F))),
+                          label: const Text(
+                            "Agregar Plan",
+                            style: TextStyle(color: Color(0xFF1E2A4F)),
+                          ),
                         ),
                       ],
                     ),
                     if (_planes.isEmpty)
-                      const Text("No has agregado ningún plan. Debes agregar al menos uno.", style: TextStyle(color: Colors.red, fontSize: 12))
+                      const Text(
+                        "No has agregado ningún plan. Debes agregar al menos uno.",
+                        style: TextStyle(color: Colors.red, fontSize: 12),
+                      )
                     else
                       ListView.builder(
                         shrinkWrap: true,
@@ -372,34 +433,65 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                           return Card(
                             margin: const EdgeInsets.symmetric(vertical: 5),
                             child: ListTile(
-                              title: Text(plan['nombre'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                              title: Text(
+                                plan['nombre'],
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text("Precio: \$${plan['precio']}", style: const TextStyle(fontWeight: FontWeight.w600, color: Color(0xFF1E2A4F))),
-                                  if (plan['descripcion'] != null && plan['descripcion'].toString().isNotEmpty) ...[
+                                  Text(
+                                    "Precio: \$${plan['precio']}",
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1E2A4F),
+                                    ),
+                                  ),
+                                  if (plan['descripcion'] != null &&
+                                      plan['descripcion']
+                                          .toString()
+                                          .isNotEmpty) ...[
                                     const SizedBox(height: 4),
                                     Text(
                                       "Incluye: ${plan['descripcion']}",
-                                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[700],
+                                      ),
                                     ),
                                   ],
                                   const SizedBox(height: 5),
-                                  if (plan['beneficios'] is List && (plan['beneficios'] as List).isNotEmpty)
+                                  if (plan['beneficios'] is List &&
+                                      (plan['beneficios'] as List).isNotEmpty)
                                     Wrap(
                                       spacing: 4,
                                       runSpacing: 4,
-                                      children: (plan['beneficios'] as List).map<Widget>((b) => Chip(
-                                        label: Text(b.toString(), style: const TextStyle(fontSize: 11)),
-                                        padding: EdgeInsets.zero,
-                                      )).toList(),
+                                      children: (plan['beneficios'] as List)
+                                          .map<Widget>(
+                                            (b) => Chip(
+                                              label: Text(
+                                                b.toString(),
+                                                style: const TextStyle(
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                              padding: EdgeInsets.zero,
+                                            ),
+                                          )
+                                          .toList(),
                                     )
-                                  else if (plan['beneficios'] is String && plan['beneficios'].toString().isNotEmpty)
+                                  else if (plan['beneficios'] is String &&
+                                      plan['beneficios'].toString().isNotEmpty)
                                     Text("Beneficios: ${plan['beneficios']}"),
                                 ],
                               ),
                               trailing: IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
                                 onPressed: () {
                                   setState(() {
                                     _planes.removeAt(index);
@@ -455,12 +547,14 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                       maxLines: 4,
                       decoration: const InputDecoration(
                         labelText: "Descripción del Viaje / Destino",
-                        hintText: "Itinerario general, qué incluye la experiencia, puntos de salida, recomendaciones...",
+                        hintText:
+                            "Itinerario general, qué incluye la experiencia, puntos de salida, recomendaciones...",
                         alignLabelWithHint: true,
                         prefixIcon: Icon(Icons.description),
                       ),
-                      validator: (v) =>
-                          v == null || v.trim().isEmpty ? "Ingresa una descripción del viaje" : null,
+                      validator: (v) => v == null || v.trim().isEmpty
+                          ? "Ingresa una descripción del viaje"
+                          : null,
                     ),
                     const SizedBox(height: 20),
 

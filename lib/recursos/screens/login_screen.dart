@@ -6,6 +6,7 @@ import 'package:prueba_eskpe/recursos/screens/empresas_screens/home_empresa_scre
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/pending_approval_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/verification_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -93,6 +94,18 @@ class _LoginScreenState extends State<LoginScreen> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => const HomeEmpresaScreen()),
+          );
+        } else if (rol == 'admin') {
+          // Para administradores: redirigir al Panel de Administración
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Sesión iniciada como Administrador.'),
+              backgroundColor: Colors.blue,
+            ),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AdminScreen()),
           );
         } else {
           // Para viajeros: usar la verificación nativa de Firebase Auth

@@ -65,7 +65,7 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
         _cedulaController.text = datos['cedula'] ?? datos['rif'] ?? '';
         _fotoUrl = datos['fotoUrl'] ?? _usuario.photoURL ?? '';
         _portadaUrl = datos['portadaUrl'] ?? '';
-        
+
         if (datos['imagenesEmpresa'] != null) {
           _imagenesEmpresa = List<String>.from(datos['imagenesEmpresa']);
         }
@@ -100,18 +100,21 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
     try {
       File archivoOriginal = File(imagen.path);
       String uid = _usuario.uid;
-      
-      final tempDir = await getTemporaryDirectory();
-      final targetPath = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.webp';
-      
-      final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
-        archivoOriginal.path,
-        targetPath,
-        format: CompressFormat.webp,
-        quality: 80,
-      );
 
-      if (compressedFile == null) throw Exception("Error al comprimir la imagen");
+      final tempDir = await getTemporaryDirectory();
+      final targetPath =
+          '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.webp';
+
+      final XFile? compressedFile =
+          await FlutterImageCompress.compressAndGetFile(
+            archivoOriginal.path,
+            targetPath,
+            format: CompressFormat.webp,
+            quality: 80,
+          );
+
+      if (compressedFile == null)
+        throw Exception("Error al comprimir la imagen");
       File archivoAsubir = File(compressedFile.path);
 
       Reference ref = FirebaseStorage.instance
@@ -124,10 +127,9 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
       String urlDescarga = await snapshot.ref.getDownloadURL();
 
       await _usuario.updatePhotoURL(urlDescarga);
-      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set(
-        {'fotoUrl': urlDescarga},
-        SetOptions(merge: true),
-      );
+      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
+        'fotoUrl': urlDescarga,
+      }, SetOptions(merge: true));
 
       if (!mounted) return;
       setState(() {
@@ -175,16 +177,19 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
       String uid = _usuario.uid;
 
       final tempDir = await getTemporaryDirectory();
-      final targetPath = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.webp';
-      
-      final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
-        archivoOriginal.path,
-        targetPath,
-        format: CompressFormat.webp,
-        quality: 85,
-      );
+      final targetPath =
+          '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.webp';
 
-      if (compressedFile == null) throw Exception("Error al comprimir la portada");
+      final XFile? compressedFile =
+          await FlutterImageCompress.compressAndGetFile(
+            archivoOriginal.path,
+            targetPath,
+            format: CompressFormat.webp,
+            quality: 85,
+          );
+
+      if (compressedFile == null)
+        throw Exception("Error al comprimir la portada");
       File archivoAsubir = File(compressedFile.path);
 
       Reference ref = FirebaseStorage.instance
@@ -196,10 +201,9 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
       TaskSnapshot snapshot = await uploadTask;
       String urlDescarga = await snapshot.ref.getDownloadURL();
 
-      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set(
-        {'portadaUrl': urlDescarga},
-        SetOptions(merge: true),
-      );
+      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
+        'portadaUrl': urlDescarga,
+      }, SetOptions(merge: true));
 
       if (!mounted) return;
       setState(() {
@@ -262,18 +266,20 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
       for (var img in imagenesASubir) {
         File archivoOriginal = File(img.path);
         String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-        
+
         final tempDir = await getTemporaryDirectory();
         final targetPath = '${tempDir.path}/$fileName.webp';
-        
-        final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
-          archivoOriginal.path,
-          targetPath,
-          format: CompressFormat.webp,
-          quality: 80,
-        );
 
-        if (compressedFile == null) throw Exception("Error al comprimir imagen de la galería");
+        final XFile? compressedFile =
+            await FlutterImageCompress.compressAndGetFile(
+              archivoOriginal.path,
+              targetPath,
+              format: CompressFormat.webp,
+              quality: 80,
+            );
+
+        if (compressedFile == null)
+          throw Exception("Error al comprimir imagen de la galería");
         File archivoAsubir = File(compressedFile.path);
 
         Reference ref = FirebaseStorage.instance
@@ -290,10 +296,9 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
 
       _imagenesEmpresa.addAll(nuevasUrls);
 
-      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set(
-        {'imagenesEmpresa': _imagenesEmpresa},
-        SetOptions(merge: true),
-      );
+      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
+        'imagenesEmpresa': _imagenesEmpresa,
+      }, SetOptions(merge: true));
 
       if (!mounted) return;
       setState(() {});
@@ -318,7 +323,7 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
       }
     }
   }
-  
+
   Future<void> _eliminarImagenGaleria(int index) async {
     if (_usuario == null) return;
 
@@ -329,11 +334,11 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
     });
 
     try {
-      await FirebaseFirestore.instance.collection('usuarios').doc(_usuario.uid).set(
-        {'imagenesEmpresa': _imagenesEmpresa},
-        SetOptions(merge: true),
-      );
-      
+      await FirebaseFirestore.instance
+          .collection('usuarios')
+          .doc(_usuario.uid)
+          .set({'imagenesEmpresa': _imagenesEmpresa}, SetOptions(merge: true));
+
       try {
         Reference ref = FirebaseStorage.instance.refFromURL(urlEliminar);
         await ref.delete();
@@ -361,20 +366,24 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
 
   // 2. LÓGICA PARA CAMBIAR CORREO
   Future<void> _mostrarDialogoEditarCorreo() async {
-    final TextEditingController nuevoCorreoCtrl =
-        TextEditingController(text: _usuario?.email ?? '');
+    final TextEditingController nuevoCorreoCtrl = TextEditingController(
+      text: _usuario?.email ?? '',
+    );
     final TextEditingController passwordCtrl = TextEditingController();
 
     await showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Text(
             "Editar Correo Electrónico",
             style: TextStyle(
-                fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E2A4F),
+            ),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -385,10 +394,13 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: "Nuevo Correo",
-                    prefixIcon: const Icon(Icons.email_outlined,
-                        color: Color(0xFF1E2A4F)),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      color: Color(0xFF1E2A4F),
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -397,10 +409,13 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: "Contraseña Actual (Re-autenticación)",
-                    prefixIcon: const Icon(Icons.lock_outline,
-                        color: Color(0xFF1E2A4F)),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: Color(0xFF1E2A4F),
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
                 ),
               ],
@@ -409,13 +424,17 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
+              child: const Text(
+                "Cancelar",
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.azuleskpe,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () {
                 String nuevoCorreo = nuevoCorreoCtrl.text.trim();
@@ -424,16 +443,19 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                 if (nuevoCorreo.isEmpty || pass.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text('Por favor completa los campos.'),
-                        backgroundColor: Colors.orange),
+                      content: Text('Por favor completa los campos.'),
+                      backgroundColor: Colors.orange,
+                    ),
                   );
                   return;
                 }
                 Navigator.pop(dialogContext);
                 _procesarCambioCorreo(nuevoCorreo, pass);
               },
-              child: const Text("Guardar",
-                  style: TextStyle(color: Colors.white)),
+              child: const Text(
+                "Guardar",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -442,7 +464,9 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
   }
 
   Future<void> _procesarCambioCorreo(
-      String nuevoCorreo, String contrasenaActual) async {
+    String nuevoCorreo,
+    String contrasenaActual,
+  ) async {
     if (_usuario == null) return;
     try {
       AuthCredential credential = EmailAuthProvider.credential(
@@ -483,12 +507,15 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Text(
             "Cambiar Contraseña",
             style: TextStyle(
-                fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E2A4F),
+            ),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -499,10 +526,13 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: "Contraseña Actual",
-                    prefixIcon: const Icon(Icons.lock_clock_outlined,
-                        color: Color(0xFF1E2A4F)),
+                    prefixIcon: const Icon(
+                      Icons.lock_clock_outlined,
+                      color: Color(0xFF1E2A4F),
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -511,10 +541,13 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: "Nueva Contraseña",
-                    prefixIcon: const Icon(Icons.lock_outline,
-                        color: Color(0xFF1E2A4F)),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: Color(0xFF1E2A4F),
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
                 ),
               ],
@@ -523,13 +556,17 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
+              child: const Text(
+                "Cancelar",
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.azuleskpe,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () {
                 String actualPass = actualPassCtrl.text.trim();
@@ -539,8 +576,10 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                 Navigator.pop(dialogContext);
                 _procesarCambioPassword(actualPass, nuevaPass);
               },
-              child: const Text("Actualizar",
-                  style: TextStyle(color: Colors.white)),
+              child: const Text(
+                "Actualizar",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -549,7 +588,9 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
   }
 
   Future<void> _procesarCambioPassword(
-      String actualPassword, String nuevaPassword) async {
+    String actualPassword,
+    String nuevaPassword,
+  ) async {
     if (_usuario == null || _usuario.email == null) return;
     try {
       AuthCredential credential = EmailAuthProvider.credential(
@@ -583,10 +624,10 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
           .collection('usuarios')
           .doc(_usuario.uid)
           .set({
-        'nombres': _nombreController.text.trim(),
-        'descripcion': _descripcionController.text.trim(),
-        'telefono': _telefonoController.text.trim(),
-      }, SetOptions(merge: true));
+            'nombres': _nombreController.text.trim(),
+            'descripcion': _descripcionController.text.trim(),
+            'telefono': _telefonoController.text.trim(),
+          }, SetOptions(merge: true));
 
       await _usuario.updateDisplayName(_nombreController.text.trim());
 
@@ -600,7 +641,10 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Error al guardar: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -608,7 +652,7 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F8),
+      backgroundColor: AppColors.blancofondo,
       appBar: AppBar(
         title: const Text(
           "Datos de la Empresa",
@@ -616,7 +660,9 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
         ),
       ),
       body: _cargandoDatos
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
               child: Column(
@@ -641,18 +687,28 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                                     fit: StackFit.expand,
                                     children: [
                                       _portadaUrl.isNotEmpty
-                                          ? Image.network(_portadaUrl, fit: BoxFit.cover)
+                                          ? Image.network(
+                                              _portadaUrl,
+                                              fit: BoxFit.cover,
+                                            )
                                           : Container(
                                               color: Colors.grey.shade300,
                                               child: const Center(
-                                                child: Text("Sin Foto de Portada", style: TextStyle(color: Colors.grey)),
+                                                child: Text(
+                                                  "Sin Foto de Portada",
+                                                  style: TextStyle(
+                                                    color: Colors.grey,
+                                                  ),
+                                                ),
                                               ),
                                             ),
                                       if (_subiendoPortada)
                                         Container(
                                           color: Colors.black45,
                                           child: const Center(
-                                            child: CircularProgressIndicator(color: Colors.white),
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                            ),
                                           ),
                                         ),
                                     ],
@@ -664,7 +720,9 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                                 top: 10,
                                 right: 10,
                                 child: InkWell(
-                                  onTap: _subiendoPortada ? null : _seleccionarYSubirPortada,
+                                  onTap: _subiendoPortada
+                                      ? null
+                                      : _seleccionarYSubirPortada,
                                   child: Container(
                                     padding: const EdgeInsets.all(8),
                                     decoration: BoxDecoration(
@@ -673,15 +731,25 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                                     ),
                                     child: const Row(
                                       children: [
-                                        Icon(Icons.camera_alt, color: Colors.white, size: 16),
+                                        Icon(
+                                          Icons.camera_alt,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
                                         SizedBox(width: 5),
-                                        Text("Portada", style: TextStyle(color: Colors.white, fontSize: 12)),
+                                        Text(
+                                          "Portada",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 12,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
                                 ),
                               ),
-                              
+
                               // 2. LOGO DE LA EMPRESA (Abajo a la izquierda)
                               Positioned(
                                 bottom: 0,
@@ -698,15 +766,18 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                                             color: Colors.black12,
                                             blurRadius: 10,
                                             offset: Offset(0, 4),
-                                          )
+                                          ),
                                         ],
                                       ),
                                       child: CircleAvatar(
                                         radius: 40,
                                         backgroundColor: Colors.grey.shade200,
                                         backgroundImage: _fotoUrl.isNotEmpty
-                                            ? NetworkImage(_fotoUrl) as ImageProvider
-                                            : const AssetImage('assets/sinfoto.jpg'),
+                                            ? NetworkImage(_fotoUrl)
+                                                  as ImageProvider
+                                            : const AssetImage(
+                                                'assets/sinfoto.jpg',
+                                              ),
                                       ),
                                     ),
                                     if (_subiendoFoto)
@@ -718,27 +789,47 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Center(
-                                          child: CircularProgressIndicator(color: Colors.white),
+                                          child: CircularProgressIndicator(
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ),
                                     Positioned(
                                       bottom: 0,
                                       right: 0,
                                       child: InkWell(
-                                        onTap: _subiendoFoto ? null : _seleccionarYSubirFoto,
+                                        onTap: _subiendoFoto
+                                            ? null
+                                            : _seleccionarYSubirFoto,
                                         child: Container(
                                           padding: const EdgeInsets.all(6),
                                           decoration: const BoxDecoration(
                                             color: Color(0xFF1E2A4F),
                                             shape: BoxShape.circle,
                                             border: Border(
-                                                top: BorderSide(color: Colors.white, width: 2),
-                                                bottom: BorderSide(color: Colors.white, width: 2),
-                                                left: BorderSide(color: Colors.white, width: 2),
-                                                right: BorderSide(color: Colors.white, width: 2),
-                                            )
+                                              top: BorderSide(
+                                                color: Colors.white,
+                                                width: 2,
+                                              ),
+                                              bottom: BorderSide(
+                                                color: Colors.white,
+                                                width: 2,
+                                              ),
+                                              left: BorderSide(
+                                                color: Colors.white,
+                                                width: 2,
+                                              ),
+                                              right: BorderSide(
+                                                color: Colors.white,
+                                                width: 2,
+                                              ),
+                                            ),
                                           ),
-                                          child: const Icon(Icons.edit, color: Colors.white, size: 14),
+                                          child: const Icon(
+                                            Icons.edit,
+                                            color: Colors.white,
+                                            size: 14,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -767,7 +858,11 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                       children: [
                         const Text(
                           "Información Principal",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E2A4F),
+                          ),
                         ),
                         const SizedBox(height: 15),
                         _buildInputField(
@@ -796,7 +891,9 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                           controller: _telefonoController,
                           keyboardType: TextInputType.phone,
                           maxLength: 11,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                          ],
                         ),
                         const SizedBox(height: 20),
                         SizedBox(
@@ -805,10 +902,18 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.azuleskpe,
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
                             onPressed: _guardarDatosEmpresa,
-                            child: const Text("Guardar Información", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                            child: const Text(
+                              "Guardar Información",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -827,16 +932,23 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                           children: [
                             const Text(
                               "Fotos de la Empresa",
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E2A4F),
+                              ),
                             ),
                             Text(
                               "${_imagenesEmpresa.length}/8",
-                              style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 15),
-                        
+
                         if (_imagenesEmpresa.isNotEmpty)
                           CarouselSlider(
                             options: CarouselOptions(
@@ -844,7 +956,9 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                               enableInfiniteScroll: false,
                               enlargeCenterPage: true,
                             ),
-                            items: _imagenesEmpresa.asMap().entries.map((entry) {
+                            items: _imagenesEmpresa.asMap().entries.map((
+                              entry,
+                            ) {
                               int index = entry.key;
                               String url = entry.value;
                               return Stack(
@@ -861,14 +975,19 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                                     top: 5,
                                     right: 5,
                                     child: InkWell(
-                                      onTap: () => _eliminarImagenGaleria(index),
+                                      onTap: () =>
+                                          _eliminarImagenGaleria(index),
                                       child: Container(
                                         padding: const EdgeInsets.all(4),
                                         decoration: const BoxDecoration(
                                           color: Colors.black54,
                                           shape: BoxShape.circle,
                                         ),
-                                        child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                        child: const Icon(
+                                          Icons.close,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -883,7 +1002,10 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                             decoration: BoxDecoration(
                               color: Colors.grey.shade100,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+                              border: Border.all(
+                                color: Colors.grey.shade300,
+                                style: BorderStyle.solid,
+                              ),
                             ),
                             child: const Center(
                               child: Text(
@@ -904,12 +1026,23 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 foregroundColor: const Color(0xFF1E2A4F),
-                                side: const BorderSide(color: Color(0xFF1E2A4F)),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                side: const BorderSide(
+                                  color: Color(0xFF1E2A4F),
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                               ),
-                              onPressed: _imagenesEmpresa.length >= 8 ? null : _seleccionarImagenesGaleria,
-                              icon: const Icon(Icons.add_photo_alternate_outlined),
-                              label: const Text("Subir Fotos", style: TextStyle(fontWeight: FontWeight.bold)),
+                              onPressed: _imagenesEmpresa.length >= 8
+                                  ? null
+                                  : _seleccionarImagenesGaleria,
+                              icon: const Icon(
+                                Icons.add_photo_alternate_outlined,
+                              ),
+                              label: const Text(
+                                "Subir Fotos",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
                             ),
                           ),
                       ],
@@ -925,27 +1058,64 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                       children: [
                         const Text(
                           "Seguridad y Credenciales",
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E2A4F),
+                          ),
                         ),
                         const SizedBox(height: 15),
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.email_outlined, color: Color(0xFF1E2A4F)),
-                          title: const Text("Correo electrónico", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                          subtitle: Text(_usuario?.email ?? "No registrado", style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                          leading: const Icon(
+                            Icons.email_outlined,
+                            color: Color(0xFF1E2A4F),
+                          ),
+                          title: const Text(
+                            "Correo electrónico",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Text(
+                            _usuario?.email ?? "No registrado",
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey,
+                            ),
+                          ),
                           trailing: IconButton(
-                            icon: const Icon(Icons.edit_outlined, color: Color(0xFF1E2A4F)),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: Color(0xFF1E2A4F),
+                            ),
                             onPressed: _mostrarDialogoEditarCorreo,
                           ),
                         ),
                         const Divider(),
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.lock_outline, color: Color(0xFF1E2A4F)),
-                          title: const Text("Contraseña", style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                          subtitle: const Text("********", style: TextStyle(fontSize: 13, color: Colors.grey)),
+                          leading: const Icon(
+                            Icons.lock_outline,
+                            color: Color(0xFF1E2A4F),
+                          ),
+                          title: const Text(
+                            "Contraseña",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            "********",
+                            style: TextStyle(fontSize: 13, color: Colors.grey),
+                          ),
                           trailing: IconButton(
-                            icon: const Icon(Icons.edit_outlined, color: Color(0xFF1E2A4F)),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: Color(0xFF1E2A4F),
+                            ),
                             onPressed: _mostrarDialogoEditarPassword,
                           ),
                         ),
@@ -966,7 +1136,11 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
         ],
       ),
       child: child,
@@ -997,13 +1171,18 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.grey),
-        prefixIcon: maxLines == 1 ? Icon(icon, color: const Color(0xFF1E2A4F)) : Padding(
-          padding: const EdgeInsets.only(bottom: 50.0),
-          child: Icon(icon, color: const Color(0xFF1E2A4F)),
-        ),
+        prefixIcon: maxLines == 1
+            ? Icon(icon, color: const Color(0xFF1E2A4F))
+            : Padding(
+                padding: const EdgeInsets.only(bottom: 50.0),
+                child: Icon(icon, color: const Color(0xFF1E2A4F)),
+              ),
         filled: true,
         fillColor: readOnly ? Colors.grey.shade100 : const Color(0xFFF7F7F9),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
         counterText: "",
       ),
     );

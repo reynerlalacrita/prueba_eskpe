@@ -58,7 +58,9 @@ class _SplashScreenState extends State<SplashScreen> {
             // Empresa pendiente: mostrar pantalla de espera
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const PendingApprovalScreen()),
+              MaterialPageRoute(
+                builder: (context) => const PendingApprovalScreen(),
+              ),
             );
             return;
           } else if (estado == 'rejected') {
@@ -120,14 +122,9 @@ class _SplashScreenState extends State<SplashScreen> {
         fit: StackFit.expand,
         children: [
           // Imagen de fondo
-          Image.asset(
-            'assets/background_road.jpg',
-            fit: BoxFit.cover,
-          ),
+          Image.asset('assets/background_road.jpg', fit: BoxFit.cover),
           // Capa oscura semitransparente
-          Container(
-            color: Colors.black.withOpacity(0.52),
-          ),
+          Container(color: Colors.black.withOpacity(0.52)),
           // Contenido centrado
           Center(
             child: Column(

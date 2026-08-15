@@ -91,19 +91,22 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
     try {
       File archivoOriginal = File(imagen.path);
       String uid = _usuario.uid;
-      
+
       // Comprimir a .webp
       final tempDir = await getTemporaryDirectory();
-      final targetPath = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.webp';
-      
-      final XFile? compressedFile = await FlutterImageCompress.compressAndGetFile(
-        archivoOriginal.path,
-        targetPath,
-        format: CompressFormat.webp,
-        quality: 80,
-      );
+      final targetPath =
+          '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.webp';
 
-      if (compressedFile == null) throw Exception("Error al comprimir la imagen");
+      final XFile? compressedFile =
+          await FlutterImageCompress.compressAndGetFile(
+            archivoOriginal.path,
+            targetPath,
+            format: CompressFormat.webp,
+            quality: 80,
+          );
+
+      if (compressedFile == null)
+        throw Exception("Error al comprimir la imagen");
       File archivoAsubir = File(compressedFile.path);
 
       Reference ref = FirebaseStorage.instance
@@ -119,10 +122,9 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
       await _usuario.updatePhotoURL(urlDescarga);
 
       // Actualizar fotoUrl en Firestore
-      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set(
-        {'fotoUrl': urlDescarga},
-        SetOptions(merge: true),
-      );
+      await FirebaseFirestore.instance.collection('usuarios').doc(uid).set({
+        'fotoUrl': urlDescarga,
+      }, SetOptions(merge: true));
 
       if (!mounted) return;
       setState(() {
@@ -153,20 +155,24 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
 
   // 2. LÓGICA PARA CAMBIAR CORREO ELECTRÓNICO
   Future<void> _mostrarDialogoEditarCorreo() async {
-    final TextEditingController nuevoCorreoCtrl =
-        TextEditingController(text: _usuario?.email ?? '');
+    final TextEditingController nuevoCorreoCtrl = TextEditingController(
+      text: _usuario?.email ?? '',
+    );
     final TextEditingController passwordCtrl = TextEditingController();
 
     await showDialog(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Text(
             "Editar Correo Electrónico",
             style: TextStyle(
-                fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E2A4F),
+            ),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -177,10 +183,13 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     labelText: "Nuevo Correo",
-                    prefixIcon: const Icon(Icons.email_outlined,
-                        color: Color(0xFF1E2A4F)),
+                    prefixIcon: const Icon(
+                      Icons.email_outlined,
+                      color: Color(0xFF1E2A4F),
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -189,10 +198,13 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: "Contraseña Actual (Re-autenticación)",
-                    prefixIcon: const Icon(Icons.lock_outline,
-                        color: Color(0xFF1E2A4F)),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: Color(0xFF1E2A4F),
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
                 ),
               ],
@@ -201,13 +213,17 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
+              child: const Text(
+                "Cancelar",
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.azuleskpe,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () async {
                 String nuevoCorreo = nuevoCorreoCtrl.text.trim();
@@ -216,8 +232,9 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                 if (nuevoCorreo.isEmpty || pass.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text('Por favor completa los campos.'),
-                        backgroundColor: Colors.orange),
+                      content: Text('Por favor completa los campos.'),
+                      backgroundColor: Colors.orange,
+                    ),
                   );
                   return;
                 }
@@ -225,8 +242,10 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                 Navigator.pop(dialogContext);
                 _procesarCambioCorreo(nuevoCorreo, pass);
               },
-              child: const Text("Guardar",
-                  style: TextStyle(color: Colors.white)),
+              child: const Text(
+                "Guardar",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -235,7 +254,9 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
   }
 
   Future<void> _procesarCambioCorreo(
-      String nuevoCorreo, String contrasenaActual) async {
+    String nuevoCorreo,
+    String contrasenaActual,
+  ) async {
     if (_usuario == null) return;
 
     try {
@@ -276,9 +297,9 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
       } else if (e.code == 'invalid-email') {
         msg = 'El correo ingresado no es válido.';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.red),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -296,12 +317,15 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
           title: const Text(
             "Cambiar Contraseña",
             style: TextStyle(
-                fontWeight: FontWeight.bold, color: Color(0xFF1E2A4F)),
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF1E2A4F),
+            ),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -312,10 +336,13 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: "Contraseña Actual",
-                    prefixIcon: const Icon(Icons.lock_clock_outlined,
-                        color: Color(0xFF1E2A4F)),
+                    prefixIcon: const Icon(
+                      Icons.lock_clock_outlined,
+                      color: Color(0xFF1E2A4F),
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -324,10 +351,13 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: "Nueva Contraseña",
-                    prefixIcon: const Icon(Icons.lock_outline,
-                        color: Color(0xFF1E2A4F)),
+                    prefixIcon: const Icon(
+                      Icons.lock_outline,
+                      color: Color(0xFF1E2A4F),
+                    ),
                     border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15)),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
                   ),
                 ),
               ],
@@ -336,13 +366,17 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
+              child: const Text(
+                "Cancelar",
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.azuleskpe,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               onPressed: () async {
                 String actualPass = actualPassCtrl.text.trim();
@@ -351,8 +385,9 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                 if (actualPass.isEmpty || nuevaPass.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text('Por favor ingresa ambas contraseñas.'),
-                        backgroundColor: Colors.orange),
+                      content: Text('Por favor ingresa ambas contraseñas.'),
+                      backgroundColor: Colors.orange,
+                    ),
                   );
                   return;
                 }
@@ -360,8 +395,11 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                 if (nuevaPass.length < 6) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                        content: Text('La nueva contraseña debe tener al menos 6 caracteres.'),
-                        backgroundColor: Colors.orange),
+                      content: Text(
+                        'La nueva contraseña debe tener al menos 6 caracteres.',
+                      ),
+                      backgroundColor: Colors.orange,
+                    ),
                   );
                   return;
                 }
@@ -369,8 +407,10 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                 Navigator.pop(dialogContext);
                 _procesarCambioPassword(actualPass, nuevaPass);
               },
-              child: const Text("Actualizar",
-                  style: TextStyle(color: Colors.white)),
+              child: const Text(
+                "Actualizar",
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         );
@@ -379,7 +419,9 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
   }
 
   Future<void> _procesarCambioPassword(
-      String actualPassword, String nuevaPassword) async {
+    String actualPassword,
+    String nuevaPassword,
+  ) async {
     if (_usuario == null || _usuario.email == null) return;
 
     try {
@@ -409,9 +451,9 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
       } else if (e.code == 'weak-password') {
         msg = 'La nueva contraseña es muy débil.';
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(msg), backgroundColor: Colors.red),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(msg), backgroundColor: Colors.red));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -429,10 +471,10 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
           .collection('usuarios')
           .doc(_usuario.uid)
           .set({
-        'nombres': _nombreController.text.trim(),
-        'apellidos': _apellidoController.text.trim(),
-        'telefono': _telefonoController.text.trim(),
-      }, SetOptions(merge: true));
+            'nombres': _nombreController.text.trim(),
+            'apellidos': _apellidoController.text.trim(),
+            'telefono': _telefonoController.text.trim(),
+          }, SetOptions(merge: true));
 
       // Actualizar también displayName en Firebase Auth
       await _usuario.updateDisplayName(
@@ -449,7 +491,10 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al guardar: $e'), backgroundColor: Colors.red),
+        SnackBar(
+          content: Text('Error al guardar: $e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -457,16 +502,13 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F8),
+      backgroundColor: AppColors.blancofondo,
       appBar: AppBar(
         backgroundColor: AppColors.azuleskpe,
         elevation: 0,
         title: const Text(
           "Mis Datos",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -498,7 +540,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                                     color: Colors.black12,
                                     blurRadius: 10,
                                     offset: Offset(0, 4),
-                                  )
+                                  ),
                                 ],
                               ),
                               child: CircleAvatar(
@@ -506,9 +548,7 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                                 backgroundColor: Colors.grey.shade200,
                                 backgroundImage: _fotoUrl.isNotEmpty
                                     ? NetworkImage(_fotoUrl) as ImageProvider
-                                    : const AssetImage(
-                                        'assets/sinfoto.jpg',
-                                      ),
+                                    : const AssetImage('assets/sinfoto.jpg'),
                               ),
                             ),
                             if (_subiendoFoto)
@@ -529,7 +569,9 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                               bottom: 0,
                               right: 0,
                               child: InkWell(
-                                onTap: _subiendoFoto ? null : _seleccionarYSubirFoto,
+                                onTap: _subiendoFoto
+                                    ? null
+                                    : _seleccionarYSubirFoto,
                                 child: Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: const BoxDecoration(
@@ -603,7 +645,8 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                           keyboardType: TextInputType.phone,
                           maxLength: 11, // Límite de caracteres
                           inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly, // Solo números
+                            FilteringTextInputFormatter
+                                .digitsOnly, // Solo números
                           ],
                         ),
                         const SizedBox(height: 20),
@@ -647,27 +690,34 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                           ),
                         ),
                         const SizedBox(height: 15),
-                        
+
                         // Item de Correo Electrónico
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.email_outlined,
-                              color: Color(0xFF1E2A4F)),
+                          leading: const Icon(
+                            Icons.email_outlined,
+                            color: Color(0xFF1E2A4F),
+                          ),
                           title: const Text(
                             "Correo electrónico",
                             style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
                           ),
                           subtitle: Text(
                             _usuario?.email ?? "No registrado",
                             style: const TextStyle(
-                                fontSize: 13, color: Colors.grey),
+                              fontSize: 13,
+                              color: Colors.grey,
+                            ),
                           ),
                           trailing: IconButton(
-                            icon: const Icon(Icons.edit_outlined,
-                                color: Color(0xFF1E2A4F)),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: Color(0xFF1E2A4F),
+                            ),
                             onPressed: _mostrarDialogoEditarCorreo,
                           ),
                         ),
@@ -676,23 +726,27 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
                         // Item de Contraseña
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading: const Icon(Icons.lock_outline,
-                              color: Color(0xFF1E2A4F)),
+                          leading: const Icon(
+                            Icons.lock_outline,
+                            color: Color(0xFF1E2A4F),
+                          ),
                           title: const Text(
                             "Contraseña",
                             style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.black87),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.black87,
+                            ),
                           ),
                           subtitle: const Text(
                             "********",
-                            style: TextStyle(
-                                fontSize: 13, color: Colors.grey),
+                            style: TextStyle(fontSize: 13, color: Colors.grey),
                           ),
                           trailing: IconButton(
-                            icon: const Icon(Icons.edit_outlined,
-                                color: Color(0xFF1E2A4F)),
+                            icon: const Icon(
+                              Icons.edit_outlined,
+                              color: Color(0xFF1E2A4F),
+                            ),
                             onPressed: _mostrarDialogoEditarPassword,
                           ),
                         ),
@@ -754,9 +808,9 @@ class _MisDatosScreenState extends State<MisDatosScreen> {
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
         ),
-        // Si no quieres que aparezca el contador numérico de caracteres abajo (ej. "0/11"), 
+        // Si no quieres que aparezca el contador numérico de caracteres abajo (ej. "0/11"),
         // puedes descomentar la siguiente línea:
-         counterText: "", 
+        counterText: "",
       ),
     );
   }

@@ -11,12 +11,15 @@ class ListaViajesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Todos los Viajes", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Todos los Viajes",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: AppColors.blancofondo,
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance.collection('viajes').snapshots(),
         builder: (context, snapshot) {
@@ -35,7 +38,7 @@ class ListaViajesScreen extends StatelessWidget {
             itemBuilder: (context, index) {
               final doc = docs[index];
               final data = doc.data() as Map<String, dynamic>;
-              
+
               return _buildTarjetaViaje(context, doc.id, data);
             },
           );
@@ -44,27 +47,42 @@ class ListaViajesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTarjetaViaje(BuildContext context, String viajeId, Map<String, dynamic> data) {
+  Widget _buildTarjetaViaje(
+    BuildContext context,
+    String viajeId,
+    Map<String, dynamic> data,
+  ) {
     String destinoId = data['destinoId'] ?? '';
-    
+
     if (destinoId.isEmpty) {
-      return _tarjetaContenido(context, viajeId, data, "Destino Desconocido", data['rutaAsset'] ?? '');
+      return _tarjetaContenido(
+        context,
+        viajeId,
+        data,
+        "Destino Desconocido",
+        data['rutaAsset'] ?? '',
+      );
     }
 
     return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('destinos').doc(destinoId).get(),
+      future: FirebaseFirestore.instance
+          .collection('destinos')
+          .doc(destinoId)
+          .get(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Container(
             height: 140,
             margin: const EdgeInsets.only(bottom: 15),
-            child: const Center(child: CircularProgressIndicator(color: Color(0xFF1E2A4F))),
+            child: const Center(
+              child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
+            ),
           );
         }
 
         String nombre = "Cargando...";
         String ruta = data['rutaAsset'] ?? '';
-        
+
         if (snapshot.connectionState == ConnectionState.done) {
           if (snapshot.hasData && snapshot.data!.exists) {
             nombre = snapshot.data!['nombre'] ?? 'Destino Desconocido';
@@ -74,13 +92,19 @@ class ListaViajesScreen extends StatelessWidget {
             nombre = "Destino Desconocido";
           }
         }
-        
+
         return _tarjetaContenido(context, viajeId, data, nombre, ruta);
       },
     );
   }
 
-  Widget _tarjetaContenido(BuildContext context, String viajeId, Map<String, dynamic> data, String nombreDestino, String rutaAsset) {
+  Widget _tarjetaContenido(
+    BuildContext context,
+    String viajeId,
+    Map<String, dynamic> data,
+    String nombreDestino,
+    String rutaAsset,
+  ) {
     String fechaStr = 'Fecha no disponible';
     if (data['fecha'] != null) {
       final Timestamp timestamp = data['fecha'] as Timestamp;
@@ -91,14 +115,21 @@ class ListaViajesScreen extends StatelessWidget {
     String precioStr = "\$0";
     if (data['planes'] != null && (data['planes'] as List).isNotEmpty) {
       List planes = data['planes'];
-      double minPrice = planes.map((p) => double.tryParse(p['precio']?.toString() ?? '0') ?? 0.0).reduce((a, b) => a < b ? a : b);
-      precioStr = "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
+      double minPrice = planes
+          .map((p) => double.tryParse(p['precio']?.toString() ?? '0') ?? 0.0)
+          .reduce((a, b) => a < b ? a : b);
+      precioStr =
+          "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
     } else {
-      String precio = data['precioPorPuesto']?.toString() ?? data['precio']?.toString() ?? '0';
+      String precio =
+          data['precioPorPuesto']?.toString() ??
+          data['precio']?.toString() ??
+          '0';
       precioStr = "\$$precio";
     }
 
-    String empresaNombre = data['empresaNombre'] ?? data['empresa'] ?? 'Agencia de Viajes';
+    String empresaNombre =
+        data['empresaNombre'] ?? data['empresa'] ?? 'Agencia de Viajes';
     String puntoSalida = data['puntoSalida'] ?? 'No especificado';
     String horaSalida = data['horaSalida'] ?? 'No especificada';
 
@@ -107,10 +138,8 @@ class ListaViajesScreen extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ReservarViajeScreen(
-              viajeId: viajeId,
-              datosViaje: data,
-            ),
+            builder: (context) =>
+                ReservarViajeScreen(viajeId: viajeId, datosViaje: data),
           ),
         );
       },
@@ -120,50 +149,142 @@ class ListaViajesScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15),
-          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 6, offset: Offset(0, 3))],
+          boxShadow: const [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              offset: Offset(0, 3),
+            ),
+          ],
         ),
         child: Row(
           children: [
             ClipRRect(
-              borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-              child: _buildImagenViaje(rutaAsset, width: 120, height: 160, fit: BoxFit.cover),
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(15),
+              ),
+              child: _buildImagenViaje(
+                rutaAsset,
+                width: 120,
+                height: 160,
+                fit: BoxFit.cover,
+              ),
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 12.0,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(empresaNombre, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    Text(nombreDestino, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Color(0xFF1E2A4F)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    Text(
+                      empresaNombre,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      nombreDestino,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Color(0xFF1E2A4F),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 5),
                     Row(
                       children: [
-                        const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                        const Icon(
+                          Icons.calendar_today,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 5),
-                        Expanded(child: Text(fechaStr, style: const TextStyle(color: Colors.grey, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                        Expanded(
+                          child: Text(
+                            fechaStr,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 13,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                        const Icon(
+                          Icons.access_time,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 5),
-                        Expanded(child: Text(horaSalida, style: const TextStyle(color: Colors.grey, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                        Expanded(
+                          child: Text(
+                            horaSalida,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 13,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     ),
                     Row(
                       children: [
-                        const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                        const Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
                         const SizedBox(width: 5),
-                        Expanded(child: Text(puntoSalida, style: const TextStyle(color: Colors.grey, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                        Expanded(
+                          child: Text(
+                            puntoSalida,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontSize: 13,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                       ],
                     ),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(precioStr, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFFB8860B), fontSize: 18), maxLines: 1, overflow: TextOverflow.ellipsis),
-                        const Text("Ver detalles >", style: TextStyle(color: Colors.grey, fontSize: 12, fontWeight: FontWeight.bold)),
+                        Text(
+                          precioStr,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFB8860B),
+                            fontSize: 18,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const Text(
+                          "Ver detalles >",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ],
@@ -176,7 +297,12 @@ class ListaViajesScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildImagenViaje(String ruta, {double? width, double? height, BoxFit fit = BoxFit.cover}) {
+  Widget _buildImagenViaje(
+    String ruta, {
+    double? width,
+    double? height,
+    BoxFit fit = BoxFit.cover,
+  }) {
     if (ruta.startsWith('http://') || ruta.startsWith('https://')) {
       return Image.network(
         ruta,

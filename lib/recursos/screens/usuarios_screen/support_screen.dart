@@ -5,17 +5,19 @@ import 'package:prueba_eskpe/recursos/colores.dart';
 class SupportScreen extends StatelessWidget {
   final String supportPhoneNumber;
 
-  const SupportScreen({
-    super.key,
-    this.supportPhoneNumber = '584263211350',
-  });
+  const SupportScreen({super.key, this.supportPhoneNumber = '584263211350'});
 
   Future<void> _openWhatsApp(BuildContext context) async {
     final String message = Uri.encodeComponent(
       "Hola, necesito ayuda con la aplicación.",
     );
-    final String cleanNumber = supportPhoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
-    final Uri whatsappUrl = Uri.parse("https://wa.me/$cleanNumber?text=$message");
+    final String cleanNumber = supportPhoneNumber.replaceAll(
+      RegExp(r'[^\d+]'),
+      '',
+    );
+    final Uri whatsappUrl = Uri.parse(
+      "https://wa.me/$cleanNumber?text=$message",
+    );
 
     try {
       if (await canLaunchUrl(whatsappUrl)) {
@@ -23,19 +25,15 @@ class SupportScreen extends StatelessWidget {
       } else {
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("No se pudo abrir WhatsApp."),
-            ),
+            const SnackBar(content: Text("No se pudo abrir WhatsApp.")),
           );
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Error al abrir WhatsApp: $e"),
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("Error al abrir WhatsApp: $e")));
       }
     }
   }
@@ -43,14 +41,11 @@ class SupportScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F8),
+      backgroundColor: AppColors.blancofondo,
       appBar: AppBar(
         title: const Text(
           "Ayuda y Soporte",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),

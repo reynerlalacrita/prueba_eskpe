@@ -154,14 +154,19 @@ class ViajesEmpresaScreen extends StatelessWidget {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.horizontal(left: Radius.circular(15)),
-                  child: Image.asset(
-                    rutaAsset.isNotEmpty 
-                        ? rutaAsset 
-                        : 'assets/sinfoto.jpg',
-                    width: 100,
-                    height: 120,
-                    fit: BoxFit.cover,
-                  ),
+                  child: rutaAsset.startsWith('http')
+                      ? Image.network(
+                          rutaAsset,
+                          width: 100,
+                          height: 120,
+                          fit: BoxFit.cover,
+                        )
+                      : Image.asset(
+                          rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
+                          width: 100,
+                          height: 120,
+                          fit: BoxFit.cover,
+                        ),
                 ),
                 Positioned(
                   top: 8,
