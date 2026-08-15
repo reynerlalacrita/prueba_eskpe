@@ -11,14 +11,20 @@ class ListaEmpresasScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Todas las Empresas", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text(
+          "Todas las Empresas",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),
         elevation: 0,
       ),
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: AppColors.blancofondo,
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('usuarios').where('rol', isEqualTo: 'empresa').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('usuarios')
+            .where('rol', isEqualTo: 'empresa')
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -43,23 +49,24 @@ class ListaEmpresasScreen extends StatelessWidget {
             itemCount: docs.length,
             itemBuilder: (context, index) {
               final data = docs[index].data() as Map<String, dynamic>;
-              
+
               // 🛠️ AQUÍ ESTÁ EL CAMBIO: Extraemos la URL de la imagen del perfil/logo de la empresa (o el asset local como fallback)
               final String nombreSeguro = data['nombres'] ?? 'Sin nombre';
-              final String rutaSegura = data['fotoUrl'] ??
+              final String rutaSegura =
+                  data['fotoUrl'] ??
                   data['logoUrl'] ??
                   data['fotoPerfilUrl'] ??
                   data['imagenUrl'] ??
                   data['photoURL'] ??
                   data['rutaAsset'] ??
                   '';
-              
+
               return _buildTarjetaDestino(
-                context, 
-                nombreSeguro, 
-                rutaSegura, 
-                docs[index].id, 
-                data['telefono'] ?? '584263211350'
+                context,
+                nombreSeguro,
+                rutaSegura,
+                docs[index].id,
+                data['telefono'] ?? '584263211350',
               );
             },
           );
@@ -68,7 +75,13 @@ class ListaEmpresasScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildTarjetaDestino(BuildContext context, String nombre, String ruta, String id, String telefono) {
+  Widget _buildTarjetaDestino(
+    BuildContext context,
+    String nombre,
+    String ruta,
+    String id,
+    String telefono,
+  ) {
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -93,9 +106,12 @@ class ListaEmpresasScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AspectRatio(
-              aspectRatio: 1.2, // Relación de aspecto más horizontal para no cortar logos
+              aspectRatio:
+                  1.2, // Relación de aspecto más horizontal para no cortar logos
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(15),
+                ),
                 child: _buildImagenEmpresa(ruta),
               ),
             ),
@@ -103,7 +119,13 @@ class ListaEmpresasScreen extends StatelessWidget {
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(nombre, style: const TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
+                  child: Text(
+                    nombre,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ),
             ),
