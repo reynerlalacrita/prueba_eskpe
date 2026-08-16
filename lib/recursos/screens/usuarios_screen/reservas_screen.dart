@@ -88,7 +88,6 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
         }
 
         int puestosDisponibles = viajeData['puestosDisponibles'] ?? 0;
-        double precio = (viajeData['precioPorPuesto'] ?? 0).toDouble();
         String empresa = viajeData['empresaNombre'] ?? 'Empresa';
         String empresaId = viajeData['empresaId'] ?? '';
         String destino = viajeData['destinoId'] ?? 'Destino';
@@ -159,11 +158,18 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
           children: [
             Icon(Icons.check_circle, color: Colors.green, size: 30),
             SizedBox(width: 10),
-            Text("¡Reserva Solicitada!"),
+            Expanded(
+              child: Text(
+                "¡Reserva Solicitada!",
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
-        content: Text(
-          "Has reservado $_puestosAReservar puesto(s) con ${widget.datosViaje['empresaNombre']}. Revisa tu Historial de Viajes para gestionar el pago.",
+        content: SingleChildScrollView(
+          child: Text(
+            "Has reservado $_puestosAReservar puesto(s) con ${widget.datosViaje['empresaNombre']}. Revisa tu Historial de Viajes para gestionar el pago.",
+          ),
         ),
         actions: [
           ElevatedButton(
@@ -186,8 +192,6 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    double precioIndividual = (widget.datosViaje['precioPorPuesto'] ?? 0)
-        .toDouble();
     int maxPuestos = widget.datosViaje['puestosDisponibles'] ?? 0;
 
     String logoUrl =
@@ -275,10 +279,10 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF2E16D1).withOpacity(0.04),
+                        color: AppColors.azulEskpe.withValues(alpha: 0.04),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: const Color(0xFF2E16D1).withOpacity(0.12),
+                          color: AppColors.azulEskpe.withValues(alpha: 0.12),
                         ),
                       ),
                       child: Column(
@@ -289,7 +293,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                               Icon(
                                 Icons.info_outline,
                                 size: 16,
-                                color: Color(0xFF2E16D1),
+                                color: AppColors.azulEskpe,
                               ),
                               SizedBox(width: 6),
                               Text(
@@ -297,7 +301,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2E16D1),
+                                  color: AppColors.azulEskpe,
                                 ),
                               ),
                             ],

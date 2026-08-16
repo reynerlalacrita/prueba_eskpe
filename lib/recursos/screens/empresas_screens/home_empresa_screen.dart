@@ -290,7 +290,7 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
             child: _buildActionCard(
               context: context,
               icon: Icons.add_location_alt_rounded,
-              color: const Color(0xFF2E16D1),
+              color: AppColors.azulEskpe,
               title: "Publicar Viaje",
               subtitle: "Agregar nuevo destino y cupos",
               onTap: () {
@@ -460,7 +460,7 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
           const SizedBox(height: 20),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2E16D1),
+              backgroundColor: AppColors.azulEskpe,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),

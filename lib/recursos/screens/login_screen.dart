@@ -7,6 +7,7 @@ import 'package:prueba_eskpe/recursos/screens/empresas_screens/pending_approval_
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/verification_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -30,19 +31,18 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // FUNCIÓN PARA INICIAR SESIÓN Y LEER EL ROL
+  /// Autentica al usuario en Firebase Auth y coordina el enrutamiento de pantalla
+  /// según su rol ('usuario', 'empresa', 'admin') y estado de verificación.
   Future<void> _procesarLogin() async {
     try {
-      // Mostrar indicador de carga
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(color: Color(0xFF2E16D1)),
+          child: CircularProgressIndicator(color: AppColors.azulEskpe),
         ),
       );
 
-      // 1. Autenticar con Firebase Auth
       UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(
             email: _emailController.text.trim(),
@@ -51,13 +51,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
       String uid = userCredential.user!.uid;
 
-      // 2. Buscar el documento del usuario en Firestore para saber su Rol
       DocumentSnapshot userDoc = await FirebaseFirestore.instance
           .collection('usuarios')
           .doc(uid)
           .get();
 
-      Navigator.pop(context); // Quitar el círculo de carga
+      if (!mounted) return;
+      Navigator.pop(context);
 
       if (userDoc.exists) {
         String rol = userDoc.get('rol');
@@ -176,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2E16D1), // Fondo azul sólido
+      backgroundColor: AppColors.azulEskpe, // Fondo azul sólido
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
@@ -184,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Container(
             width: size.width,
             height: size.height,
-            color: const Color(0xFF2E16D1),
+            color: AppColors.azulEskpe,
           ),
 
           // Gradiente superpuesto para mejorar la lectura y dar profundidad
@@ -238,7 +238,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2E16D1),
+                          color: AppColors.azulEskpe,
                         ),
                       ),
                       const SizedBox(height: 30),
@@ -279,13 +279,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(30.0),
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF2E16D1), Color(0xFF4A3AFF)],
+                            colors: [AppColors.azulEskpe, AppColors.azul1],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF4A3AFF).withOpacity(0.4),
+                              color: AppColors.azulEskpe.withValues(alpha: 0.4),
                               blurRadius: 15,
                               offset: const Offset(0, 5),
                             ),
@@ -336,7 +336,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextSpan(
                                 text: "Regístrate aquí",
                                 style: TextStyle(
-                                  color: Color(0xFF4A3AFF),
+                                  color: AppColors.azulEskpe,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -412,7 +412,7 @@ class _LoginScreenState extends State<LoginScreen> {
           fontWeight: FontWeight.w500,
         ),
         prefixIcon: prefixIcon != null
-            ? Icon(prefixIcon, color: const Color(0xFF4A3AFF))
+            ? Icon(prefixIcon, color: AppColors.azulEskpe)
             : null,
         filled: true,
         fillColor: const Color(0xFFF7F7F9),
@@ -426,7 +426,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.0),
-          borderSide: const BorderSide(color: Color(0xFF4A3AFF), width: 2),
+          borderSide: const BorderSide(color: AppColors.azulEskpe, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.0),

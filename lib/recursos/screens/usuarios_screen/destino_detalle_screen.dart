@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/reservas_screen.dart';
 
-class DestinoDetalleScreen extends StatelessWidget {
+class DestinoDetalleScreen extends StatefulWidget {
   final String nombre;
   final String destinoId;
   final String rutaAsset;
@@ -16,12 +16,72 @@ class DestinoDetalleScreen extends StatelessWidget {
   });
 
   @override
+  State<DestinoDetalleScreen> createState() => _DestinoDetalleScreenState();
+}
+
+class _DestinoDetalleScreenState extends State<DestinoDetalleScreen> {
+  String _destinoIdEfectivo = '';
+  bool _cargandoId = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _destinoIdEfectivo = widget.destinoId;
+    if (_destinoIdEfectivo.isEmpty) {
+      _resolverDestinoId();
+    }
+  }
+
+  /// Resuelve asíncronamente el ID de destino en la colección [destinos]
+  /// cuando el parámetro [destinoId] inicial es nulo o vacío.
+  void _resolverDestinoId() async {
+    setState(() => _cargandoId = true);
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collectionGroup('destinos')
+          .get();
+
+      String targetNorm = _normalizar(widget.nombre);
+
+      for (var doc in snap.docs) {
+        final data = doc.data();
+        String docNombre = _normalizar(data['nombre'] ?? '');
+        if (docNombre == targetNorm ||
+            docNombre.contains(targetNorm) ||
+            targetNorm.contains(docNombre)) {
+          if (mounted) {
+            setState(() {
+              _destinoIdEfectivo = doc.id;
+              _cargandoId = false;
+            });
+          }
+          return;
+        }
+      }
+    } catch (e) {
+      debugPrint("Error resolviendo destinoId: $e");
+    }
+    if (mounted) setState(() => _cargandoId = false);
+  }
+
+  String _normalizar(String str) {
+    return str
+        .toLowerCase()
+        .replaceAll('á', 'a')
+        .replaceAll('é', 'e')
+        .replaceAll('í', 'i')
+        .replaceAll('ó', 'o')
+        .replaceAll('ú', 'u')
+        .replaceAll('ñ', 'n')
+        .trim();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.blancofondo,
       body: CustomScrollView(
         slivers: [
-          // Encabezado con la imagen del destino
           SliverAppBar(
             expandedHeight: 250.0,
             floating: false,
@@ -30,30 +90,29 @@ class DestinoDetalleScreen extends StatelessWidget {
             iconTheme: const IconThemeData(color: Colors.white),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                nombre,
+                widget.nombre,
                 style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
                   shadows: [Shadow(color: Colors.black87, blurRadius: 10)],
                 ),
               ),
-              background: rutaAsset.startsWith('http')
+              background: widget.rutaAsset.startsWith('http')
                   ? Image.network(
-                      rutaAsset,
+                      widget.rutaAsset,
                       fit: BoxFit.cover,
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       colorBlendMode: BlendMode.darken,
                     )
                   : Image.asset(
-                      rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
+                      widget.rutaAsset.isNotEmpty ? widget.rutaAsset : 'assets/sinfoto.jpg',
                       fit: BoxFit.cover,
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       colorBlendMode: BlendMode.darken,
                     ),
             ),
           ),
 
-          // Cuerpo con los viajes de Firebase
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.all(20.0),
@@ -70,7 +129,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 5),
                   Text(
-                    "Explora las opciones de las empresas para $nombre",
+                    "Explora las opciones de las empresas para ${widget.nombre}",
                     style: const TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                   const SizedBox(height: 20),
@@ -79,12 +138,17 @@ class DestinoDetalleScreen extends StatelessWidget {
             ),
           ),
 
-          // Lista de viajes desde Firebase
-          StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('viajes')
-                .where('destinoId', isEqualTo: destinoId)
-                .snapshots(),
+          _cargandoId
+              ? const SliverToBoxAdapter(
+                  child: Center(
+                    child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
+                  ),
+                )
+              : StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection('viajes')
+                      .where('destinoId', isEqualTo: _destinoIdEfectivo)
+                      .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return const SliverToBoxAdapter(
@@ -126,7 +190,7 @@ class DestinoDetalleScreen extends StatelessWidget {
                   final doc = docs[index];
                   final data = doc.data() as Map<String, dynamic>;
 
-                  // Convertimos la fecha de forma segura
+                  /// Formateo defensivo de fecha a partir de tipo [Timestamp].
                   String fechaTexto = 'Fechas por definir';
                   if (data['fecha'] != null) {
                     final Timestamp timestamp = data['fecha'] as Timestamp;

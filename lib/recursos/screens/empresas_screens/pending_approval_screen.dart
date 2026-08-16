@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/home_empresa_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 class PendingApprovalScreen extends StatefulWidget {
   const PendingApprovalScreen({super.key});
@@ -98,7 +99,7 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2E16D1),
+      backgroundColor: AppColors.azulEskpe,
       body: SafeArea(
         child: Column(
           children: [
@@ -217,7 +218,7 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                                   ),
                                 ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2E16D1),
+                            backgroundColor: AppColors.azulEskpe,
                             foregroundColor: Colors.white,
                             disabledBackgroundColor: Colors.grey[300],
                             shape: RoundedRectangleBorder(

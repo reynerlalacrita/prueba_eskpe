@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/busqueda_screen.dart';
@@ -24,8 +25,14 @@ class _HomeScreenState extends State<HomeScreen> {
   String rol = 'usuario';
   bool cargandoRol = true;
   int _indiceActual = 0;
-
   late final List<Widget> _pantallas;
+
+  final List<Map<String, String>> bannerItems = const [
+    {'image': 'assets/lacienaga1.jpg', 'title': 'La Ciénaga'},
+    {'image': 'assets/choroni1.jpg', 'title': 'Choroní'},
+    {'image': 'assets/coloniatovar1.jpg', 'title': 'La Colonia Tovar'},
+    {'image': 'assets/banner_cayosombrero.jpg', 'title': 'Cayo Sombrero'},
+  ];
 
   @override
   void initState() {
@@ -64,12 +71,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (cargandoRol)
+    if (cargandoRol) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF2E16D1)),
+          child: CircularProgressIndicator(color: AppColors.azulEskpe),
         ),
       );
+    }
 
     return Scaffold(
       backgroundColor: Color(0xFFECEEEF),
@@ -81,7 +89,6 @@ class _HomeScreenState extends State<HomeScreen> {
         selectedItemColor: AppColors.azuleskpe,
         unselectedItemColor: Colors.black38,
         currentIndex: _indiceActual,
-        // 🛠️ SE ELIMINÓ EL IF: Ahora cambia directamente de índice y renderiza UsuarioScreen
         onTap: (index) {
           setState(() {
             _indiceActual = index;
@@ -112,16 +119,15 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: AppColors.azuleskpe,
         elevation: 0,
         centerTitle: true,
-        title: const Padding(
-          padding: EdgeInsets.only(top: 10.0),
+        title: Padding(
+          padding: const EdgeInsets.only(top: 10.0),
           child: Text(
             'ESK-PE',
-            style: TextStyle(
-              fontFamily: 'Impact',
-              fontSize: 36,
-              fontStyle: FontStyle.italic,
+            style: GoogleFonts.montserrat(
+              fontSize: 34,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 2.0,
               color: Colors.white,
-              letterSpacing: 2,
             ),
           ),
         ),
@@ -181,28 +187,60 @@ class _HomeScreenState extends State<HomeScreen> {
                 enlargeCenterPage: true,
                 viewportFraction: 0.85,
               ),
-              items:
-                  [
-                    'assets/playa1.jpg',
-                    'assets/choroni1.jpg',
-                    'assets/playa3.jpg',
-                  ].map((i) {
-                    return Builder(
-                      builder: (context) {
-                        return Container(
-                          width: MediaQuery.of(context).size.width,
-                          margin: const EdgeInsets.symmetric(horizontal: 5.0),
+              items: bannerItems.map((item) {
+                return Builder(
+                  builder: (context) {
+                    return GestureDetector(
+                      onTap: () => _navegarADestino(
+                        context,
+                        item['title']!,
+                        item['image']!,
+                      ),
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        margin: const EdgeInsets.symmetric(horizontal: 5.0),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          image: DecorationImage(
+                            image: AssetImage(item['image']!),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        child: Container(
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
-                            image: DecorationImage(
-                              image: AssetImage(i),
-                              fit: BoxFit.cover,
+                            gradient: LinearGradient(
+                              colors: [
+                                Colors.black.withValues(alpha: 0.6),
+                                Colors.transparent,
+                              ],
+                              begin: Alignment.bottomCenter,
+                              end: Alignment.center,
                             ),
                           ),
-                        );
-                      },
+                          padding: const EdgeInsets.all(15.0),
+                          alignment: Alignment.bottomLeft,
+                          child: Text(
+                            item['title']!,
+                            style: GoogleFonts.montserrat(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              shadows: const [
+                                Shadow(
+                                  blurRadius: 6,
+                                  color: Colors.black54,
+                                  offset: Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
                     );
-                  }).toList(),
+                  },
+                );
+              }).toList(),
             ),
             const SizedBox(height: 25),
 
@@ -221,8 +259,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   .limit(7)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData)
+                if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
+                }
                 final docs = snapshot.data!.docs;
                 return SizedBox(
                   height: 160,
@@ -261,8 +300,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   .limit(7)
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData)
+                if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
+                }
                 final docs = snapshot.data!.docs;
                 if (docs.isEmpty) {
                   return const Padding(
@@ -316,8 +356,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   .collection('viajes')
                   .snapshots(),
               builder: (context, snapshot) {
-                if (!snapshot.hasData)
+                if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
+                }
                 final docs = snapshot.data!.docs;
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 0),
@@ -348,18 +389,94 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               titulo,
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                color: AppColors.azul4,
+              style: GoogleFonts.montserrat(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.azulEskpe,
               ),
             ),
-            const SizedBox(width: 5), // Un poco de espacio
+            const SizedBox(width: 5),
             const Icon(Icons.chevron_right, size: 24, color: AppColors.azul2),
           ],
         ),
       ),
     );
+  }
+
+  /// Resuelve el identificador único del destino mediante comparación normalizada
+  /// de cadenas e inicia la navegación a [DestinoDetalleScreen].
+  void _navegarADestino(
+    BuildContext context,
+    String nombre,
+    String rutaAsset,
+  ) async {
+    try {
+      final querySnapshot = await FirebaseFirestore.instance
+          .collectionGroup('destinos')
+          .get();
+
+      String destinoId = '';
+      String nombreFinal = nombre;
+      String assetToUse = rutaAsset;
+
+      String normalizar(String str) {
+        return str
+            .toLowerCase()
+            .replaceAll('á', 'a')
+            .replaceAll('é', 'e')
+            .replaceAll('í', 'i')
+            .replaceAll('ó', 'o')
+            .replaceAll('ú', 'u')
+            .replaceAll('ñ', 'n')
+            .trim();
+      }
+
+      final targetNorm = normalizar(nombre);
+
+      for (var doc in querySnapshot.docs) {
+        final data = doc.data();
+        final String docNombre = (data['nombre'] ?? '').toString();
+        final docNorm = normalizar(docNombre);
+
+        if (docNorm == targetNorm ||
+            docNorm.contains(targetNorm) ||
+            targetNorm.contains(docNorm)) {
+          destinoId = doc.id;
+          nombreFinal = docNombre;
+          if (data['rutaAsset'] != null &&
+              (data['rutaAsset'] as String).isNotEmpty) {
+            assetToUse = data['rutaAsset'];
+          }
+          break;
+        }
+      }
+
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DestinoDetalleScreen(
+              nombre: nombreFinal,
+              rutaAsset: assetToUse,
+              destinoId: destinoId,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => DestinoDetalleScreen(
+              nombre: nombre,
+              rutaAsset: rutaAsset,
+              destinoId: '',
+            ),
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildItemDestino(String nombre, String rutaAsset, String destinoId) {
@@ -418,7 +535,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Diseño de Empresas: Tarjeta interactiva para ir a los detalles
   Widget _buildItemEmpresa(
     String nombre,
     String rutaAsset,
@@ -447,7 +563,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 5,
               offset: const Offset(0, 3),
             ),
@@ -484,12 +600,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Método actualizado para usar 'sinfoto.jpg' en lugar del ícono
+  /// Renderiza la imagen corporativa validando si la ruta corresponde a una URL remota
+  /// o a un recurso local de assets con fallback a [sinfoto.jpg].
   Widget _buildImagenLogoEmpresa(String ruta) {
     if (ruta.startsWith('http://') || ruta.startsWith('https://')) {
       return Image.network(
         ruta,
-        fit: BoxFit.cover, // Para que rellene el cuadrado sin deformarse
+        fit: BoxFit.cover,
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
           return const Center(
@@ -511,7 +628,6 @@ class _HomeScreenState extends State<HomeScreen> {
             Image.asset('assets/sinfoto.jpg', fit: BoxFit.cover),
       );
     } else {
-      // Si la ruta está vacía, mostramos la imagen por defecto
       return Image.asset('assets/sinfoto.jpg', fit: BoxFit.cover);
     }
   }
@@ -611,7 +727,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(15),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.08),
+              color: Colors.black.withValues(alpha: 0.08),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),

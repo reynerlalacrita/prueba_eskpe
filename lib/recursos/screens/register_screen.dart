@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/pending_approval_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/verification_screen.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -50,21 +51,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
-  // Longitud máxima del campo de documento según tipo
+  /// Retorna el límite superior de caracteres del documento de identidad según el tipo seleccionado.
   int get _maxLengthDocumento {
-    if (!_esEmpresa) return 8; // Cédula viajero: máx 8
+    if (!_esEmpresa) return 8;
     if (_tipoDocEmpresa == 'Cédula de Identidad') return 8;
-    return 9; // RIF: máx 9
+    return 9;
   }
 
-  // Función principal de registro
+  /// Crea la cuenta en Firebase Auth y persiste la entidad estructurada (viajero o empresa) en Firestore.
   Future<void> _procesarRegistro() async {
     try {
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(color: Color(0xFF2E16D1)),
+          child: CircularProgressIndicator(color: AppColors.azulEskpe),
         ),
       );
 
@@ -176,14 +177,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF2E16D1),
+      backgroundColor: AppColors.azulEskpe,
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
           Container(
             width: size.width,
             height: size.height,
-            color: const Color(0xFF2E16D1),
+            color: AppColors.azulEskpe,
           ),
           Container(
             width: size.width,
@@ -230,7 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF2E16D1),
+                          color: AppColors.azulEskpe,
                         ),
                       ),
                       const SizedBox(height: 25),
@@ -326,7 +327,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     value: t,
                                     child: Text(t,
                                         style: const TextStyle(
-                                            color: Color(0xFF2E16D1),
+                                            color: AppColors.azulEskpe,
                                             fontWeight: FontWeight.w600)),
                                   ))
                               .toList(),
@@ -366,7 +367,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         value: tipo,
                                         child: Text(tipo,
                                             style: const TextStyle(
-                                                color: Color(0xFF2E16D1),
+                                                color: AppColors.azulEskpe,
                                                 fontWeight: FontWeight.bold,
                                                 fontSize: 16)),
                                       ))
@@ -509,13 +510,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               color: Color(0xFF7A7A7A),
                               fontWeight: FontWeight.w500),
                           prefixIcon: const Icon(Icons.lock_outline,
-                              color: Color(0xFF4A3AFF)),
+                              color: AppColors.azulEskpe),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscurePassword
                                   ? Icons.visibility_off_outlined
                                   : Icons.visibility_outlined,
-                              color: const Color(0xFF4A3AFF),
+                              color: AppColors.azulEskpe,
                             ),
                             onPressed: () => setState(
                                 () => _obscurePassword = !_obscurePassword),
@@ -531,7 +532,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20.0),
                               borderSide: const BorderSide(
-                                  color: Color(0xFF4A3AFF), width: 2)),
+                                  color: AppColors.azulEskpe, width: 2)),
                           errorBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(20.0),
                               borderSide: const BorderSide(
@@ -554,13 +555,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(30.0),
                           gradient: const LinearGradient(
-                            colors: [Color(0xFF2E16D1), Color(0xFF4A3AFF)],
+                            colors: [AppColors.azulEskpe, AppColors.azul1],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFF4A3AFF).withOpacity(0.4),
+                              color: AppColors.azulEskpe.withValues(alpha: 0.4),
                               blurRadius: 15,
                               offset: const Offset(0, 5),
                             ),
@@ -602,7 +603,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               TextSpan(
                                 text: "Inicia sesión",
                                 style: TextStyle(
-                                  color: Color(0xFF4A3AFF),
+                                  color: AppColors.azulEskpe,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -659,12 +660,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             color:
-                isActive ? const Color(0xFF2E16D1) : Colors.transparent,
+                isActive ? AppColors.azulEskpe : Colors.transparent,
             borderRadius: BorderRadius.circular(26),
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF2E16D1).withOpacity(0.3),
+                      color: AppColors.azulEskpe.withValues(alpha: 0.3),
                       blurRadius: 8,
                       offset: const Offset(0, 3),
                     )
@@ -676,7 +677,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               label,
               style: TextStyle(
                 color:
-                    isActive ? Colors.white : const Color(0xFF2E16D1),
+                    isActive ? Colors.white : AppColors.azulEskpe,
                 fontWeight: FontWeight.bold,
                 fontSize: 15,
               ),
@@ -693,7 +694,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       labelText: label,
       labelStyle: const TextStyle(
           color: Color(0xFF7A7A7A), fontWeight: FontWeight.w500),
-      prefixIcon: Icon(icon, color: const Color(0xFF4A3AFF)),
+      prefixIcon: Icon(icon, color: AppColors.azulEskpe),
       filled: true,
       fillColor: const Color(0xFFF7F7F9),
       border: OutlineInputBorder(
@@ -705,7 +706,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.0),
           borderSide:
-              const BorderSide(color: Color(0xFF4A3AFF), width: 2)),
+              const BorderSide(color: AppColors.azulEskpe, width: 2)),
       contentPadding:
           const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
     );
@@ -736,7 +737,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         labelStyle: const TextStyle(
             color: Color(0xFF7A7A7A), fontWeight: FontWeight.w500),
         prefixIcon: prefixIcon != null
-            ? Icon(prefixIcon, color: const Color(0xFF4A3AFF))
+            ? Icon(prefixIcon, color: AppColors.azulEskpe)
             : null,
         filled: true,
         fillColor: const Color(0xFFF7F7F9),
@@ -749,7 +750,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20.0),
             borderSide:
-                const BorderSide(color: Color(0xFF4A3AFF), width: 2)),
+                const BorderSide(color: AppColors.azulEskpe, width: 2)),
         errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(20.0),
             borderSide:

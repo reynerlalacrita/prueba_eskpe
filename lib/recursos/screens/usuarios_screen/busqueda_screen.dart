@@ -11,16 +11,12 @@ class BusquedaScreen extends StatefulWidget {
 }
 
 class _BusquedaScreenState extends State<BusquedaScreen> {
-  // Variable de estado para controlar la lista de búsquedas
   final List<String> _busquedasRecientes = [];
-
-  // 🛠️ CONTROLADOR AGREGADO: Para escuchar lo que el usuario escribe
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    // Escachamos los cambios del teclado para refrescar la lista
     _searchController.addListener(() {
       setState(() {});
     });
@@ -28,11 +24,10 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
 
   @override
   void dispose() {
-    _searchController.dispose(); // Limpiamos el controlador al salir
+    _searchController.dispose();
     super.dispose();
   }
 
-  // Método para eliminar una búsqueda
   void _eliminarBusqueda(String busqueda) {
     setState(() {
       _busquedasRecientes.remove(busqueda);
@@ -58,11 +53,10 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
           children: [
             const SizedBox(height: 15),
 
-            // BARRA DE BÚSQUEDA
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
               child: TextField(
-                controller: _searchController, // 🛠️ VINCULADO AQUÍ
+                controller: _searchController,
                 decoration: InputDecoration(
                   hintText: "Escribe el nombre del lugar...",
                   hintStyle: const TextStyle(color: Colors.black45),
@@ -86,9 +80,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
               ),
             ),
             const SizedBox(height: 15),
-            //colocar aqui si quieres tener un flito de busqueda personalizado
 
-            // BÚSQUEDAS RECIENTES (Se oculta si la lista está vacía)
             if (_busquedasRecientes.isNotEmpty) ...[
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 15.0),
@@ -104,7 +96,6 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
               const SizedBox(height: 25),
             ],
 
-            // TÍTULO DINÁMICO: Cambia si está escribiendo o no
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
               child: Text(
@@ -122,7 +113,7 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collectionGroup('destinos')
-                  .snapshots(), // Quitamos el limit(5) fijo para permitir buscar en todos los destinos creados
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return const Padding(
@@ -144,7 +135,8 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
 
                 var docsSugerencias = snapshot.data?.docs ?? [];
 
-                // 🛠️ LÓGICA DE BÚSQUEDA FILTRADA EN TIEMPO REAL
+                /// Filtrado en memoria por coincidencia de subcadena en minúsculas.
+                /// Cuando la consulta está vacía, se limita el resultado a los primeros 5 elementos.
                 String query = _searchController.text.toLowerCase();
                 if (query.isNotEmpty) {
                   docsSugerencias = docsSugerencias.where((doc) {
@@ -154,6 +146,8 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                         .toLowerCase();
                     return nombreDestino.contains(query);
                   }).toList();
+                } else {
+                  docsSugerencias = docsSugerencias.take(5).toList();
                 }
 
                 if (docsSugerencias.isEmpty) {
@@ -171,15 +165,13 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: docsSugerencias.length,
                   itemBuilder: (context, index) {
-                    final doc =
-                        docsSugerencias[index]; // Obtenemos el documento individual
+                    final doc = docsSugerencias[index];
                     final datosSugerencia = doc.data() as Map<String, dynamic>;
 
-                    // 🛠️ CORRECCIÓN: Ahora pasamos los 3 parámetros requeridos, incluyendo el doc.id
                     return _buildSugerencia(
                       datosSugerencia['nombre'] ?? 'Sin nombre',
                       datosSugerencia['rutaAsset'] ?? '',
-                      doc.id, // 🌟 Enviamos el ID único aquí
+                      doc.id,
                     );
                   },
                 );
@@ -189,23 +181,6 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
             const SizedBox(height: 30),
           ],
         ),
-      ),
-    );
-  }
-
-  // --- WIDGETS AUXILIARES ---
-
-  Widget _buildFiltroChip(String texto) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade300),
-      ),
-      child: Text(
-        texto,
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
       ),
     );
   }
@@ -223,7 +198,6 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
         onPressed: () => _eliminarBusqueda(texto),
       ),
       onTap: () {
-        // Al tocar una búsqueda reciente, la escribe en la barra
         _searchController.text = texto;
       },
     );
@@ -234,7 +208,6 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
       visualDensity: VisualDensity.compact,
       leading: CircleAvatar(
         radius: 18,
-        // 🛠️ MEJORA: Detecta inteligentemente si viene URL de Firebase (http) o asset local
         backgroundImage:
             (rutaAsset.startsWith('http')
                     ? NetworkImage(rutaAsset)
@@ -249,19 +222,17 @@ class _BusquedaScreenState extends State<BusquedaScreen> {
         style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
       ),
       onTap: () {
-        // Agrega la palabra seleccionada a búsquedas recientes si no existe ya
         if (!_busquedasRecientes.contains(nombre)) {
           setState(() {
             _busquedasRecientes.insert(0, nombre);
           });
         }
 
-        // Navegación limpia enviando el ID correcto
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => DestinoDetalleScreen(
-              destinoId: destinoId, // 🌟 Pasado sin problemas
+              destinoId: destinoId,
               nombre: nombre,
               rutaAsset: rutaAsset,
             ),

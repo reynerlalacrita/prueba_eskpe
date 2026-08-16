@@ -29,6 +29,7 @@ class HistorialReservasScreen extends StatelessWidget {
           .where('usuarioId', isEqualTo: user.uid)
           .snapshots(),
       builder: (context, snapshot) {
+        /// Calcula la cantidad de reservaciones con estados actualizados pendientes de lectura.
         int noLeidas = 0;
         if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
           noLeidas = snapshot.data!.docs.where((r) {
@@ -285,6 +286,23 @@ class HistorialReservasScreen extends StatelessWidget {
                       viajeData['puntoSalida'] ?? 'No especificado';
                   String horaSalida =
                       viajeData['horaSalida'] ?? 'No especificada';
+
+                  String fechaSalidaStr = 'No especificada';
+                  dynamic rawFecha = viajeData['fechaSalida'] ??
+                      viajeData['fechaViaje'] ??
+                      viajeData['fecha'] ??
+                      data['fechaSalida'] ??
+                      data['fechaViaje'];
+
+                  if (rawFecha != null) {
+                    if (rawFecha is Timestamp) {
+                      final dt = rawFecha.toDate();
+                      fechaSalidaStr = "${dt.day}/${dt.month}/${dt.year}";
+                    } else {
+                      fechaSalidaStr = rawFecha.toString();
+                    }
+                  }
+
                   return Column(
                     children: [
                       _buildInfoRow(
@@ -299,6 +317,13 @@ class HistorialReservasScreen extends StatelessWidget {
                         "Hora de salida",
                         horaSalida,
                         color: AppColors.azul3,
+                      ),
+                      const SizedBox(height: 10),
+                      _buildInfoRow(
+                        Icons.calendar_today,
+                        "Fecha de salida",
+                        fechaSalidaStr,
+                        color: AppColors.azul1,
                       ),
                     ],
                   );
@@ -400,6 +425,7 @@ class HistorialReservasScreen extends StatelessWidget {
           .collection('usuarios')
           .doc(empresaId)
           .get();
+      if (!context.mounted) return;
       if (doc.exists && doc.data() != null) {
         String telefono = doc.get('telefono') ?? '';
         if (telefono.isNotEmpty) {

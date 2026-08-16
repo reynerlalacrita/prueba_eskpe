@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:prueba_eskpe/recursos/screens/register_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
+import 'package:prueba_eskpe/recursos/colores.dart';
 
 class VerificationScreen extends StatefulWidget {
   final String email;
@@ -147,7 +148,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2E16D1),
+      backgroundColor: AppColors.azulEskpe,
       body: SafeArea(
         child: Column(
           children: [
@@ -239,7 +240,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF2E16D1),
+                            color: AppColors.azulEskpe,
                           ),
                         ),
                       ),
@@ -265,7 +266,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         child: ElevatedButton(
                           onPressed: _isChecking ? null : _verificarCorreo,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2E16D1),
+                            backgroundColor: AppColors.azulEskpe,
                             foregroundColor: Colors.white,
                             disabledBackgroundColor: Colors.grey[300],
                             shape: RoundedRectangleBorder(
@@ -301,13 +302,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
                               onPressed: _reenviarCorreo,
                               icon: const Icon(
                                 Icons.refresh_rounded,
-                                color: Color(0xFF2E16D1),
+                                color: AppColors.azulEskpe,
                                 size: 20,
                               ),
                               label: const Text(
                                 'Reenviar correo',
                                 style: TextStyle(
-                                  color: Color(0xFF2E16D1),
+                                  color: AppColors.azulEskpe,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
                                 ),
