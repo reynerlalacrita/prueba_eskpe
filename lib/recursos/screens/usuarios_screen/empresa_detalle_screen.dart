@@ -421,18 +421,27 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
         ),
         child: Row(
           children: [
-            Container(
+            SizedBox(
               width: 110,
-              decoration: BoxDecoration(
+              height: double.infinity,
+              child: ClipRRect(
                 borderRadius: const BorderRadius.horizontal(
                   left: Radius.circular(15),
                 ),
-                image: DecorationImage(
-                  image: AssetImage(
-                    rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
-                  ),
-                  fit: BoxFit.cover,
-                ),
+                child: (rutaAsset.startsWith('http://') ||
+                        rutaAsset.startsWith('https://'))
+                    ? Image.network(
+                        rutaAsset,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset('assets/sinfoto.jpg', fit: BoxFit.cover),
+                      )
+                    : Image.asset(
+                        rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            Image.asset('assets/sinfoto.jpg', fit: BoxFit.cover),
+                      ),
               ),
             ),
             Expanded(

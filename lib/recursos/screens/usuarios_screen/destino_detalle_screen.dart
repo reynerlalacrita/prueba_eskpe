@@ -220,19 +220,35 @@ class _DestinoDetalleScreenState extends State<DestinoDetalleScreen> {
                     precioStr = "\$$precio";
                   }
 
-                  // 🛠️ SOLUCIÓN: Pasamos el context, el doc.id y el mapa de datos completo
-                  return _buildTarjetaViaje(
-                    context,
-                    doc.id,
-                    data,
-                    data['empresaNombre'] ?? data['empresa'] ?? 'Empresa',
-                    precioStr,
-                    fechaTexto,
-                    data['empresaLogoUrl'] ??
-                        data['fotoUrl'] ??
-                        data['logoUrl'] ??
-                        data['rutaAsset'] ??
-                        '',
+                  // Carga la foto real de la empresa desde Firestore
+                  final String empresaId = data['empresaId'] ?? '';
+                  return FutureBuilder<DocumentSnapshot>(
+                    future: empresaId.isNotEmpty
+                        ? FirebaseFirestore.instance
+                            .collection('usuarios')
+                            .doc(empresaId)
+                            .get()
+                        : Future.value(null as DocumentSnapshot?),
+                    builder: (context, snapEmpresa) {
+                      String logoUrl =
+                          snapEmpresa.data?.get('fotoUrl') as String? ?? '';
+                      if (logoUrl.isEmpty) {
+                        logoUrl = data['empresaLogoUrl'] ??
+                            data['fotoUrl'] ??
+                            data['logoUrl'] ??
+                            data['rutaAsset'] ??
+                            '';
+                      }
+                      return _buildTarjetaViaje(
+                        context,
+                        doc.id,
+                        data,
+                        data['empresaNombre'] ?? data['empresa'] ?? 'Empresa',
+                        precioStr,
+                        fechaTexto,
+                        logoUrl,
+                      );
+                    },
                   );
                 }, childCount: docs.length),
               );

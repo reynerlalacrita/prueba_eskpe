@@ -288,7 +288,8 @@ class HistorialReservasScreen extends StatelessWidget {
                       viajeData['horaSalida'] ?? 'No especificada';
 
                   String fechaSalidaStr = 'No especificada';
-                  dynamic rawFecha = viajeData['fechaSalida'] ??
+                  dynamic rawFecha =
+                      viajeData['fechaSalida'] ??
                       viajeData['fechaViaje'] ??
                       viajeData['fecha'] ??
                       data['fechaSalida'] ??

@@ -181,21 +181,25 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Stack(
         children: [
           // Fondo azul en caso de que el Stack necesite cubrir todo el espacio
-          Container(
-            width: size.width,
-            height: size.height,
-            color: AppColors.azulEskpe,
+          RepaintBoundary(
+            child: Container(
+              width: size.width,
+              height: size.height,
+              color: AppColors.azulEskpe,
+            ),
           ),
 
           // Gradiente superpuesto para mejorar la lectura y dar profundidad
-          Container(
-            width: size.width,
-            height: size.height,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.black.withOpacity(0.4), Colors.transparent],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+          RepaintBoundary(
+            child: Container(
+              width: size.width,
+              height: size.height,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.black.withOpacity(0.4), Colors.transparent],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ),
@@ -401,6 +405,8 @@ class _LoginScreenState extends State<LoginScreen> {
       inputFormatters: inputFormatters,
       textCapitalization: textCapitalization,
       obscureText: obscureText,
+      autocorrect: false,
+      enableSuggestions: false,
       style: const TextStyle(
         fontWeight: FontWeight.w500,
         color: Color(0xFF333333),

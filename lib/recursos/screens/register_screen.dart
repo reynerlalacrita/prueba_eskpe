@@ -87,7 +87,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // Solo campos de empresa — sin apellidos, sin cédula de viajero
         final Map<String, dynamic> datosEmpresa = {
           'uid': uid,
-          'razon_social': _nombreController.text.trim(),
+          'nombres': _nombreController.text.trim(),
           'correo': _emailController.text.trim(),
           'contrasena': _passwordController.text.trim(),
           'telefono': _telefonoController.text.trim(),
@@ -181,19 +181,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          Container(
-            width: size.width,
-            height: size.height,
-            color: AppColors.azulEskpe,
+          RepaintBoundary(
+            child: Container(
+              width: size.width,
+              height: size.height,
+              color: AppColors.azulEskpe,
+            ),
           ),
-          Container(
-            width: size.width,
-            height: size.height,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Colors.black.withOpacity(0.4), Colors.transparent],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+          RepaintBoundary(
+            child: Container(
+              width: size.width,
+              height: size.height,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.black.withOpacity(0.4), Colors.transparent],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ),
@@ -730,6 +734,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       inputFormatters: inputFormatters,
       textCapitalization: textCapitalization,
       obscureText: obscureText,
+      autocorrect: false,
+      enableSuggestions: false,
       style: const TextStyle(
           fontWeight: FontWeight.w500, color: Color(0xFF333333)),
       decoration: InputDecoration(

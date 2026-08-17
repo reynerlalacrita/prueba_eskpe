@@ -59,10 +59,12 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
 
       if (doc.exists && doc.data() != null) {
         Map<String, dynamic> datos = doc.data() as Map<String, dynamic>;
-        _nombreController.text = datos['nombres'] ?? _usuario.displayName ?? '';
+        _nombreController.text =
+            datos['nombres'] ?? _usuario.displayName ?? '';
         _descripcionController.text = datos['descripcion'] ?? '';
         _telefonoController.text = datos['telefono'] ?? '';
-        _cedulaController.text = datos['cedula'] ?? datos['rif'] ?? '';
+        _cedulaController.text =
+            datos['documento'] ?? datos['cedula'] ?? datos['rif'] ?? '';
         _fotoUrl = datos['fotoUrl'] ?? _usuario.photoURL ?? '';
         _portadaUrl = datos['portadaUrl'] ?? '';
 
@@ -671,172 +673,174 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
                   _buildCard(
                     child: Column(
                       children: [
-                        SizedBox(
-                          height: 200,
-                          child: Stack(
-                            children: [
-                              // 1. FOTO DE PORTADA
-                              Positioned(
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                height: 160,
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(15),
-                                  child: Stack(
-                                    fit: StackFit.expand,
-                                    children: [
-                                      _portadaUrl.isNotEmpty
-                                          ? Image.network(
-                                              _portadaUrl,
-                                              fit: BoxFit.cover,
-                                            )
-                                          : Container(
-                                              color: Colors.grey.shade300,
-                                              child: const Center(
-                                                child: Text(
-                                                  "Sin Foto de Portada",
-                                                  style: TextStyle(
-                                                    color: Colors.grey,
+                        RepaintBoundary(
+                          child: SizedBox(
+                            height: 200,
+                            child: Stack(
+                              children: [
+                                // 1. FOTO DE PORTADA
+                                Positioned(
+                                  top: 0,
+                                  left: 0,
+                                  right: 0,
+                                  height: 160,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(15),
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        _portadaUrl.isNotEmpty
+                                            ? Image.network(
+                                                _portadaUrl,
+                                                fit: BoxFit.cover,
+                                              )
+                                            : Container(
+                                                color: Colors.grey.shade300,
+                                                child: const Center(
+                                                  child: Text(
+                                                    "Sin Foto de Portada",
+                                                    style: TextStyle(
+                                                      color: Colors.grey,
+                                                    ),
                                                   ),
                                                 ),
                                               ),
+                                        if (_subiendoPortada)
+                                          Container(
+                                            color: Colors.black45,
+                                            child: const Center(
+                                              child: CircularProgressIndicator(
+                                                color: Colors.white,
+                                              ),
                                             ),
-                                      if (_subiendoPortada)
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                // Botón para editar portada
+                                Positioned(
+                                  top: 10,
+                                  right: 10,
+                                  child: InkWell(
+                                    onTap: _subiendoPortada
+                                        ? null
+                                        : _seleccionarYSubirPortada,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black54,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: const Row(
+                                        children: [
+                                          Icon(
+                                            Icons.camera_alt,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            "Portada",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                // 2. LOGO DE LA EMPRESA (Abajo a la izquierda)
+                                Positioned(
+                                  bottom: 0,
+                                  left: 20,
+                                  child: Stack(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(4),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.white,
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black12,
+                                              blurRadius: 10,
+                                              offset: Offset(0, 4),
+                                            ),
+                                          ],
+                                        ),
+                                        child: CircleAvatar(
+                                          radius: 40,
+                                          backgroundColor: Colors.grey.shade200,
+                                          backgroundImage: _fotoUrl.isNotEmpty
+                                              ? NetworkImage(_fotoUrl)
+                                                    as ImageProvider
+                                              : const AssetImage(
+                                                  'assets/sinfoto.jpg',
+                                                ),
+                                        ),
+                                      ),
+                                      if (_subiendoFoto)
                                         Container(
-                                          color: Colors.black45,
+                                          width: 88,
+                                          height: 88,
+                                          decoration: const BoxDecoration(
+                                            color: Colors.black45,
+                                            shape: BoxShape.circle,
+                                          ),
                                           child: const Center(
                                             child: CircularProgressIndicator(
                                               color: Colors.white,
                                             ),
                                           ),
                                         ),
+                                      Positioned(
+                                        bottom: 0,
+                                        right: 0,
+                                        child: InkWell(
+                                          onTap: _subiendoFoto
+                                              ? null
+                                              : _seleccionarYSubirFoto,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: const BoxDecoration(
+                                              color: Color(0xFF1E2A4F),
+                                              shape: BoxShape.circle,
+                                              border: Border(
+                                                top: BorderSide(
+                                                  color: Colors.white,
+                                                  width: 2,
+                                                ),
+                                                bottom: BorderSide(
+                                                  color: Colors.white,
+                                                  width: 2,
+                                                ),
+                                                left: BorderSide(
+                                                  color: Colors.white,
+                                                  width: 2,
+                                                ),
+                                                right: BorderSide(
+                                                  color: Colors.white,
+                                                  width: 2,
+                                                ),
+                                              ),
+                                            ),
+                                            child: const Icon(
+                                              Icons.edit,
+                                              color: Colors.white,
+                                              size: 14,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
-                              ),
-                              // Botón para editar portada
-                              Positioned(
-                                top: 10,
-                                right: 10,
-                                child: InkWell(
-                                  onTap: _subiendoPortada
-                                      ? null
-                                      : _seleccionarYSubirPortada,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black54,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: const Row(
-                                      children: [
-                                        Icon(
-                                          Icons.camera_alt,
-                                          color: Colors.white,
-                                          size: 16,
-                                        ),
-                                        SizedBox(width: 5),
-                                        Text(
-                                          "Portada",
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              // 2. LOGO DE LA EMPRESA (Abajo a la izquierda)
-                              Positioned(
-                                bottom: 0,
-                                left: 20,
-                                child: Stack(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(4),
-                                      decoration: const BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black12,
-                                            blurRadius: 10,
-                                            offset: Offset(0, 4),
-                                          ),
-                                        ],
-                                      ),
-                                      child: CircleAvatar(
-                                        radius: 40,
-                                        backgroundColor: Colors.grey.shade200,
-                                        backgroundImage: _fotoUrl.isNotEmpty
-                                            ? NetworkImage(_fotoUrl)
-                                                  as ImageProvider
-                                            : const AssetImage(
-                                                'assets/sinfoto.jpg',
-                                              ),
-                                      ),
-                                    ),
-                                    if (_subiendoFoto)
-                                      Container(
-                                        width: 88,
-                                        height: 88,
-                                        decoration: const BoxDecoration(
-                                          color: Colors.black45,
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Center(
-                                          child: CircularProgressIndicator(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ),
-                                    Positioned(
-                                      bottom: 0,
-                                      right: 0,
-                                      child: InkWell(
-                                        onTap: _subiendoFoto
-                                            ? null
-                                            : _seleccionarYSubirFoto,
-                                        child: Container(
-                                          padding: const EdgeInsets.all(6),
-                                          decoration: const BoxDecoration(
-                                            color: Color(0xFF1E2A4F),
-                                            shape: BoxShape.circle,
-                                            border: Border(
-                                              top: BorderSide(
-                                                color: Colors.white,
-                                                width: 2,
-                                              ),
-                                              bottom: BorderSide(
-                                                color: Colors.white,
-                                                width: 2,
-                                              ),
-                                              left: BorderSide(
-                                                color: Colors.white,
-                                                width: 2,
-                                              ),
-                                              right: BorderSide(
-                                                color: Colors.white,
-                                                width: 2,
-                                              ),
-                                            ),
-                                          ),
-                                          child: const Icon(
-                                            Icons.edit,
-                                            color: Colors.white,
-                                            size: 14,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -1164,6 +1168,8 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
       maxLength: maxLength,
       maxLines: maxLines,
       inputFormatters: inputFormatters,
+      autocorrect: false,
+      enableSuggestions: false,
       style: TextStyle(
         color: readOnly ? Colors.grey.shade700 : Colors.black87,
         fontWeight: FontWeight.w500,
