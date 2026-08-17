@@ -21,7 +21,19 @@ class ListaViajesScreen extends StatelessWidget {
       ),
       backgroundColor: AppColors.blancofondo,
       body: StreamBuilder<QuerySnapshot>(
-        stream: FirebaseFirestore.instance.collection('viajes').snapshots(),
+        stream: FirebaseFirestore.instance
+            .collection('viajes')
+            .where(
+              'fecha',
+              isGreaterThanOrEqualTo: Timestamp.fromDate(
+                DateTime(
+                  DateTime.now().year,
+                  DateTime.now().month,
+                  DateTime.now().day,
+                ),
+              ),
+            )
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
@@ -202,12 +214,19 @@ class ListaViajesScreen extends StatelessWidget {
                       const SizedBox(height: 5),
                       Row(
                         children: [
-                          const Icon(Icons.calendar_today, size: 14, color: Colors.grey),
+                          const Icon(
+                            Icons.calendar_today,
+                            size: 14,
+                            color: AppColors.azul1,
+                          ),
                           const SizedBox(width: 5),
                           Expanded(
                             child: Text(
                               fechaStr,
-                              style: const TextStyle(color: Colors.grey, fontSize: 13),
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -216,12 +235,19 @@ class ListaViajesScreen extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.access_time, size: 14, color: Colors.grey),
+                          const Icon(
+                            Icons.access_time,
+                            size: 14,
+                            color: AppColors.azul3,
+                          ),
                           const SizedBox(width: 5),
                           Expanded(
                             child: Text(
                               horaSalida,
-                              style: const TextStyle(color: Colors.grey, fontSize: 13),
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -230,12 +256,19 @@ class ListaViajesScreen extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          const Icon(Icons.location_on, size: 14, color: Colors.grey),
+                          const Icon(
+                            Icons.location_on,
+                            size: 14,
+                            color: Color.fromARGB(255, 219, 3, 3),
+                          ),
                           const SizedBox(width: 5),
                           Expanded(
                             child: Text(
                               puntoSalida,
-                              style: const TextStyle(color: Colors.grey, fontSize: 13),
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 13,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -259,7 +292,7 @@ class ListaViajesScreen extends StatelessWidget {
                           const Text(
                             "Ver detalles >",
                             style: TextStyle(
-                              color: Colors.grey,
+                              color: AppColors.azuleskpe,
                               fontSize: 12,
                               fontWeight: FontWeight.bold,
                             ),

@@ -59,8 +59,7 @@ class _MisDatosEmpresaScreenState extends State<MisDatosEmpresaScreen> {
 
       if (doc.exists && doc.data() != null) {
         Map<String, dynamic> datos = doc.data() as Map<String, dynamic>;
-        _nombreController.text =
-            datos['nombres'] ?? _usuario.displayName ?? '';
+        _nombreController.text = datos['nombres'] ?? _usuario.displayName ?? '';
         _descripcionController.text = datos['descripcion'] ?? '';
         _telefonoController.text = datos['telefono'] ?? '';
         _cedulaController.text =

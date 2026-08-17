@@ -177,7 +177,7 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                         IconButton(
                           icon: const Icon(
                             Icons.add_circle,
-                            color: Color(0xFF1E2A4F),
+                            color: AppColors.azuleskpe,
                           ),
                           onPressed: () {
                             if (beneficioController.text.trim().isNotEmpty) {
@@ -225,6 +225,22 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                   ),
                   onPressed: () {
                     if (precioPlanController.text.isNotEmpty) {
+                      // Verificar si ya existe un plan con ese nombre
+                      bool yaExiste = _planes.any(
+                        (p) => p['nombre'] == nombrePlan,
+                      );
+                      if (yaExiste) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "Ya tienes un plan de tipo $nombrePlan agregado.",
+                            ),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                        return;
+                      }
+
                       setState(() {
                         _planes.add({
                           'nombre': nombrePlan,
@@ -340,12 +356,12 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
           "Editar Viaje",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        backgroundColor: const Color(0xFF1E2A4F),
+        backgroundColor: AppColors.azuleskpe,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: _guardando
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFF1E2A4F)),
+              child: CircularProgressIndicator(color: AppColors.azul2),
             )
           : Padding(
               padding: const EdgeInsets.all(20.0),
@@ -410,7 +426,10 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                         ),
                         TextButton.icon(
                           onPressed: _mostrarDialogoAgregarPlan,
-                          icon: const Icon(Icons.add, color: Color(0xFF1E2A4F)),
+                          icon: const Icon(
+                            Icons.add,
+                            color: AppColors.azuleskpe,
+                          ),
                           label: const Text(
                             "Agregar Plan",
                             style: TextStyle(color: Color(0xFF1E2A4F)),
@@ -487,17 +506,7 @@ class _EditarViajeScreenState extends State<EditarViajeScreen> {
                                     Text("Beneficios: ${plan['beneficios']}"),
                                 ],
                               ),
-                              trailing: IconButton(
-                                icon: const Icon(
-                                  Icons.delete,
-                                  color: Colors.red,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _planes.removeAt(index);
-                                  });
-                                },
-                              ),
+                              // trailing: IconButton( ... ) eliminado para impedir borrar planes en edición
                             ),
                           );
                         },

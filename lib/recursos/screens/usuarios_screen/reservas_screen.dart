@@ -90,7 +90,16 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
         int puestosDisponibles = viajeData['puestosDisponibles'] ?? 0;
         String empresa = viajeData['empresaNombre'] ?? 'Empresa';
         String empresaId = viajeData['empresaId'] ?? '';
-        String destino = viajeData['destinoId'] ?? 'Destino';
+        String destinoId = viajeData['destinoId'] ?? 'Destino';
+
+        // Obtener el nombre real del destino para guardarlo en la reserva
+        DocumentSnapshot destinoSnapshot = await transaction.get(
+          FirebaseFirestore.instance.collection('destinos').doc(destinoId),
+        );
+        String destinoNombre = destinoSnapshot.exists
+            ? (destinoSnapshot.data() as Map<String, dynamic>)['nombre'] ??
+                  'Destino'
+            : 'Destino';
 
         String usuarioNombre = usuarioData != null
             ? (usuarioData['nombres'] ?? 'Usuario')
@@ -117,7 +126,9 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
           'usuarioNombre': usuarioNombre,
           'usuarioContacto': usuarioContacto,
           'viajeId': widget.viajeId,
-          'destino': destino,
+          'destino': destinoId, // Guardamos el ID para compatibilidad
+          'destinoNombre':
+              destinoNombre, // Guardamos el nombre para el historial
           'empresaNombre': empresa,
           'empresaId': empresaId,
           'puestosReservados': _puestosAReservar,
@@ -125,6 +136,12 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
           'precioPlan': _planSeleccionado?['precio'] ?? 0.0,
           'totalPago':
               (_planSeleccionado?['precio'] ?? 0.0) * _puestosAReservar,
+          'puntoSalida': viajeData['puntoSalida'] ?? 'No especificado',
+          'horaSalida': viajeData['horaSalida'] ?? 'No especificada',
+          'fechaSalida':
+              viajeData['fechaSalida'] ??
+              viajeData['fechaViaje'] ??
+              viajeData['fecha'],
           'fechaReservacion': FieldValue.serverTimestamp(),
           'estado':
               'Pendiente', // Puede ser Pendiente, Aceptada, Rechazada, Cancelada
@@ -279,10 +296,10 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.azulEskpe.withValues(alpha: 0.04),
+                        color: AppColors.azuleskpe.withValues(alpha: 0.04),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: AppColors.azulEskpe.withValues(alpha: 0.12),
+                          color: AppColors.azuleskpe.withValues(alpha: 0.12),
                         ),
                       ),
                       child: Column(
@@ -293,7 +310,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                               Icon(
                                 Icons.info_outline,
                                 size: 16,
-                                color: AppColors.azulEskpe,
+                                color: AppColors.azuleskpe,
                               ),
                               SizedBox(width: 6),
                               Text(
@@ -301,7 +318,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.bold,
-                                  color: AppColors.azulEskpe,
+                                  color: AppColors.azuleskpe,
                                 ),
                               ),
                             ],
@@ -357,11 +374,11 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                     padding: const EdgeInsets.all(15),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF1E2A4F).withOpacity(0.05)
+                          ? AppColors.azuleskpe.withOpacity(0.05)
                           : Colors.white,
                       border: Border.all(
                         color: isSelected
-                            ? const Color(0xFF1E2A4F)
+                            ? AppColors.azuleskpe
                             : Colors.grey.shade300,
                         width: isSelected ? 2 : 1,
                       ),
@@ -373,7 +390,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                         Radio<Map<String, dynamic>>(
                           value: plan,
                           groupValue: _planSeleccionado,
-                          activeColor: const Color(0xFF1E2A4F),
+                          activeColor: AppColors.azuleskpe,
                           onChanged: (Map<String, dynamic>? value) {
                             setState(() {
                               _planSeleccionado = value;
@@ -401,7 +418,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                                     "\$${plan['precio']}",
                                     style: const TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFFA53030),
+                                      color: Color.fromARGB(255, 32, 167, 22),
                                       fontSize: 16,
                                     ),
                                   ),
@@ -475,7 +492,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                   icon: const Icon(
                     Icons.remove_circle_outline,
                     size: 40,
-                    color: Color(0xFF1E2A4F),
+                    color: AppColors.azul4,
                   ),
                 ),
                 Container(
@@ -502,7 +519,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
                   icon: const Icon(
                     Icons.add_circle_outline,
                     size: 40,
-                    color: Color(0xFF1E2A4F),
+                    color: AppColors.azul4,
                   ),
                 ),
               ],
@@ -513,7 +530,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E2A4F),
+                color: AppColors.azuleskpe,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: Row(
@@ -543,9 +560,7 @@ class _ReservarViajeScreenState extends State<ReservarViajeScreen> {
               child: ElevatedButton(
                 onPressed: _procesando ? null : _confirmarReservacion,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(
-                    0xFFA53030,
-                  ), // Color llamativo para accionar la compra
+                  backgroundColor: const Color.fromARGB(255, 38, 169, 21),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),

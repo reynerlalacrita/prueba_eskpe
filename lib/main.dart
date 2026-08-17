@@ -31,13 +31,13 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner:
           false, // Quita la etiqueta roja de "Debug" en la esquina
       theme: ThemeData(
-        primaryColor: AppColors.azulEskpe,
+        primaryColor: AppColors.azuleskpe,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.azulEskpe,
-          primary: AppColors.azulEskpe,
+          seedColor: AppColors.azuleskpe,
+          primary: AppColors.azuleskpe,
         ),
         appBarTheme: const AppBarTheme(
-          backgroundColor: AppColors.azulEskpe,
+          backgroundColor: AppColors.azuleskpe,
           foregroundColor: AppColors.blancofondo,
         ),
         useMaterial3: true,

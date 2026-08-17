@@ -5,14 +5,14 @@ import 'package:prueba_eskpe/recursos/screens/empresas_screens/home_empresa_scre
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 
-class PendingApprovalScreen extends StatefulWidget {
-  const PendingApprovalScreen({super.key});
+class AprobacionPendienteScreen extends StatefulWidget {
+  const AprobacionPendienteScreen({super.key});
 
   @override
-  State<PendingApprovalScreen> createState() => _PendingApprovalScreenState();
+  State<AprobacionPendienteScreen> createState() => _AprobacionPendienteScreenState();
 }
 
-class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
+class _AprobacionPendienteScreenState extends State<AprobacionPendienteScreen> {
   bool _isChecking = false;
 
   // Consultar a Firestore si la cuenta fue aprobada
@@ -39,7 +39,9 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
         if (estado == 'active') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('¡Tu cuenta ha sido aprobada! Bienvenido a ESK-PE.'),
+              content: Text(
+                '¡Tu cuenta ha sido aprobada! Bienvenido a ESK-PE.',
+              ),
               backgroundColor: Colors.green,
             ),
           );
@@ -51,14 +53,18 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
         } else if (estado == 'rejected') {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Tu solicitud de registro de empresa ha sido rechazada.'),
+              content: Text(
+                'Tu solicitud de registro de empresa ha sido rechazada.',
+              ),
               backgroundColor: Colors.red,
             ),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Tu solicitud aún está en revisión por el equipo de ESK-PE.'),
+              content: Text(
+                'Tu solicitud aún está en revisión por el equipo de ESK-PE.',
+              ),
               backgroundColor: Colors.orange,
             ),
           );
@@ -99,7 +105,7 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.azulEskpe,
+      backgroundColor: AppColors.azuleskpe,
       body: SafeArea(
         child: Column(
           children: [
@@ -147,13 +153,19 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                   ),
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 36.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28.0,
+                    vertical: 36.0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Badge de estado
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.orange.withOpacity(0.12),
                           borderRadius: BorderRadius.circular(20),
@@ -162,7 +174,11 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.pending_actions_rounded, size: 18, color: Colors.orange.shade800),
+                            Icon(
+                              Icons.pending_actions_rounded,
+                              size: 18,
+                              color: Colors.orange.shade800,
+                            ),
                             const SizedBox(width: 8),
                             Text(
                               'Estado: Pendiente',
@@ -199,7 +215,10 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                           onPressed: _isChecking ? null : _verificarEstado,
                           icon: _isChecking
                               ? const SizedBox.shrink()
-                              : const Icon(Icons.refresh_rounded, color: Colors.white),
+                              : const Icon(
+                                  Icons.refresh_rounded,
+                                  color: Colors.white,
+                                ),
                           label: _isChecking
                               ? const SizedBox(
                                   width: 22,
@@ -218,7 +237,7 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                                   ),
                                 ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.azulEskpe,
+                            backgroundColor: AppColors.azuleskpe,
                             foregroundColor: Colors.white,
                             disabledBackgroundColor: Colors.grey[300],
                             shape: RoundedRectangleBorder(
@@ -238,7 +257,11 @@ class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
                       // ── Botón secundario: Cerrar Sesión ─────────────
                       TextButton.icon(
                         onPressed: _cerrarSesion,
-                        icon: const Icon(Icons.logout_rounded, color: Colors.grey, size: 20),
+                        icon: const Icon(
+                          Icons.logout_rounded,
+                          color: Colors.grey,
+                          size: 20,
+                        ),
                         label: const Text(
                           'Cerrar Sesión',
                           style: TextStyle(

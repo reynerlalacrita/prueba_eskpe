@@ -41,9 +41,18 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
         if (doc.exists && mounted) {
           final data = doc.data() as Map<String, dynamic>;
           setState(() {
-            _nombreEmpresa = data['nombres'] ?? data['razon_social'] ?? data['nombre'] ?? 'Mi Empresa';
-            _rifEmpresa = data['documento'] ?? data['cedula'] ?? data['rif'] ?? '';
-            _fotoUrl = data['fotoUrl'] ?? data['logoUrl'] ?? data['imagenPerfil'] ?? '';
+            _nombreEmpresa =
+                data['nombres'] ??
+                data['razon_social'] ??
+                data['nombre'] ??
+                'Mi Empresa';
+            _rifEmpresa =
+                data['documento'] ?? data['cedula'] ?? data['rif'] ?? '';
+            _fotoUrl =
+                data['fotoUrl'] ??
+                data['logoUrl'] ??
+                data['imagenPerfil'] ??
+                '';
             _cargandoDatos = false;
           });
         }
@@ -60,16 +69,23 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: const Text("Cerrar Sesión"),
-        content: const Text("¿Estás seguro de que deseas salir del panel de empresa?"),
+        content: const Text(
+          "¿Estás seguro de que deseas salir del panel de empresa?",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
             child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFA53030)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFA53030),
+            ),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text("Cerrar Sesión", style: TextStyle(color: Colors.white)),
+            child: const Text(
+              "Cerrar Sesión",
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -93,7 +109,9 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         title: const Text("Eliminar Viaje"),
-        content: Text("¿Seguro que deseas eliminar el viaje hacia \"$nombreDestino\"? Esta acción no se puede deshacer."),
+        content: Text(
+          "¿Seguro que deseas eliminar el viaje hacia \"$nombreDestino\"? Esta acción no se puede deshacer.",
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -103,23 +121,35 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             onPressed: () async {
               try {
-                await FirebaseFirestore.instance.collection('viajes').doc(viajeId).delete();
+                await FirebaseFirestore.instance
+                    .collection('viajes')
+                    .doc(viajeId)
+                    .delete();
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Viaje eliminado correctamente"), backgroundColor: Colors.green),
+                    const SnackBar(
+                      content: Text("Viaje eliminado correctamente"),
+                      backgroundColor: Colors.green,
+                    ),
                   );
                 }
               } catch (e) {
                 if (mounted) {
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Error al eliminar: $e"), backgroundColor: Colors.red),
+                    SnackBar(
+                      content: Text("Error al eliminar: $e"),
+                      backgroundColor: Colors.red,
+                    ),
                   );
                 }
               }
             },
-            child: const Text("Eliminar", style: TextStyle(color: Colors.white)),
+            child: const Text(
+              "Eliminar",
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
@@ -146,7 +176,9 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const MisDatosEmpresaScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const MisDatosEmpresaScreen(),
+                ),
               ).then((_) {
                 _cargarDatosEmpresa();
               });
@@ -238,11 +270,18 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                     child: Image.network(
                       _fotoUrl,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const Icon(Icons.business_rounded, color: Colors.white, size: 36),
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.business_rounded,
+                        color: Colors.white,
+                        size: 36,
+                      ),
                     ),
                   )
-                : const Icon(Icons.business_rounded, color: Colors.white, size: 36),
+                : const Icon(
+                    Icons.business_rounded,
+                    color: Colors.white,
+                    size: 36,
+                  ),
           ),
           const SizedBox(width: 15),
           Expanded(
@@ -261,12 +300,21 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(Icons.verified, color: Colors.lightBlueAccent, size: 16),
+                    const Icon(
+                      Icons.verified,
+                      color: Colors.lightBlueAccent,
+                      size: 16,
+                    ),
                     const SizedBox(width: 5),
                     Expanded(
                       child: Text(
-                        _rifEmpresa.isNotEmpty ? "RIF: $_rifEmpresa" : "Cuenta de Empresa Aliada",
-                        style: const TextStyle(color: Colors.white70, fontSize: 13),
+                        _rifEmpresa.isNotEmpty
+                            ? "RIF: $_rifEmpresa"
+                            : "Cuenta de Empresa Aliada",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -290,13 +338,15 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
             child: _buildActionCard(
               context: context,
               icon: Icons.add_location_alt_rounded,
-              color: AppColors.azulEskpe,
+              color: AppColors.azuleskpe,
               title: "Publicar Viaje",
               subtitle: "Agregar nuevo destino y cupos",
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AgregarViajeScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const AgregarViajeScreen(),
+                  ),
                 );
               },
             ),
@@ -307,13 +357,15 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
             child: _buildActionCard(
               context: context,
               icon: Icons.assignment_outlined,
-              color: const Color(0xFF4A3AFF),
+              color: AppColors.azul2,
               title: "Mis Datos",
               subtitle: "Configuración de la cuenta",
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const MisDatosEmpresaScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const MisDatosEmpresaScreen(),
+                  ),
                 ).then((_) {
                   _cargarDatosEmpresa();
                 });
@@ -441,15 +493,26 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade300, style: BorderStyle.solid),
+        border: Border.all(
+          color: Colors.grey.shade300,
+          style: BorderStyle.solid,
+        ),
       ),
       child: Column(
         children: [
-          Icon(Icons.directions_bus_filled_outlined, size: 70, color: Colors.grey.shade400),
+          Icon(
+            Icons.directions_bus_filled_outlined,
+            size: 70,
+            color: Colors.grey.shade400,
+          ),
           const SizedBox(height: 15),
           const Text(
             "Aún no tienes viajes publicados",
-            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 17,
+              fontWeight: FontWeight.bold,
+              color: Colors.grey,
+            ),
           ),
           const SizedBox(height: 8),
           const Text(
@@ -460,33 +523,56 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
           const SizedBox(height: 20),
           ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.azulEskpe,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              backgroundColor: AppColors.azuleskpe,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             ),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const AgregarViajeScreen()),
+                MaterialPageRoute(
+                  builder: (context) => const AgregarViajeScreen(),
+                ),
               );
             },
             icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text("Publicar mi primer viaje", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            label: const Text(
+              "Publicar mi primer viaje",
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTarjetaViaje(BuildContext context, String viajeId, Map<String, dynamic> data) {
+  Widget _buildTarjetaViaje(
+    BuildContext context,
+    String viajeId,
+    Map<String, dynamic> data,
+  ) {
     String destinoId = data['destinoId'] ?? '';
 
     if (destinoId.isEmpty) {
-      return _tarjetaContenido(context, viajeId, data, "Destino Desconocido", data['rutaAsset'] ?? '');
+      return _tarjetaContenido(
+        context,
+        viajeId,
+        data,
+        "Destino Desconocido",
+        data['rutaAsset'] ?? '',
+      );
     }
 
     return FutureBuilder<DocumentSnapshot>(
-      future: FirebaseFirestore.instance.collection('destinos').doc(destinoId).get(),
+      future: FirebaseFirestore.instance
+          .collection('destinos')
+          .doc(destinoId)
+          .get(),
       builder: (context, snapshot) {
         String nombre = "Cargando...";
         String ruta = data['rutaAsset'] ?? '';
@@ -528,9 +614,13 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
       double minPrice = planes
           .map((p) => double.tryParse(p['precio']?.toString() ?? '0') ?? 0.0)
           .reduce((a, b) => a < b ? a : b);
-      precioStr = "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
+      precioStr =
+          "Desde \$${minPrice.toStringAsFixed(minPrice.truncateToDouble() == minPrice ? 0 : 2)}";
     } else {
-      String precio = data['precioPorPuesto']?.toString() ?? data['precio']?.toString() ?? '0';
+      String precio =
+          data['precioPorPuesto']?.toString() ??
+          data['precio']?.toString() ??
+          '0';
       precioStr = "\$$precio";
     }
 
@@ -564,24 +654,34 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                               width: 110,
                               height: 110,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                width: 110,
-                                height: 110,
-                                color: Colors.grey.shade300,
-                                child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    width: 110,
+                                    height: 110,
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
                             )
                           : Image.asset(
-                              rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
+                              rutaAsset.isNotEmpty
+                                  ? rutaAsset
+                                  : 'assets/sinfoto.jpg',
                               width: 110,
                               height: 110,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Container(
-                                width: 110,
-                                height: 110,
-                                color: Colors.grey.shade300,
-                                child: const Icon(Icons.image_not_supported, color: Colors.grey),
-                              ),
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    width: 110,
+                                    height: 110,
+                                    color: Colors.grey.shade300,
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
                             ),
                     ),
                     Positioned(
@@ -594,7 +694,11 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
               ),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 12.0, right: 12.0, bottom: 12.0),
+                  padding: const EdgeInsets.only(
+                    top: 12.0,
+                    right: 12.0,
+                    bottom: 12.0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -605,13 +709,20 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                           Expanded(
                             child: Text(
                               nombreDestino,
-                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 17, color: Color(0xFF1E2A4F)),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 17,
+                                color: Color(0xFF1E2A4F),
+                              ),
                               overflow: TextOverflow.ellipsis,
                               maxLines: 1,
                             ),
                           ),
                           PopupMenuButton<String>(
-                            icon: const Icon(Icons.more_vert, color: Colors.grey),
+                            icon: const Icon(
+                              Icons.more_vert,
+                              color: Colors.grey,
+                            ),
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
                             onSelected: (value) {
@@ -619,14 +730,21 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => EditarViajeScreen(viajeId: viajeId, datosViaje: data),
+                                    builder: (context) => EditarViajeScreen(
+                                      viajeId: viajeId,
+                                      datosViaje: data,
+                                    ),
                                   ),
                                 );
                               } else if (value == 'solicitudes') {
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => SolicitudesViajeScreen(viajeId: viajeId, nombreViaje: nombreDestino),
+                                    builder: (context) =>
+                                        SolicitudesViajeScreen(
+                                          viajeId: viajeId,
+                                          nombreViaje: nombreDestino,
+                                        ),
                                   ),
                                 );
                               } else if (value == 'eliminar') {
@@ -638,7 +756,11 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                                 value: 'solicitudes',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.people_outline, color: Color(0xFF4A3AFF), size: 20),
+                                    Icon(
+                                      Icons.people_outline,
+                                      color: Color(0xFF4A3AFF),
+                                      size: 20,
+                                    ),
                                     SizedBox(width: 10),
                                     Text("Ver Solicitudes"),
                                   ],
@@ -648,7 +770,11 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                                 value: 'editar',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.edit_outlined, color: Colors.orange, size: 20),
+                                    Icon(
+                                      Icons.edit_outlined,
+                                      color: Colors.orange,
+                                      size: 20,
+                                    ),
                                     SizedBox(width: 10),
                                     Text("Editar Viaje"),
                                   ],
@@ -658,9 +784,16 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                                 value: 'eliminar',
                                 child: Row(
                                   children: [
-                                    Icon(Icons.delete_outline, color: Colors.red, size: 20),
+                                    Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.red,
+                                      size: 20,
+                                    ),
                                     SizedBox(width: 10),
-                                    Text("Eliminar Viaje", style: TextStyle(color: Colors.red)),
+                                    Text(
+                                      "Eliminar Viaje",
+                                      style: TextStyle(color: Colors.red),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -672,38 +805,85 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                       Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
-                          const Icon(Icons.calendar_today, size: 13, color: Colors.grey),
+                          const Icon(
+                            Icons.calendar_today,
+                            size: 13,
+                            color: AppColors.azul1,
+                          ),
                           const SizedBox(width: 4),
-                          Text(fechaStr, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text(
+                            fechaStr,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
                           const SizedBox(width: 12),
-                          const Icon(Icons.attach_money, size: 14, color: Color(0xFFB8860B)),
-                          Text(precioStr, style: const TextStyle(fontSize: 13, color: Color(0xFFB8860B), fontWeight: FontWeight.bold)),
+                          const Icon(
+                            Icons.attach_money,
+                            size: 14,
+                            color: Color(0xFFB8860B),
+                          ),
+                          Text(
+                            precioStr,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFFB8860B),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Row(
                         children: [
-                          const Icon(Icons.access_time, size: 13, color: Colors.grey),
+                          const Icon(
+                            Icons.access_time,
+                            size: 13,
+                            color: AppColors.azul3,
+                          ),
                           const SizedBox(width: 4),
                           Expanded(
-                            child: Text(horaSalida, style: const TextStyle(fontSize: 12, color: Colors.grey), overflow: TextOverflow.ellipsis),
+                            child: Text(
+                              horaSalida,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 2),
                       Row(
                         children: [
-                          const Icon(Icons.location_on_outlined, size: 13, color: Colors.grey),
+                          const Icon(
+                            Icons.location_on,
+                            size: 13,
+                            color: Color.fromARGB(255, 219, 3, 3),
+                          ),
                           const SizedBox(width: 4),
                           Expanded(
-                            child: Text(puntoSalida, style: const TextStyle(fontSize: 12, color: Colors.grey), overflow: TextOverflow.ellipsis),
+                            child: Text(
+                              puntoSalida,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
                         ],
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "Puestos: ${data['puestosDisponibles'] ?? 0}/${data['puestosTotales'] ?? 0}",
-                        style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
                       ),
                     ],
                   ),
@@ -722,28 +902,48 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => SolicitudesViajeScreen(viajeId: viajeId, nombreViaje: nombreDestino),
+                        builder: (context) => SolicitudesViajeScreen(
+                          viajeId: viajeId,
+                          nombreViaje: nombreDestino,
+                        ),
                       ),
                     );
                   },
-                  icon: const Icon(Icons.assignment_turned_in_outlined, size: 16, color: Color(0xFF4A3AFF)),
-                  label: const Text("Solicitudes", style: TextStyle(color: Color(0xFF4A3AFF), fontSize: 13, fontWeight: FontWeight.bold)),
+                  icon: const Icon(
+                    Icons.assignment_turned_in_outlined,
+                    size: 16,
+                    color: Color(0xFF4A3AFF),
+                  ),
+                  label: const Text(
+                    "Solicitudes",
+                    style: TextStyle(
+                      color: Color(0xFF4A3AFF),
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 TextButton.icon(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => EditarViajeScreen(viajeId: viajeId, datosViaje: data),
+                        builder: (context) => EditarViajeScreen(
+                          viajeId: viajeId,
+                          datosViaje: data,
+                        ),
                       ),
                     );
                   },
                   icon: const Icon(Icons.edit, size: 16, color: Colors.grey),
-                  label: const Text("Editar", style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  label: const Text(
+                    "Editar",
+                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -758,21 +958,31 @@ class _HomeEmpresaScreenState extends State<HomeEmpresaScreen> {
           .snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return const SizedBox(); 
+          return const SizedBox();
         }
         int cantidadPendientes = snapshot.data!.docs.length;
-        
+
         return Container(
           padding: const EdgeInsets.all(6),
           decoration: BoxDecoration(
             color: Colors.red,
             shape: BoxShape.circle,
             border: Border.all(color: Colors.white, width: 2),
-            boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))],
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
           ),
           child: Text(
             cantidadPendientes.toString(),
-            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         );
       },

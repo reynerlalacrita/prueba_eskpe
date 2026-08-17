@@ -155,15 +155,31 @@ class HistorialReservasScreen extends StatelessWidget {
     Color colorEstado = Colors.orange;
     IconData iconoEstado = Icons.pending_actions;
 
-    if (estado == 'Aceptada') {
-      colorEstado = Colors.green;
-      iconoEstado = Icons.check_circle;
-    } else if (estado == 'Rechazada') {
-      colorEstado = Colors.red;
-      iconoEstado = Icons.cancel;
-    } else if (estado == 'Cancelada') {
-      colorEstado = Colors.grey;
-      iconoEstado = Icons.block;
+    // Verificar si la fecha del viaje ya pasó → marcar como Completado
+    bool viajeCompletado = false;
+    dynamic rawFechaSalida = data['fechaSalida'] ?? data['fechaViaje'];
+    if (rawFechaSalida is Timestamp) {
+      final fechaViaje = rawFechaSalida.toDate();
+      final hoy = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+      if (fechaViaje.isBefore(hoy) && estado != 'Rechazada' && estado != 'Cancelada') {
+        viajeCompletado = true;
+        estado = 'Completado';
+        colorEstado = AppColors.azuleskpe;
+        iconoEstado = Icons.check_circle_outline;
+      }
+    }
+
+    if (!viajeCompletado) {
+      if (estado == 'Aceptada') {
+        colorEstado = Colors.green;
+        iconoEstado = Icons.check_circle;
+      } else if (estado == 'Rechazada') {
+        colorEstado = Colors.red;
+        iconoEstado = Icons.cancel;
+      } else if (estado == 'Cancelada') {
+        colorEstado = Colors.grey;
+        iconoEstado = Icons.block;
+      }
     }
 
     // Formateo de fecha
@@ -249,28 +265,71 @@ class HistorialReservasScreen extends StatelessWidget {
             ],
           ),
           const Divider(height: 25),
-          FutureBuilder<DocumentSnapshot>(
-            future: FirebaseFirestore.instance
-                .collection('destinos')
-                .doc(data['destino'])
-                .get(),
-            builder: (context, snapshot) {
-              String nombreDestino = data['destino'] ?? 'Desconocido';
-              if (snapshot.connectionState == ConnectionState.done &&
-                  snapshot.hasData &&
-                  snapshot.data!.exists) {
-                nombreDestino = snapshot.data!['nombre'] ?? nombreDestino;
-              }
-              return _buildInfoRow(
-                Icons.map,
-                "Destino",
-                nombreDestino,
-                color: const Color.fromARGB(210, 47, 225, 160),
-              );
-            },
-          ),
+          if (data['destinoNombre'] != null && data['destinoNombre'].toString().isNotEmpty)
+            _buildInfoRow(
+              Icons.map,
+              "Destino",
+              data['destinoNombre'],
+              color: const Color.fromARGB(210, 47, 225, 160),
+            )
+          else
+            FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('destinos')
+                  .doc(data['destino'])
+                  .get(),
+              builder: (context, snapshot) {
+                String nombreDestino = 'Cargando...';
+                if (snapshot.connectionState == ConnectionState.done &&
+                    snapshot.hasData &&
+                    snapshot.data!.exists) {
+                  nombreDestino = snapshot.data!['nombre'] ?? data['destino'] ?? 'Desconocido';
+                }
+                return _buildInfoRow(
+                  Icons.map,
+                  "Destino",
+                  nombreDestino,
+                  color: const Color.fromARGB(210, 47, 225, 160),
+                );
+              },
+            ),
           const SizedBox(height: 10),
-          if (data['viajeId'] != null)
+          if (data['puntoSalida'] != null && data['horaSalida'] != null) ...[
+            _buildInfoRow(
+              Icons.location_on,
+              "Punto de salida",
+              data['puntoSalida'],
+              color: Colors.red,
+            ),
+            const SizedBox(height: 10),
+            _buildInfoRow(
+              Icons.access_time,
+              "Hora de salida",
+              data['horaSalida'],
+              color: AppColors.azul3,
+            ),
+            const SizedBox(height: 10),
+            Builder(
+              builder: (context) {
+                String fechaSalidaStr = 'No especificada';
+                dynamic rawFecha = data['fechaSalida'] ?? data['fechaViaje'];
+                if (rawFecha != null) {
+                  if (rawFecha is Timestamp) {
+                    final dt = rawFecha.toDate();
+                    fechaSalidaStr = "${dt.day}/${dt.month}/${dt.year}";
+                  } else {
+                    fechaSalidaStr = rawFecha.toString();
+                  }
+                }
+                return _buildInfoRow(
+                  Icons.calendar_today,
+                  "Fecha de salida",
+                  fechaSalidaStr,
+                  color: AppColors.azul1,
+                );
+              },
+            ),
+          ] else if (data['viajeId'] != null)
             FutureBuilder<DocumentSnapshot>(
               future: FirebaseFirestore.instance
                   .collection('viajes')

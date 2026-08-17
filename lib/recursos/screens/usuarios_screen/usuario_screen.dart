@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
-import 'package:prueba_eskpe/recursos/screens/empresas_screens/agregar_viajes_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/historial_reservas_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/viajes_empresa_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/mis_datos_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/usuarios_screen/support_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/mis_datos_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/usuarios_screen/soporte_screen.dart';
 
 class UsuarioScreen extends StatefulWidget {
   const UsuarioScreen({super.key});
@@ -17,10 +15,6 @@ class UsuarioScreen extends StatefulWidget {
 }
 
 class _UsuarioScreenState extends State<UsuarioScreen> {
-  // Variables para controlar el estado de los interruptores
-  bool _modoOscuro = false;
-  bool _notificaciones = false;
-
   // 🛠️ Variable para almacenar el nombre del usuario
   String _nombreUsuario = 'Cargando...';
   String _apellidoUsuario = '';
@@ -161,19 +155,18 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                     _obtenerNombreDesdeFirebase();
                   },
                 ),
-                if (rol == 'usuario')
-                  _buildMenuItem(
-                    Icons.tune,
-                    "Historial de Viajes",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const HistorialReservasScreen(),
-                        ),
-                      );
-                    },
-                  ),
+                _buildMenuItem(
+                  Icons.tune,
+                  "Historial de Viajes",
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const HistorialReservasScreen(),
+                      ),
+                    );
+                  },
+                ),
                 _buildMenuItem(
                   Icons.help_outline,
                   "Ayuda y Soporte",
@@ -181,57 +174,10 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const SupportScreen(),
+                        builder: (context) => const SoporteScreen(),
                       ),
                     );
                   },
-                ),
-                if (rol == 'empresa') ...[
-                  _buildMenuItem(
-                    Icons.directions_boat_filled_outlined,
-                    "Mis Viajes Publicados",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const ViajesEmpresaScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  _buildMenuItem(
-                    Icons.add,
-                    "Agregar viajes",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const AgregarViajeScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                ],
-              ],
-            ),
-            const SizedBox(height: 15),
-
-            // 3. SEGUNDA TARJETA (Ajustes con interruptores)
-            _buildMenuCard(
-              children: [
-                _buildSwitchItem(
-                  _modoOscuro ? Icons.dark_mode : Icons.dark_mode_outlined,
-                  "Modo Oscuro",
-                  _modoOscuro,
-                  (valor) => setState(() => _modoOscuro = valor),
-                ),
-                _buildSwitchItem(
-                  _notificaciones
-                      ? Icons.notifications_active
-                      : Icons.notifications_none_outlined,
-                  "Notificaciones",
-                  _notificaciones,
-                  (valor) => setState(() => _notificaciones = valor),
                 ),
               ],
             ),
@@ -320,34 +266,6 @@ class _UsuarioScreenState extends State<UsuarioScreen> {
           () {
             // Lógica futura de navegación
           },
-    );
-  }
-
-  // Crea cada fila con interruptor (Switch)
-  Widget _buildSwitchItem(
-    IconData icon,
-    String title,
-    bool value,
-    ValueChanged<bool> onChanged,
-  ) {
-    return ListTile(
-      leading: Icon(icon, color: const Color(0xFF1E2A4F)),
-      title: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w500,
-          color: Colors.black87,
-        ),
-      ),
-      trailing: Switch(
-        value: value,
-        onChanged: onChanged,
-        activeColor: Colors.white,
-        activeTrackColor: const Color(0xFF1E2A4F),
-        inactiveThumbColor: Colors.white,
-        inactiveTrackColor: Colors.grey.shade300,
-      ),
     );
   }
 }

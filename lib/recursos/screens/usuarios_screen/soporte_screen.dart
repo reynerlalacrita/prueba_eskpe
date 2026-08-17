@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 
-class SupportScreen extends StatelessWidget {
+class SoporteScreen extends StatelessWidget {
   final String supportPhoneNumber;
 
-  const SupportScreen({super.key, this.supportPhoneNumber = '584263211350'});
+  const SoporteScreen({super.key, this.supportPhoneNumber = '584263211350'});
 
   Future<void> _openWhatsApp(BuildContext context) async {
     final String message = Uri.encodeComponent(

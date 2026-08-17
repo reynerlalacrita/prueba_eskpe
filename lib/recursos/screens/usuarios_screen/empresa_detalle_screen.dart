@@ -428,19 +428,26 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                 borderRadius: const BorderRadius.horizontal(
                   left: Radius.circular(15),
                 ),
-                child: (rutaAsset.startsWith('http://') ||
+                child:
+                    (rutaAsset.startsWith('http://') ||
                         rutaAsset.startsWith('https://'))
                     ? Image.network(
                         rutaAsset,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) =>
-                            Image.asset('assets/sinfoto.jpg', fit: BoxFit.cover),
+                            Image.asset(
+                              'assets/sinfoto.jpg',
+                              fit: BoxFit.cover,
+                            ),
                       )
                     : Image.asset(
                         rutaAsset.isNotEmpty ? rutaAsset : 'assets/sinfoto.jpg',
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) =>
-                            Image.asset('assets/sinfoto.jpg', fit: BoxFit.cover),
+                            Image.asset(
+                              'assets/sinfoto.jpg',
+                              fit: BoxFit.cover,
+                            ),
                       ),
               ),
             ),
@@ -479,7 +486,7 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                         const Icon(
                           Icons.calendar_today,
                           size: 14,
-                          color: Color(0xFFB8860B),
+                          color: AppColors.azul1,
                         ),
                         const SizedBox(width: 5),
                         Text(
@@ -496,7 +503,7 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                         const Icon(
                           Icons.access_time,
                           size: 14,
-                          color: Color(0xFFB8860B),
+                          color: AppColors.azul3,
                         ),
                         const SizedBox(width: 5),
                         Text(
@@ -513,7 +520,7 @@ class _EmpresaDetalleScreenState extends State<EmpresaDetalleScreen> {
                         const Icon(
                           Icons.location_on,
                           size: 14,
-                          color: Color(0xFFB8860B),
+                          color: Color.fromARGB(255, 219, 3, 3),
                         ),
                         const SizedBox(width: 5),
                         Expanded(

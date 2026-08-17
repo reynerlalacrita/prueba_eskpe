@@ -230,14 +230,22 @@ class _DestinoDetalleScreenState extends State<DestinoDetalleScreen> {
                             .get()
                         : Future.value(null as DocumentSnapshot?),
                     builder: (context, snapEmpresa) {
-                      String logoUrl =
-                          snapEmpresa.data?.get('fotoUrl') as String? ?? '';
-                      if (logoUrl.isEmpty) {
-                        logoUrl = data['empresaLogoUrl'] ??
-                            data['fotoUrl'] ??
-                            data['logoUrl'] ??
-                            data['rutaAsset'] ??
-                            '';
+                      String logoUrl = '';
+                      if (snapEmpresa.connectionState == ConnectionState.waiting) {
+                        logoUrl = 'loading';
+                      } else {
+                        try {
+                          logoUrl = snapEmpresa.data?.get('fotoUrl') as String? ?? '';
+                        } catch (e) {
+                          logoUrl = '';
+                        }
+                        if (logoUrl.isEmpty) {
+                          logoUrl = data['empresaLogoUrl'] ??
+                              data['fotoUrl'] ??
+                              data['logoUrl'] ??
+                              data['rutaAsset'] ??
+                              '';
+                        }
                       }
                       return _buildTarjetaViaje(
                         context,
@@ -307,19 +315,32 @@ class _DestinoDetalleScreenState extends State<DestinoDetalleScreen> {
                 borderRadius: const BorderRadius.horizontal(
                   left: Radius.circular(15),
                 ),
-                child:
-                    (rutaAsset.startsWith('http://') ||
-                        rutaAsset.startsWith('https://'))
-                    ? Image.network(
-                        rutaAsset,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Image.asset(
-                              'assets/sinfoto.jpg',
-                              fit: BoxFit.cover,
-                            ),
+                child: rutaAsset == 'loading'
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF1E2A4F),
+                        ),
                       )
-                    : Image.asset('assets/sinfoto.jpg', fit: BoxFit.cover),
+                    : (rutaAsset.startsWith('http://') ||
+                            rutaAsset.startsWith('https://'))
+                        ? Image.network(
+                            rutaAsset,
+                            fit: BoxFit.cover,
+                            loadingBuilder: (context, child, loadingProgress) {
+                              if (loadingProgress == null) return child;
+                              return const Center(
+                                child: CircularProgressIndicator(
+                                  color: Color(0xFF1E2A4F),
+                                ),
+                              );
+                            },
+                            errorBuilder: (context, error, stackTrace) =>
+                                Image.asset(
+                                  'assets/sinfoto.jpg',
+                                  fit: BoxFit.cover,
+                                ),
+                          )
+                        : Image.asset('assets/sinfoto.jpg', fit: BoxFit.cover),
               ),
             ),
             Expanded(

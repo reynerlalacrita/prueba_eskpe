@@ -3,11 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/home_empresa_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/empresas_screens/pending_approval_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresas_screens/aprobacion_pendiente_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/verification_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/verificacion_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
+import 'package:prueba_eskpe/recursos/screens/recuperar_contrasena_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -39,7 +40,7 @@ class _LoginScreenState extends State<LoginScreen> {
         context: context,
         barrierDismissible: false,
         builder: (context) => const Center(
-          child: CircularProgressIndicator(color: AppColors.azulEskpe),
+          child: CircularProgressIndicator(color: AppColors.azuleskpe),
         ),
       );
 
@@ -71,19 +72,25 @@ class _LoginScreenState extends State<LoginScreen> {
           if (estado == 'pending') {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Tu cuenta de empresa está pendiente de aprobación por el equipo.'),
+                content: Text(
+                  'Tu cuenta de empresa está pendiente de aprobación por el equipo.',
+                ),
                 backgroundColor: Colors.orange,
               ),
             );
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => const PendingApprovalScreen()),
+              MaterialPageRoute(
+                builder: (context) => const AprobacionPendienteScreen(),
+              ),
             );
             return;
           } else if (estado == 'rejected') {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Tu solicitud de registro de empresa fue rechazada. Contacta a soporte.'),
+                content: Text(
+                  'Tu solicitud de registro de empresa fue rechazada. Contacta a soporte.',
+                ),
                 backgroundColor: Colors.red,
               ),
             );
@@ -115,14 +122,16 @@ class _LoginScreenState extends State<LoginScreen> {
           if (refreshedUser != null && !refreshedUser.emailVerified) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('Debes verificar tu correo antes de ingresar. Revisa tu bandeja de entrada.'),
+                content: Text(
+                  'Debes verificar tu correo antes de ingresar. Revisa tu bandeja de entrada.',
+                ),
                 backgroundColor: Colors.orange,
               ),
             );
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => VerificationScreen(
+                builder: (context) => VerificacionScreen(
                   email: refreshedUser.email ?? _emailController.text.trim(),
                 ),
               ),
@@ -176,7 +185,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      backgroundColor: AppColors.azulEskpe, // Fondo azul sólido
+      backgroundColor: AppColors.azuleskpe, // Fondo azul sólido
       resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
@@ -185,7 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Container(
               width: size.width,
               height: size.height,
-              color: AppColors.azulEskpe,
+              color: AppColors.azuleskpe,
             ),
           ),
 
@@ -242,7 +251,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.azulEskpe,
+                          color: AppColors.azuleskpe,
                         ),
                       ),
                       const SizedBox(height: 30),
@@ -274,7 +283,32 @@ class _LoginScreenState extends State<LoginScreen> {
                         prefixIcon: Icons.lock_outline,
                       ),
 
-                      const SizedBox(height: 40),
+                      const SizedBox(height: 10),
+
+                      // Botón Olvidé mi contraseña
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    const RecuperarContrasenaScreen(),
+                              ),
+                            );
+                          },
+                          child: const Text(
+                            '¿Olvidaste tu contraseña?',
+                            style: TextStyle(
+                              color: AppColors.azuleskpe,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
 
                       // Botón Ingresar
                       Container(
@@ -283,13 +317,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(30.0),
                           gradient: const LinearGradient(
-                            colors: [AppColors.azulEskpe, AppColors.azul1],
+                            colors: [AppColors.azuleskpe, AppColors.azul1],
                             begin: Alignment.centerLeft,
                             end: Alignment.centerRight,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.azulEskpe.withValues(alpha: 0.4),
+                              color: AppColors.azuleskpe.withValues(alpha: 0.4),
                               blurRadius: 15,
                               offset: const Offset(0, 5),
                             ),
@@ -340,7 +374,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextSpan(
                                 text: "Regístrate aquí",
                                 style: TextStyle(
-                                  color: AppColors.azulEskpe,
+                                  color: AppColors.azuleskpe,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -358,28 +392,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
           // Logo ESK-PE
           Positioned(
-            top: size.height * 0.12,
+            top: size.height * 0.06,
             left: 0,
             right: 0,
-            child: Center(
-              child: Text(
-                'ESK-PE',
-                style: TextStyle(
-                  fontFamily: 'Impact',
-                  fontSize: 55,
-                  fontWeight: FontWeight.bold,
-                  fontStyle: FontStyle.italic,
-                  color: Colors.white,
-                  letterSpacing: 3,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withOpacity(0.6),
-                      blurRadius: 15,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/logo_foreground.png', height: 120),
+                const SizedBox(height: 5),
+                Text(
+                  'ESK-PE',
+                  style: TextStyle(
+                    fontFamily: 'Impact',
+                    fontSize: 55,
+                    fontWeight: FontWeight.bold,
+                    fontStyle: FontStyle.italic,
+                    color: Colors.white,
+                    letterSpacing: 3,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withOpacity(0.6),
+                        blurRadius: 15,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ],
@@ -418,7 +457,7 @@ class _LoginScreenState extends State<LoginScreen> {
           fontWeight: FontWeight.w500,
         ),
         prefixIcon: prefixIcon != null
-            ? Icon(prefixIcon, color: AppColors.azulEskpe)
+            ? Icon(prefixIcon, color: AppColors.azuleskpe)
             : null,
         filled: true,
         fillColor: const Color(0xFFF7F7F9),
@@ -432,7 +471,7 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.0),
-          borderSide: const BorderSide(color: AppColors.azulEskpe, width: 2),
+          borderSide: const BorderSide(color: AppColors.azuleskpe, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20.0),

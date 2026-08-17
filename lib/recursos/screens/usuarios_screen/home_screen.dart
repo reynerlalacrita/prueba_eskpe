@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (cargandoRol) {
       return const Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.azulEskpe),
+          child: CircularProgressIndicator(color: AppColors.azuleskpe),
         ),
       );
     }
@@ -201,6 +201,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         margin: const EdgeInsets.symmetric(horizontal: 5.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(15),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
                           image: DecorationImage(
                             image: AssetImage(item['image']!),
                             fit: BoxFit.cover,
@@ -354,12 +361,31 @@ class _HomeScreenState extends State<HomeScreen> {
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
                   .collection('viajes')
+                  .where(
+                    'fecha',
+                    isGreaterThanOrEqualTo: Timestamp.fromDate(
+                      DateTime(
+                        DateTime.now().year,
+                        DateTime.now().month,
+                        DateTime.now().day,
+                      ),
+                    ),
+                  )
                   .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 final docs = snapshot.data!.docs;
+                if (docs.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      "No hay viajes próximos disponibles.",
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  );
+                }
                 return ListView.builder(
                   padding: const EdgeInsets.symmetric(horizontal: 0),
                   shrinkWrap: true,
@@ -392,11 +418,11 @@ class _HomeScreenState extends State<HomeScreen> {
               style: GoogleFonts.montserrat(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: AppColors.azulEskpe,
+                color: AppColors.azuleskpe,
               ),
             ),
             const SizedBox(width: 5),
-            const Icon(Icons.chevron_right, size: 24, color: AppColors.azul2),
+            const Icon(Icons.chevron_right, size: 30, color: AppColors.azul2),
           ],
         ),
       ),
@@ -503,6 +529,13 @@ class _HomeScreenState extends State<HomeScreen> {
               height: 108,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
                 image: DecorationImage(
                   image: rutaAsset.startsWith('http')
                       ? NetworkImage(rutaAsset) as ImageProvider

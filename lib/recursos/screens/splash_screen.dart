@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:prueba_eskpe/recursos/screens/empresas_screens/home_empresa_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/empresas_screens/pending_approval_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/empresas_screens/aprobacion_pendiente_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/login_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
-import 'package:prueba_eskpe/recursos/screens/verification_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/verificacion_screen.dart';
+import 'package:prueba_eskpe/recursos/screens/admin_panel_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -51,6 +52,14 @@ class _SplashScreenState extends State<SplashScreen> {
         final String rol = doc.get('rol') ?? 'usuario';
         debugPrint("Sesión detectada. Rol de usuario: $rol");
 
+        if (rol == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const AdminScreen()),
+          );
+          return;
+        }
+
         if (rol == 'empresa') {
           // Para empresas: verificar estado de aprobación
           final String estado = doc.data()?['estado'] ?? 'pending';
@@ -59,7 +68,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => const PendingApprovalScreen(),
+                builder: (context) => const AprobacionPendienteScreen(),
               ),
             );
             return;
@@ -83,7 +92,7 @@ class _SplashScreenState extends State<SplashScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => VerificationScreen(
+                builder: (context) => VerificacionScreen(
                   email: refreshedUser.email ?? doc.data()?['correo'] ?? '',
                 ),
               ),

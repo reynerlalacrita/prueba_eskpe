@@ -5,19 +5,16 @@ import 'package:prueba_eskpe/recursos/screens/register_screen.dart';
 import 'package:prueba_eskpe/recursos/screens/usuarios_screen/home_screen.dart';
 import 'package:prueba_eskpe/recursos/colores.dart';
 
-class VerificationScreen extends StatefulWidget {
+class VerificacionScreen extends StatefulWidget {
   final String email;
 
-  const VerificationScreen({
-    super.key,
-    required this.email,
-  });
+  const VerificacionScreen({super.key, required this.email});
 
   @override
-  State<VerificationScreen> createState() => _VerificationScreenState();
+  State<VerificacionScreen> createState() => _VerificacionScreenState();
 }
 
-class _VerificationScreenState extends State<VerificationScreen> {
+class _VerificacionScreenState extends State<VerificacionScreen> {
   bool _isChecking = false;
   bool _canResend = false;
   int _secondsLeft = 60;
@@ -86,7 +83,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
         // ⚠️ Aún no ha verificado
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada o spam.'),
+            content: Text(
+              'Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada o spam.',
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -116,7 +115,9 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Correo de verificación reenviado. Revisa tu bandeja de entrada.'),
+          content: Text(
+            'Correo de verificación reenviado. Revisa tu bandeja de entrada.',
+          ),
           backgroundColor: Colors.green,
         ),
       );
@@ -148,18 +149,24 @@ class _VerificationScreenState extends State<VerificationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.azulEskpe,
+      backgroundColor: AppColors.azuleskpe,
       body: SafeArea(
         child: Column(
           children: [
             // ── Header con flecha de regreso ─────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
               child: Row(
                 children: [
                   IconButton(
                     onPressed: _volverAlRegistro,
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                    icon: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white,
+                    ),
                     tooltip: 'Volver al registro',
                   ),
                   const Spacer(),
@@ -210,11 +217,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   ),
                 ),
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 36.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28.0,
+                    vertical: 36.0,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-
                       // Mensaje informativo
                       Text(
                         'Hemos enviado un enlace de verificación a:',
@@ -230,7 +239,10 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
                       // Correo del usuario
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 10,
+                        ),
                         decoration: BoxDecoration(
                           color: const Color(0xFFF0ECFF),
                           borderRadius: BorderRadius.circular(12),
@@ -240,7 +252,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           style: const TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: AppColors.azulEskpe,
+                            color: AppColors.azuleskpe,
                           ),
                         ),
                       ),
@@ -266,7 +278,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                         child: ElevatedButton(
                           onPressed: _isChecking ? null : _verificarCorreo,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.azulEskpe,
+                            backgroundColor: AppColors.azuleskpe,
                             foregroundColor: Colors.white,
                             disabledBackgroundColor: Colors.grey[300],
                             shape: RoundedRectangleBorder(
@@ -302,13 +314,13 @@ class _VerificationScreenState extends State<VerificationScreen> {
                               onPressed: _reenviarCorreo,
                               icon: const Icon(
                                 Icons.refresh_rounded,
-                                color: AppColors.azulEskpe,
+                                color: AppColors.azuleskpe,
                                 size: 20,
                               ),
                               label: const Text(
                                 'Reenviar correo',
                                 style: TextStyle(
-                                  color: AppColors.azulEskpe,
+                                  color: AppColors.azuleskpe,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14,
                                 ),
